@@ -1,8 +1,8 @@
 Gem::Specification.new do |spec|
   spec.name          = "fiddle"
   spec.version       = '1.0.0.beta1'
-  s.authors          = ["Aaron Patterson", "SHIBATA Hiroshi"]
-  s.email            = ["aaron@tenderlovemaking.com", "hsbt@ruby-lang.org"]
+  spec.authors       = ["Aaron Patterson", "SHIBATA Hiroshi"]
+  spec.email         = ["aaron@tenderlovemaking.com", "hsbt@ruby-lang.org"]
 
   spec.summary       = %q{A libffi wrapper for Ruby.}
   spec.description   = %q{A libffi wrapper for Ruby.}
