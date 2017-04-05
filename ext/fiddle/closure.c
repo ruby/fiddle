@@ -1,6 +1,7 @@
 #include <fiddle.h>
 #include <ruby/thread.h>
-#include "internal.h" /* rb_thread_has_gvl_p */
+
+int ruby_thread_has_gvl_p(void); /* for ext/fiddle/closure.c */
 
 VALUE cFiddleClosure;
 
