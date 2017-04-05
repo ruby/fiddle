@@ -1,5 +1,7 @@
 # frozen_string_literal: false
 require 'minitest/autorun'
+require "test/unit/assertions"
+require "envutil"
 require 'fiddle'
 
 # FIXME: this is stolen from DL and needs to be refactored.
