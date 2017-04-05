@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "fiddle"
-  spec.version       = '0.7.0'
+  spec.version       = '1.0.0.beta1'
   s.authors          = ["Aaron Patterson", "SHIBATA Hiroshi"]
   s.email            = ["aaron@tenderlovemaking.com", "hsbt@ruby-lang.org"]
 
