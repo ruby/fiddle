@@ -110,7 +110,7 @@ Fiddle::LIBC_SO = libc_so
 Fiddle::LIBM_SO = libm_so
 
 module Fiddle
-  class TestCase < MiniTest::Unit::TestCase
+  class TestCase < MiniTest::Test
     def setup
       @libc = Fiddle.dlopen(LIBC_SO)
       @libm = Fiddle.dlopen(LIBM_SO)
