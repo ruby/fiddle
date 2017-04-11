@@ -10,4 +10,4 @@ end
 require 'rake/extensiontask'
 Rake::ExtensionTask.new("fiddle")
 
-task :default => :test
+task :default => [:compile, :test]
