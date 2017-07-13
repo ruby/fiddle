@@ -1,7 +1,9 @@
 # Used by configure and make to download or update mirrored Ruby and GCC
 # files. This will use HTTPS if possible, falling back to HTTP.
 
+require 'fileutils'
 require 'open-uri'
+require 'pathname'
 begin
   require 'net/https'
 rescue LoadError
@@ -60,12 +62,8 @@ class Downloader
     def self.download(name, dir = nil, since = true, options = {})
       require 'rubygems'
       options = options.dup
-      verify = options.delete(:verify) {Gem::VERSION >= "2.4."}
       options[:ssl_ca_cert] = Dir.glob(File.expand_path("../lib/rubygems/ssl_certs/**/*.pem", File.dirname(__FILE__)))
-      file = under(dir, name)
-      super("https://rubygems.org/downloads/#{name}", file, nil, since, options) or
-        return false
-      return true unless verify
+      super("https://rubygems.org/downloads/#{name}", name, dir, since, options)
     end
   end
 
@@ -124,25 +122,40 @@ class Downloader
   #            'UnicodeData.txt', 'enc/unicode/data'
   def self.download(url, name, dir = nil, since = true, options = {})
     options = options.dup
-    options.delete(:verify)
-    file = under(dir, name)
+    url = URI(url)
     dryrun = options.delete(:dryrun)
-    if since.nil? and File.exist?(file)
+    if name
+      file = Pathname.new(under(dir, name))
+    else
+      name = File.basename(url.path)
+    end
+    cache_save = options.delete(:cache_save) {
+      ENV["CACHE_SAVE"] != "no"
+    }
+    cache = cache_file(url, name, options.delete(:cache_dir))
+    file ||= cache
+    if since.nil? and file.exist?
       if $VERBOSE
         $stdout.puts "#{file} already exists"
         $stdout.flush
       end
-      return true
+      if cache_save
+        save_cache(cache, file, name)
+      end
+      return file.to_path
     end
     if dryrun
       puts "Download #{url} into #{file}"
-      return false
+      return
     end
-    if !https? and url.start_with?("https:")
+    if link_cache(cache, file, name, $VERBOSE)
+      return file.to_path
+    end
+    if !https? and URI::HTTPS === url
       warn "*** using http instead of https ***"
-      url = url.sub(/\Ahttps/, 'http')
+      url.scheme = 'http'
+      url = URI(url.to_s)
     end
-    url = URI(url)
     if $VERBOSE
       $stdout.print "downloading #{name} ... "
       $stdout.flush
@@ -155,47 +168,101 @@ class Downloader
           $stdout.puts "#{name} not modified"
           $stdout.flush
         end
-        return true
+        return file.to_path
       end
       raise
     rescue Timeout::Error
-      if since.nil? and File.exist?(file)
+      if since.nil? and file.exist?
         puts "Request for #{url} timed out, using old version."
-        return true
+        return file.to_path
       end
       raise
     rescue SocketError
-      if since.nil? and File.exist?(file)
+      if since.nil? and file.exist?
         puts "No network connection, unable to download #{url}, using old version."
-        return true
+        return file.to_path
       end
       raise
     end
     mtime = nil
-    open(file, "wb", 0600) do |f|
+    dest = (cache_save && cache && !cache.exist? ? cache : file)
+    dest.parent.mkpath
+    dest.open("wb", 0600) do |f|
       f.write(data)
       f.chmod(mode_for(data))
       mtime = data.meta["last-modified"]
     end
     if mtime
       mtime = Time.httpdate(mtime)
-      File.utime(mtime, mtime, file)
+      dest.utime(mtime, mtime)
     end
     if $VERBOSE
       $stdout.puts "done"
       $stdout.flush
     end
-    true
+    if dest.eql?(cache)
+      link_cache(cache, file, name)
+    elsif cache_save
+      save_cache(cache, file, name)
+    end
+    return file.to_path
   rescue => e
     raise "failed to download #{name}\n#{e.message}: #{url}"
   end
 
-  def self.verify(file)
-    true
-  end
-
   def self.under(dir, name)
     dir ? File.join(dir, File.basename(name)) : name
+  end
+
+  def self.cache_file(url, name, cache_dir = nil)
+    case cache_dir
+    when false
+      return nil
+    when nil
+      cache_dir = ENV['CACHE_DIR']
+      if !cache_dir or cache_dir.empty?
+        cache_dir = ".downloaded-cache"
+      end
+    end
+    Pathname.new(cache_dir) + (name || File.basename(URI(url).path))
+  end
+
+  def self.link_cache(cache, file, name, verbose = false)
+    return false unless cache and cache.exist?
+    return true if cache.eql?(file)
+    if /cygwin/ !~ RUBY_PLATFORM or /winsymlink:nativestrict/ =~ ENV['CYGWIN']
+      begin
+        file.make_symlink(cache.relative_path_from(file.parent))
+      rescue SystemCallError
+      else
+        if verbose
+          $stdout.puts "made symlink #{name} to #{cache}"
+          $stdout.flush
+        end
+        return true
+      end
+    end
+    begin
+      file.make_link(cache)
+    rescue SystemCallError
+    else
+      if verbose
+        $stdout.puts "made link #{name} to #{cache}"
+        $stdout.flush
+      end
+      return true
+    end
+  end
+
+  def self.save_cache(cache, file, name)
+    if cache and !cache.eql?(file) and !cache.exist?
+      begin
+        file.rename(cache)
+      rescue
+      else
+        link_cache(cache, file, name)
+      end
+    end
   end
 end
 
@@ -218,10 +285,13 @@ if $0 == __FILE__
       since = nil
     when '-a'
       since = false
-    when '-V'
-      options[:verify] = true
     when '-n', '--dryrun'
       options[:dryrun] = true
+    when '--cache-dir'
+      options[:cache_dir] = ARGV[1]
+      ARGV.shift
+    when /\A--cache-dir=(.*)/m
+      options[:cache_dir] = $1
     when /\A-/
       abort "#{$0}: unknown option #{ARGV[0]}"
     else

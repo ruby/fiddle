@@ -23,15 +23,9 @@ begin
     require_relative "../../bin/extlibs"
     extlibs = ExtLibs.new
     cache_dir = File.expand_path("../../tmp/.download_cache", $srcdir)
-    FileUtils.mkdir_p(cache_dir)
+    ext_dir = File.expand_path("../../ext", $srcdir)
     Dir.glob("#{$srcdir}/libffi-*/").each{|dir| FileUtils.rm_rf(dir)}
-    lines = IO.readlines("#{$srcdir}/extlibs")
-    url, *checksums = lines.shift.chomp.split
-    extlibs.do_command(:all, $srcdir, url, cache_dir, checksums)
-    lines.each do |line|
-      patch, args = line.strip.split(/\s+/, 2)
-      extlibs.do_patch($srcdir, patch, args)
-    end
+    extlibs.run(["--cache=#{cache_dir}", ext_dir])
   end
   ver = bundle != false &&
         Dir.glob("#{$srcdir}/libffi-*/")
