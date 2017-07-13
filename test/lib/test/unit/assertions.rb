@@ -1,20 +1,11 @@
-# frozen_string_literal: false
+# frozen_string_literal: true
 require 'minitest/unit'
 require 'pp'
 
 module Test
   module Unit
     module Assertions
-
       include MiniTest::Assertions
-
-      def _assertions= n # :nodoc:
-        @_assertions = n
-      end
-
-      def _assertions # :nodoc:
-        @_assertions ||= 0
-      end
 
       def mu_pp(obj) #:nodoc:
         obj.pretty_inspect.chomp
@@ -370,15 +361,41 @@ EOT
       #
       #    assert_respond_to("hello", :reverse)  #Succeeds
       #    assert_respond_to("hello", :does_not_exist)  #Fails
-      def assert_respond_to obj, (meth, priv), msg = nil
-        if priv
+      def assert_respond_to(obj, (meth, *priv), msg = nil)
+        unless priv.empty?
           msg = message(msg) {
-            "Expected #{mu_pp(obj)} (#{obj.class}) to respond to ##{meth}#{" privately" if priv}"
+            "Expected #{mu_pp(obj)} (#{obj.class}) to respond to ##{meth}#{" privately" if priv[0]}"
           }
-          return assert obj.respond_to?(meth, priv), msg
+          return assert obj.respond_to?(meth, *priv), msg
         end
         #get rid of overcounting
-        super if !caller[0].rindex(MINI_DIR, 0) || !obj.respond_to?(meth)
+        if caller_locations(1, 1)[0].path.start_with?(MINI_DIR)
+          return if obj.respond_to?(meth)
+        end
+        super(obj, meth, msg)
+      end
+
+      # :call-seq:
+      #   assert_not_respond_to( object, method, failure_message = nil )
+      #
+      #Tests if the given Object does not respond to +method+.
+      #
+      #An optional failure message may be provided as the final argument.
+      #
+      #    assert_not_respond_to("hello", :reverse)  #Fails
+      #    assert_not_respond_to("hello", :does_not_exist)  #Succeeds
+      def assert_not_respond_to(obj, (meth, *priv), msg = nil)
+        unless priv.empty?
+          msg = message(msg) {
+            "Expected #{mu_pp(obj)} (#{obj.class}) to not respond to ##{meth}#{" privately" if priv[0]}"
+          }
+          return assert !obj.respond_to?(meth, *priv), msg
+        end
+        #get rid of overcounting
+        if caller_locations(1, 1)[0].path.start_with?(MINI_DIR)
+          return unless obj.respond_to?(meth)
+        end
+        refute_respond_to(obj, meth, msg)
       end
 
       # :call-seq:
@@ -435,7 +452,7 @@ EOT
 
       ms = instance_methods(true).map {|sym| sym.to_s }
       ms.grep(/\Arefute_/) do |m|
-        mname = ('assert_not_' << m.to_s[/.*?_(.*)/, 1])
+        mname = ('assert_not_'.dup << m.to_s[/.*?_(.*)/, 1])
         alias_method(mname, m) unless ms.include? mname
       end
       alias assert_include assert_includes
@@ -464,8 +481,24 @@ EOT
       # compatibility with test-unit
       alias pend skip
 
+      if defined?(RubyVM::InstructionSequence)
+        def syntax_check(code, fname, line)
+          code = code.dup.force_encoding(Encoding::UTF_8)
+          RubyVM::InstructionSequence.compile(code, fname, fname, line)
+          :ok
+        end
+      else
+        def syntax_check(code, fname, line)
+          code = code.b
+          code.sub!(/\A(?:\xef\xbb\xbf)?(\s*\#.*$)*(\n)?/n) {
+            "#$&#{"\n" if $1 && !$2}BEGIN{throw tag, :ok}\n"
+          }
+          code = code.force_encoding(Encoding::UTF_8)
+          catch {|tag| eval(code, binding, fname, line - 1)}
+        end
+      end
+
       def prepare_syntax_check(code, fname = caller_locations(2, 1)[0], mesg = fname.to_s, verbose: nil)
-        code = code.dup.force_encoding(Encoding::UTF_8)
         verbose, $VERBOSE = $VERBOSE, verbose
         case
         when Array === fname
@@ -484,7 +517,7 @@ EOT
         prepare_syntax_check(code, *args) do |src, fname, line, mesg|
           yield if defined?(yield)
           assert_nothing_raised(SyntaxError, mesg) do
-            RubyVM::InstructionSequence.compile(src, fname, fname, line)
+            assert_equal(:ok, syntax_check(src, fname, line), mesg)
           end
         end
       end
@@ -493,9 +526,10 @@ EOT
         prepare_syntax_check(code, *args) do |src, fname, line, mesg|
           yield if defined?(yield)
           e = assert_raise(SyntaxError, mesg) do
-            RubyVM::InstructionSequence.compile(src, fname, fname, line)
+            syntax_check(src, fname, line)
           end
           assert_match(error, e.message, mesg)
+          e
         end
       end
 
@@ -523,9 +557,9 @@ EOT
             sigdesc = "SIG#{signame} (#{sigdesc})"
           end
           if status.coredump?
-            sigdesc << " (core dumped)"
+            sigdesc = "#{sigdesc} (core dumped)"
           end
-          full_message = ''
+          full_message = ''.dup
           message = message.call if Proc === message
           if message and !message.empty?
             full_message << message << "\n"
@@ -534,11 +568,11 @@ EOT
           full_message << " exit #{status.exitstatus}" if status.exited?
           full_message << " killed by #{sigdesc}" if sigdesc
           if out and !out.empty?
-            full_message << "\n#{out.b.gsub(/^/, '| ')}"
-            full_message << "\n" if /\n\z/ !~ full_message
+            full_message << "\n" << out.b.gsub(/^/, '| ')
+            full_message.sub!(/(?<!\n)\z/, "\n")
           end
           if log
-            full_message << "\n#{log.b.gsub(/^/, '| ')}"
+            full_message << "Diagnostic reports:\n" << log.b.gsub(/^/, '| ')
           end
           full_message
         end
@@ -697,6 +731,27 @@ eom
         skip
       end
 
+      def assert_cpu_usage_low(msg = nil, pct: 0.01)
+        require 'benchmark'
+
+        tms = Benchmark.measure(msg || '') { yield }
+        max = pct * tms.real
+        if tms.real < 0.1 # TIME_QUANTUM_USEC in thread_pthread.c
+          warn "test #{msg || 'assert_cpu_usage_low'} too short to be accurate"
+        end
+
+        # kernel resolution can limit the minimum time we can measure
+        # [ruby-core:81540]
+        min_hz = windows? ? 67 : 100
+        min_measurable = 1.0 / min_hz
+        min_measurable *= 1.10 # add a little (10%) to account for misc. overheads
+        if max < min_measurable
+          max = min_measurable
+        end
+
+        assert_operator tms.total, :<=, max, msg
+      end
+
       def assert_is_minus_zero(f)
         assert(1.0/f == -Float::INFINITY, "#{f} is not -0.0")
       end
@@ -789,7 +844,7 @@ eom
           end
           result = File.__send__(predicate, *args)
           result = !result if neg
-          mesg = "Expected file " << args.shift.inspect
+          mesg = "Expected file ".dup << args.shift.inspect
           mesg << "#{neg} to be #{predicate}"
           mesg << mu_pp(args).sub(/\A\[(.*)\]\z/m, '(\1)') unless args.empty?
           mesg << " #{failure_message}" if failure_message
@@ -817,6 +872,17 @@ eom
           @failures[key] = [@count, e]
         end
 
+        def foreach(*keys)
+          keys.each do |key|
+            @count += 1
+            begin
+              yield key
+            rescue Exception => e
+              @failures[key] = [@count, e]
+            end
+          end
+        end
+
         def message
           i = 0
           total = @count.to_s
@@ -838,6 +904,14 @@ eom
         assert(all.pass?, message(msg) {all.message.chomp(".")})
       end
       alias all_assertions assert_all_assertions
+
+      def assert_all_assertions_foreach(msg = nil, *keys, &block)
+        all = AllFailures.new
+        all.foreach(*keys, &block)
+      ensure
+        assert(all.pass?, message(msg) {all.message.chomp(".")})
+      end
+      alias all_assertions_foreach assert_all_assertions_foreach
 
       def build_message(head, template=nil, *arguments) #:nodoc:
         template &&= template.chomp
