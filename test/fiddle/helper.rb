@@ -1,7 +1,5 @@
 # frozen_string_literal: true
-require 'minitest/autorun'
-require "test/unit/assertions"
-require "envutil"
+require 'test/unit'
 require 'fiddle'
 
 # FIXME: this is stolen from DL and needs to be refactored.
@@ -110,7 +108,7 @@ Fiddle::LIBC_SO = libc_so
 Fiddle::LIBM_SO = libm_so
 
 module Fiddle
-  class TestCase < MiniTest::Unit::TestCase
+  class TestCase < Test::Unit::TestCase
     def setup
       @libc = Fiddle.dlopen(LIBC_SO)
       @libm = Fiddle.dlopen(LIBM_SO)
