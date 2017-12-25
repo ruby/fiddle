@@ -28,7 +28,7 @@ Or install it yourself as:
 
  Here we will use Fiddle::Function to wrap [floor(3) from libm](http://linux.die.net/man/3/floor)
 
-```
+```ruby
 require 'fiddle'
 
 libm = Fiddle.dlopen('/lib/libm.so.6')
