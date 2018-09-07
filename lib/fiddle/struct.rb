@@ -63,6 +63,8 @@ module Fiddle
         }
         define_method(:to_ptr){ @entity }
         define_method(:to_i){ @entity.to_i }
+        define_singleton_method(:types) { types }
+        define_singleton_method(:members) { members }
         members.each{|name|
           if name.kind_of?(Array) # name is a nested struct
             next if method_defined?(name[0])

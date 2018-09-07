@@ -118,6 +118,14 @@ module Fiddle
       assert_equal([0,1,2], ary.value)
     end
 
+    def test_nested_struct_reusing_other_structs()
+      position_struct = Fiddle::Importer.struct([ 'float x', 'float y', 'float z' ])
+      texcoord_struct = Fiddle::Importer.struct([ 'float u', 'float v' ])
+      vertex_struct   = Fiddle::Importer.struct(position: position_struct, texcoord: texcoord_struct)
+      mesh_struct     = Fiddle::Importer.struct([{"vertices[2]" => vertex_struct, object: [ "int id" ]}, "int id"])
+      assert_equal LIBC::NestedStruct.size, mesh_struct.size
+    end
+
     def test_nested_struct_members()
       s = LIBC::NestedStruct.malloc
       s.vertices[0].position.x = 1
