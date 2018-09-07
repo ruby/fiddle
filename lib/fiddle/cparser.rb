@@ -35,12 +35,27 @@ module Fiddle
     def parse_struct_signature(signature, tymap=nil)
       if signature.is_a?(String)
         signature = split_arguments(signature, /[,;]/)
+      elsif signature.kind_of?(Hash)
+        signature = [signature]
       end
       mems = []
       tys  = []
       signature.each{|msig|
-        msig = compact(msig)
+        msig = compact(msig) if msig.is_a?(String)
         case msig
+        when Hash
+          msig.each do |structure_name, struct_signature|
+            structure_count = nil
+            if structure_name.to_s =~ /^([\w\*\s]+)\[(\d+)\]$/
+              structure_count = $2.to_i
+              structure_name = $1
+            end
+            structure_parsed  = parse_struct_signature(struct_signature, tymap)
+            structure_types   = structure_parsed[0]
+            structure_members = structure_parsed[1]
+            mems.push([structure_name.to_s, structure_members])
+            tys.push([structure_types, structure_count])
+          end
         when /^[\w\*\s]+[\*\s](\w+)$/
           mems.push($1)
           tys.push(parse_ctype(msig, tymap))
