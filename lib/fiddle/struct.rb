@@ -362,7 +362,11 @@ module Fiddle
     #       Fiddle::TYPE_VOIDP ]) #=> 8
     def CUnionEntity.size(types)
       types.map { |type, count = 1|
-        PackInfo::SIZE_MAP[type] * count
+        if type.kind_of?(Array) # type is a nested array representing a nested struct
+          CStructEntity.size(type) * (count || 1)
+        else
+          PackInfo::SIZE_MAP[type] * count
+        end
       }.max
     end
 
