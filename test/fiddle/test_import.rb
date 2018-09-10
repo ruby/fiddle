@@ -36,7 +36,7 @@ module Fiddle
       "char c",
       "unsigned char buff[7]",
     ]
-    NestedStruct = struct [
+    StructNestedStruct = struct [
       {
         "vertices[2]" => {
           position: [ "float x", "float y", "float z" ],
@@ -45,6 +45,19 @@ module Fiddle
         object:  [ "int id" ]
       },
       "int id"
+    ]
+    UnionNestedStruct = union [
+      {
+        keyboard: [
+          'unsigned int state',
+          'char key'
+        ],
+        mouse: [
+          'unsigned int button',
+          'unsigned short x',
+          'unsigned short y'
+        ]
+      }
     ]
 
     CallCallback = bind("void call_callback(void*, void*)"){ | ptr1, ptr2|
@@ -75,7 +88,7 @@ module Fiddle
       assert_equal(LIBC::MyStruct.size(), LIBC.sizeof(LIBC::MyStruct))
       assert_equal(LIBC::MyStruct.size(), LIBC.sizeof(LIBC::MyStruct.malloc()))
       assert_equal(SIZEOF_LONG_LONG, LIBC.sizeof("long long")) if defined?(SIZEOF_LONG_LONG)
-      assert_equal(LIBC::NestedStruct.size(), LIBC.sizeof(LIBC::NestedStruct))
+      assert_equal(LIBC::StructNestedStruct.size(), LIBC.sizeof(LIBC::StructNestedStruct))
     end
 
     Fiddle.constants.grep(/\ATYPE_(?!VOID\z)(.*)/) do
@@ -123,11 +136,17 @@ module Fiddle
       texcoord_struct = Fiddle::Importer.struct([ 'float u', 'float v' ])
       vertex_struct   = Fiddle::Importer.struct(position: position_struct, texcoord: texcoord_struct)
       mesh_struct     = Fiddle::Importer.struct([{"vertices[2]" => vertex_struct, object: [ "int id" ]}, "int id"])
-      assert_equal LIBC::NestedStruct.size, mesh_struct.size
+      assert_equal LIBC::StructNestedStruct.size, mesh_struct.size
+
+
+      keyboard_event_struct = Fiddle::Importer.struct([ 'unsigned int state', 'char key' ])
+      mouse_event_struct    = Fiddle::Importer.struct([ 'unsigned int button', 'unsigned short x', 'unsigned short y' ])
+      event_union           = Fiddle::Importer.union([{ keboard: keyboard_event_struct, mouse: mouse_event_struct}])
+      assert_equal LIBC::UnionNestedStruct.size, event_union.size
     end
 
-    def test_nested_struct_members()
-      s = LIBC::NestedStruct.malloc
+    def test_struct_nested_struct_members()
+      s = LIBC::StructNestedStruct.malloc
       s.vertices[0].position.x = 1
       s.vertices[0].position.y = 2
       s.vertices[0].position.z = 3
@@ -154,8 +173,16 @@ module Fiddle
       assert_equal(101, s.id)
     end
 
-    def test_nested_struct_replace_array_element()
-      s = LIBC::NestedStruct.malloc
+    def test_union_nested_struct_members()
+      s = LIBC::UnionNestedStruct.malloc
+      s.keyboard.state = 100
+      s.keyboard.key   = 101
+      assert_equal(100, s.mouse.button)
+      refute_equal(  0, s.mouse.x)
+    end
+
+    def test_struct_nested_struct_replace_array_element()
+      s = LIBC::StructNestedStruct.malloc
       s.vertices[0].position.x = 5
 
       vertex_struct = Fiddle::Importer.struct [{
@@ -173,8 +200,8 @@ module Fiddle
       refute_equal(vertex.to_ptr,    s.vertices[0].to_ptr)
     end
 
-    def test_nested_struct_replace_entire_array()
-      s = LIBC::NestedStruct.malloc
+    def test_struct_nested_struct_replace_entire_array()
+      s = LIBC::StructNestedStruct.malloc
       vertex_struct = Fiddle::Importer.struct [{
         position: [ "float x", "float y", "float z" ],
         texcoord: [ "float u", "float v" ]
