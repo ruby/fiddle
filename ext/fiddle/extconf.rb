@@ -18,7 +18,8 @@ if ! bundle
   end and (have_library('ffi') || have_library('libffi'))
 end or
 begin
-  if bundle
+  # for https://github.com/ruby/fiddle
+  if bundle && File.exit?("../../bin/extlibs.rb")
     require "fileutils"
     require_relative "../../bin/extlibs"
     extlibs = ExtLibs.new
