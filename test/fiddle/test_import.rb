@@ -149,7 +149,10 @@ module Fiddle
     end
 
     def test_no_message_with_debug
-      assert_in_out_err(%w[--debug --disable=gems -rfiddle/import], 'p Fiddle::Importer', ['Fiddle::Importer'])
+      Bundler.with_clean_env do
+        libdir = File.expand_path('../../../lib', __FILE__)
+        assert_in_out_err(%W[--debug --disable=gems -I#{libdir} -rfiddle/import], 'p Fiddle::Importer', ['Fiddle::Importer'])
+      end
     end
   end
 end if defined?(Fiddle)
