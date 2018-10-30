@@ -74,7 +74,7 @@ StudentDetail = struct [
 ]
 ```
 
-The position of a hash (and the order of the keys in the hash, in the case of a hash with multiple values), dictate the offsets of the nested struct in memory. For example, the following are both syntactically valid but will lay out the data in the nested structs differently in memory:
+The position of a hash (and the order of the keys in the hash, in the case of a hash with multiple entries), dictate the offsets of the nested struct in memory. The following examples are both syntactically valid but will lay out the structs differently in memory:
 
 ```ruby
 # order of members in memory: position, id, dimensions
