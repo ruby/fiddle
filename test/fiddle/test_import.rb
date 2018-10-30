@@ -131,6 +131,14 @@ module Fiddle
       assert_equal([0,1,2], ary.value)
     end
 
+    def test_struct_array_subscript_multiarg()
+      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
+      assert_equal("\x00".b * Fiddle::SIZEOF_INT, struct.to_ptr[0, Fiddle::SIZEOF_INT])
+
+      struct.to_ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
+      assert_equal 16843009, struct.x
+    end
+
     def test_nested_struct_reusing_other_structs()
       position_struct = Fiddle::Importer.struct([ 'float x', 'float y', 'float z' ])
       texcoord_struct = Fiddle::Importer.struct([ 'float u', 'float v' ])
