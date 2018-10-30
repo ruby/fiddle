@@ -54,6 +54,16 @@ module Fiddle
       assert_match(/call dlload before/, err.message)
     end
 
+    def test_struct_memory_access
+      my_struct = Fiddle::Importer.struct(['int id']).malloc
+      my_struct['id'] = 1
+      my_struct[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
+      refute_equal 0, my_struct.id
+
+      my_struct.id = 0
+      assert_equal "\x00".b * Fiddle::SIZEOF_INT, my_struct[0, Fiddle::SIZEOF_INT]
+    end
+
     def test_malloc()
       s1 = LIBC::Timeval.malloc()
       s2 = LIBC::Timeval.malloc()
