@@ -57,6 +57,9 @@ module Fiddle
     def test_struct_memory_access()
       # check memory operations performed directly on struct
       Fiddle::Importer.struct(['int id']).malloc(Fiddle::RUBY_FREE) do |my_struct|
+        my_struct['id'] = 1
+        assert_equal 1, my_struct.id
+
         my_struct[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
         assert_equal 0x01010101, my_struct.id
 
