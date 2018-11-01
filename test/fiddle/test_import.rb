@@ -163,6 +163,16 @@ module Fiddle
       assert_equal LIBC::UnionNestedStruct.size, event_union.size
     end
 
+    def test_nested_struct_alignment_is_not_its_size()
+      inner = Fiddle::Importer.struct(['int x', 'int y', 'int z', 'int w'])
+      outer = Fiddle::Importer.struct(['char a', { 'nested' => inner }, 'char b'])
+      instance = outer.malloc
+      offset = instance.to_ptr.instance_variable_get(:"@offset")
+      assert_equal Fiddle::SIZEOF_INT * 5, offset.last
+      assert_equal Fiddle::SIZEOF_INT * 6, outer.size
+      assert_equal instance.to_ptr.size, outer.size
+    end
+
     def test_struct_nested_struct_members()
       s = LIBC::StructNestedStruct.malloc
       s.vertices[0].position.x = 1
