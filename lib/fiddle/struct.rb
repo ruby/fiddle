@@ -144,6 +144,19 @@ module Fiddle
     include PackInfo
     include ValueUtil
 
+    def CStructEntity.alignment(types)
+      max = 1
+      types.each do |type, count = 1|
+        if type.kind_of?(Array) # nested struct
+          n = CStructEntity.alignment(type)
+        else
+          n = ALIGN_MAP[type]
+        end
+        max = n if n > max
+      end
+      max
+    end
+
     # Allocates a C struct with the +types+ provided.
     #
     # See Fiddle::Pointer.malloc for memory management issues.
@@ -174,9 +187,10 @@ module Fiddle
         last_offset = offset
 
         if type.kind_of?(Array) # type is a nested array representing a nested struct
-          align = CStructEntity.size(type)
+          align = CStructEntity.alignment(type)
+          total_size = CStructEntity.size(type)
           offset = PackInfo.align(last_offset, align) +
-                  (align * (count || 1))
+                  (total_size * (count || 1))
         else
           align = PackInfo::ALIGN_MAP[type]
           offset = PackInfo.align(last_offset, align) +
@@ -233,10 +247,11 @@ module Fiddle
       max_align = types.map { |type, count = 1|
         orig_offset = offset
         if type.kind_of?(Array) # type is a nested array representing a nested struct
-          align = CStructEntity.size(type)
+          align = CStructEntity.alignment(type)
+          total_size = CStructEntity.size(type)
           offset = PackInfo.align(orig_offset, align)
           @offset << offset
-          offset += (align * (count || 1))
+          offset += (total_size * (count || 1))
         else
           align = ALIGN_MAP[type]
           offset = PackInfo.align(orig_offset, align)
