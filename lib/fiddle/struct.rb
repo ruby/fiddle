@@ -92,8 +92,10 @@ module Fiddle
         define_method(:[]=) { |*args| @entity.send(:[]=, *args) }
         define_method(:to_ptr){ @entity }
         define_method(:to_i){ @entity.to_i }
+        define_method(:offset_of) { |*args| @entity.offset_of(*args) }
         define_singleton_method(:types) { types }
         define_singleton_method(:members) { members }
+        define_singleton_method(:offset_of) { |mbr| klass.entity_class.compute_offset(types, members, mbr) }
         members.each{|name|
           if name.kind_of?(Array) # name is a nested struct
             next if method_defined?(name[0])
@@ -136,6 +138,15 @@ module Fiddle
       max
     end
 
+    def CStructEntity.compute_offset(types, members, mbr)
+      members.each_with_index do |m, idx|
+        if (m.kind_of?(Array) ? m[0] : m) == mbr.to_s
+          return idx == 0 ? 0 : CStructEntity.size(types[0...idx])
+        end
+      end
+      raise(ArgumentError, "no such member: #{mbr}")
+    end
+
     # Allocates a C struct with the +types+ provided.
     #
     # When the instance is garbage collected, the C function +func+ is called.
@@ -154,12 +165,12 @@ module Fiddle
     def CStructEntity.size(types)
       offset = 0
 
-      max_align = types.map { |type, count = 1|
+      max_align = types.map { |type, count = 1, klass = CStructEntity|
         last_offset = offset
 
         if type.kind_of?(Array) # type is a nested array representing a nested struct
-          align = CStructEntity.alignment(type)
-          total_size = CStructEntity.size(type)
+          align = klass.alignment(type)
+          total_size = klass.size(type)
           offset = PackInfo.align(last_offset, align) +
                   (total_size * (count || 1))
         else
@@ -197,7 +208,7 @@ module Fiddle
           entity_class = CStructBuilder.create(CStruct, ty[0], members[idx][1])
           @nested_structs[member] ||= if ty[1]
             NestedStructArray.new(ty[1].times.map do |i|
-              entity_class.new(@addr + @offset[idx] + i * CStructEntity.size(ty[0]))
+              entity_class.new(@addr + @offset[idx] + i * (ty[2] || CStructEntity).size(ty[0]))
             end)
           else
             entity_class.new(@addr + @offset[idx])
@@ -212,11 +223,11 @@ module Fiddle
       @offset = []
       offset = 0
 
-      max_align = types.map { |type, count = 1|
+      max_align = types.map { |type, count = 1, klass = CStructEntity|
         orig_offset = offset
         if type.kind_of?(Array) # type is a nested array representing a nested struct
-          align = CStructEntity.alignment(type)
-          total_size = CStructEntity.size(type)
+          align = klass.alignment(type)
+          total_size = klass.size(type)
           offset = PackInfo.align(orig_offset, align)
           @offset << offset
           offset += (total_size * (count || 1))
@@ -231,6 +242,11 @@ module Fiddle
       }.max
 
       @size = PackInfo.align(offset, max_align)
+    end
+
+    def offset_of(mbr)
+      idx = @members.index(mbr.to_s) || raise(ArgumentError, "no such member: #{mbr}")
+      @offset[idx]
     end
 
     # Fetch struct member +name+ if only one argument is specified. If two
@@ -268,10 +284,11 @@ module Fiddle
       when Array
         case ty[0]
         when TYPE_VOIDP
-          val = val.collect{|v| Pointer.new(v)}
+          val = val.collect{|v| v = Pointer.new(v); v.size = SIZEOF_VOIDP; v }
         end
       when TYPE_VOIDP
         val = Pointer.new(val[0])
+        val.size = SIZEOF_VOIDP
       else
         val = val[0]
       end
@@ -335,6 +352,11 @@ module Fiddle
   class CUnionEntity < CStructEntity
     include PackInfo
 
+    def CUnionEntity.compute_offset(types, members, mbr)
+      # all members begin at offset 0
+      0
+    end
+
     # Allocates a C union the +types+ provided.
     #
     # When the instance is garbage collected, the C function +func+ is called.
@@ -351,9 +373,9 @@ module Fiddle
     #       Fiddle::TYPE_CHAR,
     #       Fiddle::TYPE_VOIDP ]) #=> 8
     def CUnionEntity.size(types)
-      types.map { |type, count = 1|
+      types.map { |type, count = 1, klass = CStructEntity|
         if type.kind_of?(Array) # type is a nested array representing a nested struct
-          CStructEntity.size(type) * (count || 1)
+          klass.size(type) * (count || 1)
         else
           PackInfo::SIZE_MAP[type] * count
         end
