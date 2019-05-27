@@ -149,10 +149,21 @@ module Fiddle
     end
 
     def test_no_message_with_debug
-      Bundler.with_clean_env do
-        libdir = File.expand_path('../../../lib', __FILE__)
-        assert_in_out_err(%W[--debug --disable=gems -I#{libdir} -rfiddle/import], 'p Fiddle::Importer', ['Fiddle::Importer'])
+      # disable bundler
+      orig_RUBYOPT = ENV['RUBYOPT']
+      ENV['RUBYOPT'] = orig_RUBYOPT.gsub(%r|-rbundler/setup|, '') if orig_RUBYOPT
+
+      # load development fiddle instead of bundled one
+      orig_RUBYLIB = ENV['RUBYLIB']
+      libdir = File.expand_path('../../../lib', __FILE__)
+      if File.file?(File.join(libdir, "fiddle/import.rb"))
+        ENV['RUBYLIB'] = [libdir, orig_RUBYLIB].compact.join(":")
       end
+
+      assert_in_out_err(%w[--debug --disable=gems -rfiddle/import], 'p Fiddle::Importer', ['Fiddle::Importer'])
+    ensure
+      ENV['RUBYLIB'] = orig_RUBYLIB
+      ENV['RUBYOPT'] = orig_RUBYOPT
     end
   end
 end if defined?(Fiddle)
