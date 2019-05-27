@@ -1,3 +1,6 @@
+notifications:
+  webhooks:
+    - https://webhook.commit-email.info/
 sudo: false
 language: ruby
 rvm:
