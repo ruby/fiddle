@@ -12,7 +12,7 @@ when /cygwin/
   libm_so = "cygwin1.dll"
 when /linux/
   libdir = '/lib'
-  case [0].pack('L!').size
+  case RbConfig::SIZEOF['void*']
   when 4
     # 32-bit ruby
     libdir = '/lib32' if File.directory? '/lib32'
@@ -46,7 +46,7 @@ when /bsd|dragonfly/
   libm_so = "/usr/lib/libm.so"
 when /solaris/
   libdir = '/lib'
-  case [0].pack('L!').size
+  case RbConfig::SIZEOF['void*']
   when 4
     # 32-bit ruby
     libdir = '/lib' if File.directory? '/lib'
