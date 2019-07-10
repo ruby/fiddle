@@ -27,20 +27,20 @@ begin
     Dir.glob("#{$srcdir}/libffi-*/").each{|dir| FileUtils.rm_rf(dir)}
     extlibs.run(["--cache=#{cache_dir}", ext_dir])
   end
-  ver = bundle != false &&
+  libffi_dir = bundle != false &&
         Dir.glob("#{$srcdir}/libffi-*/")
         .map {|n| File.basename(n)}
         .max_by {|n| n.scan(/\d+/).map(&:to_i)}
-  unless ver
+  unless libffi_dir
     raise "missing libffi. Please install libffi."
   end
 
-  srcdir = "#{$srcdir}/#{ver}"
+  srcdir = "#{$srcdir}/#{libffi_dir}"
   ffi_header = 'ffi.h'
   libffi = Struct.new(*%I[dir srcdir builddir include lib a cflags ldflags opt arch]).new
-  libffi.dir = ver
+  libffi.dir = libffi_dir
   if $srcdir == "."
-    libffi.builddir = "#{ver}/#{RUBY_PLATFORM}"
+    libffi.builddir = "#{libffi_dir}/#{RUBY_PLATFORM}"
     libffi.srcdir = "."
   else
     libffi.builddir = libffi.dir
