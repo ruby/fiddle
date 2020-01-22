@@ -135,8 +135,8 @@ module Fiddle
       assert_equal 1024, instance.stages[0]
       assert_equal [1024].pack(Fiddle::PackInfo::PACK_MAP[-Fiddle::TYPE_INT]),
                    instance.to_ptr[0, Fiddle::SIZEOF_INT]
-      assert_raise(RangeError) { instance.stages[-1] = 5 }
-      assert_raise(RangeError) { instance.stages[2] = 5 }
+      assert_raise(IndexError) { instance.stages[-1] = 5 }
+      assert_raise(IndexError) { instance.stages[2] = 5 }
     end
 
     def test_struct()

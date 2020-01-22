@@ -39,7 +39,7 @@ module Fiddle
 
     def []=(index, value)
       if index < 0 || index >= size
-        raise RangeError, 'index %d outside of array bounds 0...%d' % [index, size]
+        raise IndexError, 'index %d outside of array bounds 0...%d' % [index, size]
       end
 
       to_ptr[index * @align, @size] = [value].pack(@pack_format)
