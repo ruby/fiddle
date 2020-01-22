@@ -173,7 +173,7 @@ module Fiddle
     end
 
     def test_struct_array_subscript_multiarg()
-      Fiddle::Importer.struct([ 'int x' ]).malloc do |struct|
+      Fiddle::Importer.struct([ 'int x' ]).malloc(Fiddle::RUBY_FREE) do |struct|
         assert_equal("\x00".b * Fiddle::SIZEOF_INT, struct.to_ptr[0, Fiddle::SIZEOF_INT])
 
         struct.to_ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
