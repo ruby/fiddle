@@ -130,13 +130,17 @@ module Fiddle
     end
 
     def test_struct_array_assignment()
-      instance = Fiddle::Importer.struct(["unsigned int stages[1]"]).malloc
+      instance = Fiddle::Importer.struct(["unsigned int stages[3]"]).malloc
       instance.stages[0] = 1024
+      instance.stages[1] = 10
+      instance.stages[2] = 100
       assert_equal 1024, instance.stages[0]
-      assert_equal [1024].pack(Fiddle::PackInfo::PACK_MAP[-Fiddle::TYPE_INT]),
-                   instance.to_ptr[0, Fiddle::SIZEOF_INT]
+      assert_equal 10, instance.stages[1]
+      assert_equal 100, instance.stages[2]
+      assert_equal [1024, 10, 100].pack(Fiddle::PackInfo::PACK_MAP[-Fiddle::TYPE_INT] * 3),
+                   instance.to_ptr[0, 3 * Fiddle::SIZEOF_INT]
       assert_raise(IndexError) { instance.stages[-1] = 5 }
-      assert_raise(IndexError) { instance.stages[2] = 5 }
+      assert_raise(IndexError) { instance.stages[3] = 5 }
     end
 
     def test_struct()
