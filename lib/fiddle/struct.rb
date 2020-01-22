@@ -149,7 +149,9 @@ module Fiddle
     end
 
     # Fetch struct member +name+
-    def [](name)
+    def [](*args)
+      return super(*args) if args.size > 1
+      name = args[0]
       idx = @members.index(name)
       if( idx.nil? )
         raise(ArgumentError, "no such member: #{name}")
@@ -183,7 +185,9 @@ module Fiddle
     end
 
     # Set struct member +name+, to value +val+
-    def []=(name, val)
+    def []=(*args)
+      return super(*args) if args.size > 2
+      name, val = *args
       idx = @members.index(name)
       if( idx.nil? )
         raise(ArgumentError, "no such member: #{name}")

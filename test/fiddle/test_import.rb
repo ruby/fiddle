@@ -107,6 +107,14 @@ module Fiddle
       assert_equal([0,1,2], ary.value)
     end
 
+    def test_struct_array_subscript_multiarg()
+      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
+      assert_equal("\x00".b * Fiddle::SIZEOF_INT, struct.to_ptr[0, Fiddle::SIZEOF_INT])
+
+      struct.to_ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
+      assert_equal 16843009, struct.x
+    end
+
     def test_struct()
       s = LIBC::MyStruct.malloc()
       s.num = [0,1,2,3,4]
