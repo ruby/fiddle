@@ -37,6 +37,8 @@ module Fiddle
         signature = split_arguments(signature, /[,;]/)
       elsif signature.kind_of?(Hash)
         signature = [signature]
+      elsif signature.respond_to?(:types) && signature.respond_to?(:members)
+        return signature.types, signature.members
       end
       mems = []
       tys  = []
