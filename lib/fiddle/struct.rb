@@ -42,7 +42,7 @@ module Fiddle
         raise IndexError, 'index %d outside of array bounds 0...%d' % [index, size]
       end
 
-      to_ptr[index * @align, @size] = [value].pack(@pack_format)
+      to_ptr[index * @size, @size] = [value].pack(@pack_format)
       super(index, value)
     end
   end
