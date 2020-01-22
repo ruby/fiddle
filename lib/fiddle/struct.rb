@@ -156,7 +156,7 @@ module Fiddle
     # +offset+.
     #
     # Examples:
-    # 
+    #
     #     my_struct = struct(['int id']).malloc
     #     my_struct.id = 1
     #     my_struct['id'] # => 1
@@ -202,7 +202,7 @@ module Fiddle
     # +offset+ and +length+.
     #
     # Examples:
-    # 
+    #
     #     my_struct = struct(['int id']).malloc
     #     my_struct['id'] = 1
     #     my_struct[0, 4] = "\x01\x00\x00\x00".b
