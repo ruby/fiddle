@@ -38,7 +38,7 @@ module Fiddle
       elsif signature.kind_of?(Hash)
         signature = [signature]
       elsif signature.respond_to?(:types) && signature.respond_to?(:members)
-        return signature.types, signature.members
+        return signature.types, signature.members, signature.entity_class
       end
       mems = []
       tys  = []
@@ -55,8 +55,11 @@ module Fiddle
             structure_parsed  = parse_struct_signature(struct_signature, tymap)
             structure_types   = structure_parsed[0]
             structure_members = structure_parsed[1]
+            structure_klass   = structure_parsed[2]
+            ty = [structure_types, structure_count]
+            ty << structure_klass if structure_klass
             mems.push([structure_name.to_s, structure_members])
-            tys.push([structure_types, structure_count])
+            tys.push(ty)
           end
         when /^[\w\*\s]+[\*\s](\w+)$/
           mems.push($1)

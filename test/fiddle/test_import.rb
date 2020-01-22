@@ -275,6 +275,35 @@ module Fiddle
       refute_equal(  0, s.mouse.x)
     end
 
+    def test_size_of_struct_accessor_returning_void_pointer()
+      s = Fiddle::Importer.struct(['void *x', 'void *y[2]']).malloc
+      assert_equal Fiddle::SIZEOF_VOIDP, s['x'].size
+      assert_equal Fiddle::SIZEOF_VOIDP, s['y'][0].size
+    end
+
+    def test_struct_size_and_offset_of_nested_unions()
+      a = Fiddle::Importer.union ['float f[4]', 'int i[2]']
+      b = Fiddle::Importer.struct ['float x', 'int y']
+      c = Fiddle::Importer.struct [ a: a, b: b ]
+
+      assert_equal                        0, a.offset_of(:f)
+      assert_equal                        0, a.offset_of(:i)
+      assert_equal                        0, b.offset_of(:x)
+      assert_equal     Fiddle::SIZEOF_FLOAT, b.offset_of(:y)
+      assert_equal                        0, c.offset_of(:a)
+      assert_equal 4 * Fiddle::SIZEOF_FLOAT, c.offset_of(:b)
+
+      assert_equal a.offset_of(:f), a.malloc.offset_of(:f)
+      assert_equal a.offset_of(:i), a.malloc.offset_of(:i)
+      assert_equal b.offset_of(:x), b.malloc.offset_of(:x)
+      assert_equal b.offset_of(:y), b.malloc.offset_of(:y)
+      assert_equal c.offset_of(:a), c.malloc.offset_of(:a)
+      assert_equal c.offset_of(:b), c.malloc.offset_of(:b)
+
+      assert_equal Fiddle::SIZEOF_FLOAT * 4 + Fiddle::SIZEOF_INT * 2,
+                   c.size
+    end
+
     def test_struct_nested_struct_replace_array_element()
       s = LIBC::StructNestedStruct.malloc
       s.vertices[0].position.x = 5
