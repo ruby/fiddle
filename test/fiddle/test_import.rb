@@ -129,6 +129,16 @@ module Fiddle
       assert_equal([0,1,2], ary.value)
     end
 
+    def test_struct_array_assignment()
+      instance = Fiddle::Importer.struct(["unsigned int stages[1]"]).malloc
+      instance.stages[0] = 1024
+      assert_equal 1024, instance.stages[0]
+      assert_equal [1024].pack(Fiddle::PackInfo::PACK_MAP[-Fiddle::TYPE_INT]),
+                   instance.to_ptr[0, Fiddle::SIZEOF_INT]
+      assert_raise(RangeError) { instance.stages[-1] = 5 }
+      assert_raise(RangeError) { instance.stages[2] = 5 }
+    end
+
     def test_struct()
       s = LIBC::MyStruct.malloc()
       s.num = [0,1,2,3,4]
