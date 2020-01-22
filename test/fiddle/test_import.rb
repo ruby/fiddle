@@ -157,6 +157,15 @@ module Fiddle
       end
     end
 
+    def test_struct_array_subscript_multiarg()
+      Fiddle::Importer.struct([ 'int x' ]).malloc do |struct|
+        assert_equal("\x00".b * Fiddle::SIZEOF_INT, struct.to_ptr[0, Fiddle::SIZEOF_INT])
+
+        struct.to_ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
+        assert_equal 16843009, struct.x
+      end
+    end
+
     def test_struct()
       LIBC::MyStruct.malloc(Fiddle::RUBY_FREE) do |s|
         s.num = [0,1,2,3,4]
