@@ -81,6 +81,18 @@ module Fiddle
       end
     end
 
+    def test_struct_ptr_array_subscript_multiarg()
+      # check memory operations performed on struct#to_ptr
+      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
+      ptr = struct.to_ptr
+
+      struct.x = 0x02020202
+      assert_equal("\x02".b * Fiddle::SIZEOF_INT, ptr[0, Fiddle::SIZEOF_INT])
+
+      ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
+      assert_equal 0x01010101, struct.x
+    end
+
     def test_malloc()
       LIBC::Timeval.malloc(Fiddle::RUBY_FREE) do |s1|
         LIBC::Timeval.malloc(Fiddle::RUBY_FREE) do |s2|
