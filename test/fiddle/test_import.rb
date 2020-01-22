@@ -54,14 +54,26 @@ module Fiddle
       assert_match(/call dlload before/, err.message)
     end
 
-    def test_struct_memory_access
+    def test_struct_memory_access()
+      # check memory operations performed directly on struct
       my_struct = Fiddle::Importer.struct(['int id']).malloc
-      my_struct['id'] = 1
       my_struct[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
-      refute_equal 0, my_struct.id
+      assert_equal 0x01010101, my_struct.id
 
       my_struct.id = 0
       assert_equal "\x00".b * Fiddle::SIZEOF_INT, my_struct[0, Fiddle::SIZEOF_INT]
+    end
+
+    def test_struct_ptr_array_subscript_multiarg()
+      # check memory operations performed on struct#to_ptr
+      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
+      ptr = struct.to_ptr
+
+      struct.x = 0x02020202
+      assert_equal("\x02".b * Fiddle::SIZEOF_INT, ptr[0, Fiddle::SIZEOF_INT])
+
+      ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
+      assert_equal 0x01010101, struct.x
     end
 
     def test_malloc()
@@ -115,14 +127,6 @@ module Fiddle
 
       ary = LIBC.value('int[3]', [0,1,2])
       assert_equal([0,1,2], ary.value)
-    end
-
-    def test_struct_array_subscript_multiarg()
-      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
-      assert_equal("\x00".b * Fiddle::SIZEOF_INT, struct.to_ptr[0, Fiddle::SIZEOF_INT])
-
-      struct.to_ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
-      assert_equal 16843009, struct.x
     end
 
     def test_struct()
