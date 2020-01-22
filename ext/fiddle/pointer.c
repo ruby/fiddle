@@ -712,6 +712,27 @@ rb_fiddle_ptr_size_get(VALUE self)
 }
 
 /*
+ * call-seq: memcpy
+ *
+ * Copies the contents of the given pointer into this one. Will copy up to the
+ * allocated size of the given pointer or the allocated size of this one,
+ * whichever is smaller (to prevent overflow).
+ *
+ * Returns the number of bytes actually copied.
+ */
+static VALUE
+rb_fiddle_ptr_memcpy(VALUE self, VALUE other)
+{
+    long self_size  = NUM2LONG(rb_funcall(self,  rb_intern("size"), 0));
+    long other_size = NUM2LONG(rb_funcall(other, rb_intern("size"), 0));
+    void *self_ptr  = NUM2PTR(rb_fiddle_ptr_to_i(self));
+    void *other_ptr = NUM2PTR(rb_fiddle_ptr_to_i(other));
+    long size = self_size > other_size ? other_size : self_size;
+    memcpy(self_ptr, other_ptr, size);
+    return LONG2NUM(size);
+}
+
+/*
  * call-seq:
  *    Fiddle::Pointer[val]         => cptr
  *    to_ptr(val)  => cptr
@@ -794,6 +815,7 @@ Init_fiddle_pointer(void)
     rb_define_method(rb_cPointer, "[]=", rb_fiddle_ptr_aset, -1);
     rb_define_method(rb_cPointer, "size", rb_fiddle_ptr_size_get, 0);
     rb_define_method(rb_cPointer, "size=", rb_fiddle_ptr_size_set, 1);
+    rb_define_method(rb_cPointer, "memcpy", rb_fiddle_ptr_memcpy, 1);
 
     /*  Document-const: NULL
      *

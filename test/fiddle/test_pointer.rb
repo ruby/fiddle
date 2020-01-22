@@ -45,7 +45,7 @@ module Fiddle
     end
 
     def test_malloc_block_no_free
-      assert_raise ArgumentError do 
+      assert_raise ArgumentError do
         Pointer.malloc(10) { |ptr| }
       end
     end
@@ -55,6 +55,20 @@ module Fiddle
       subclass.malloc(10, Fiddle::RUBY_FREE) do |ptr|
         assert ptr.is_a?(subclass)
       end
+    end
+
+    def test_memcpy
+      ptr     = Pointer[Marshal.load(Marshal.dump("hello world"))]
+      smaller = Pointer[Marshal.load(Marshal.dump("1234567890"))]
+      same    = Pointer[Marshal.load(Marshal.dump("12345678901"))]
+      larger  = Pointer[Marshal.load(Marshal.dump("123456789012"))]
+
+      assert_equal(ptr.size - 1, smaller.memcpy(ptr))
+      assert_equal(ptr.size    , same.memcpy(ptr))
+      assert_equal(ptr.size    , larger.memcpy(ptr))
+      assert_equal("hello worl",   smaller.to_s)
+      assert_equal("hello world",  same.to_s)
+      assert_equal("hello world2", larger.to_s)
     end
 
     def test_to_str

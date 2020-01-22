@@ -47,6 +47,13 @@ module Fiddle
     end
   end
 
+  # Wrapper for arrays of structs within a struct
+  class NestedStructArray < Array
+    def []=(index, value)
+      self[index].to_ptr.memcpy(value.to_ptr)
+    end
+  end
+
   # Used to construct C classes (CUnion, CStruct, etc)
   #
   # Fiddle::Importer#struct and Fiddle::Importer#union wrap this functionality in an
@@ -106,6 +113,10 @@ module Fiddle
         define_method(:to_ptr){ @entity }
         define_method(:to_i){ @entity.to_i }
         members.each{|name|
+          if name.kind_of?(Array) # name is a nested struct
+            next if method_defined?(name[0])
+            name = name[0]
+          end
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
@@ -160,9 +171,15 @@ module Fiddle
       max_align = types.map { |type, count = 1|
         last_offset = offset
 
-        align = PackInfo::ALIGN_MAP[type]
-        offset = PackInfo.align(last_offset, align) +
-                 (PackInfo::SIZE_MAP[type] * count)
+        if type.kind_of?(Array) # type is a nested array representing a nested struct
+          align = CStructEntity.size(type)
+          offset = PackInfo.align(last_offset, align) +
+                  (align * (count || 1))
+        else
+          align = PackInfo::ALIGN_MAP[type]
+          offset = PackInfo.align(last_offset, align) +
+                   (PackInfo::SIZE_MAP[type] * count)
+        end
 
         align
       }.max
@@ -179,13 +196,30 @@ module Fiddle
       if func && addr.is_a?(Pointer) && addr.free
         raise ArgumentError, 'free function specified on both underlying struct Pointer and when creating a CStructEntity - who do you want to free this?'
       end
+      @addr = addr
       set_ctypes(types)
       super(addr, @size, func)
     end
 
     # Set the names of the +members+ in this C struct
     def assign_names(members)
-      @members = members
+      @members = members.map { |member| member.kind_of?(Array) ? member[0] : member }
+
+      @nested_structs = {}
+      @ctypes.each_with_index do |ty, idx|
+        if ty.kind_of?(Array) && ty[0].kind_of?(Array)
+          member = members[idx]
+          member = member[0] if member.kind_of?(Array)
+          entity_class = CStructBuilder.create(CStruct, ty[0], members[idx][1])
+          @nested_structs[member] ||= if ty[1]
+            NestedStructArray.new(ty[1].times.map do |i|
+              entity_class.new(@addr + @offset[idx] + i * CStructEntity.size(ty[0]))
+            end)
+          else
+            entity_class.new(@addr + @offset[idx])
+          end
+        end
+      end
     end
 
     # Calculates the offsets and sizes for the given +types+ in the struct.
@@ -196,12 +230,17 @@ module Fiddle
 
       max_align = types.map { |type, count = 1|
         orig_offset = offset
-        align = ALIGN_MAP[type]
-        offset = PackInfo.align(orig_offset, align)
-
-        @offset << offset
-
-        offset += (SIZE_MAP[type] * count)
+        if type.kind_of?(Array) # type is a nested array representing a nested struct
+          align = CStructEntity.size(type)
+          offset = PackInfo.align(orig_offset, align)
+          @offset << offset
+          offset += (align * (count || 1))
+        else
+          align = ALIGN_MAP[type]
+          offset = PackInfo.align(orig_offset, align)
+          @offset << offset
+          offset += (SIZE_MAP[type] * (count || 1))
+        end
 
         align
       }.max
@@ -230,7 +269,11 @@ module Fiddle
       end
       ty = @ctypes[idx]
       if( ty.is_a?(Array) )
-        r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
+        if ty.first.kind_of?(Array)
+          return @nested_structs[name]
+        else
+          r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
+        end
       else
         r = super(@offset[idx], SIZE_MAP[ty.abs])
       end
@@ -273,6 +316,16 @@ module Fiddle
       idx = @members.index(name)
       if( idx.nil? )
         raise(ArgumentError, "no such member: #{name}")
+      end
+      if @nested_structs[name]
+        if @nested_structs[name].kind_of?(Array)
+          val.size.times do |i|
+            @nested_structs[name][i].to_ptr.memcpy(val[i].to_ptr)
+          end
+        else
+          @nested_structs[name].to_ptr.memcpy(val.to_ptr)
+        end
+        return
       end
       ty  = @ctypes[idx]
       packer = Packer.new([ty])

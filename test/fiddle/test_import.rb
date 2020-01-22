@@ -36,6 +36,16 @@ module Fiddle
       "char c",
       "unsigned char buff[7]",
     ]
+    NestedStruct = struct [
+      {
+        "vertices[2]" => {
+          position: [ "float x", "float y", "float z" ],
+          texcoord: [ "float u", "float v" ]
+        },
+        object:  [ "int id" ]
+      },
+      "int id"
+    ]
 
     CallCallback = bind("void call_callback(void*, void*)"){ | ptr1, ptr2|
       f = Function.new(ptr1.to_i, [TYPE_VOIDP], TYPE_VOID)
@@ -108,6 +118,7 @@ module Fiddle
         assert_equal(LIBC::MyStruct.size(), LIBC.sizeof(my_struct))
       end
       assert_equal(SIZEOF_LONG_LONG, LIBC.sizeof("long long")) if defined?(SIZEOF_LONG_LONG)
+      assert_equal(LIBC::NestedStruct.size(), LIBC.sizeof(LIBC::NestedStruct))
     end
 
     Fiddle.constants.grep(/\ATYPE_(?!VOID|VARIADIC\z)(.*)/) do
@@ -189,6 +200,92 @@ module Fiddle
                    instance.to_ptr[0, Fiddle::SIZEOF_INT]
       assert_raise(RangeError) { instance.stages[-1] = 5 }
       assert_raise(RangeError) { instance.stages[2] = 5 }
+    end
+    
+    def test_nested_struct_members()
+      s = LIBC::NestedStruct.malloc
+      s.vertices[0].position.x = 1
+      s.vertices[0].position.y = 2
+      s.vertices[0].position.z = 3
+      s.vertices[0].texcoord.u = 4
+      s.vertices[0].texcoord.v = 5
+      s.vertices[1].position.x = 6
+      s.vertices[1].position.y = 7
+      s.vertices[1].position.z = 8
+      s.vertices[1].texcoord.u = 9
+      s.vertices[1].texcoord.v = 10
+      s.object.id              = 100
+      s.id                     = 101
+      assert_equal(1,   s.vertices[0].position.x)
+      assert_equal(2,   s.vertices[0].position.y)
+      assert_equal(3,   s.vertices[0].position.z)
+      assert_equal(4,   s.vertices[0].texcoord.u)
+      assert_equal(5,   s.vertices[0].texcoord.v)
+      assert_equal(6,   s.vertices[1].position.x)
+      assert_equal(7,   s.vertices[1].position.y)
+      assert_equal(8,   s.vertices[1].position.z)
+      assert_equal(9,   s.vertices[1].texcoord.u)
+      assert_equal(10,  s.vertices[1].texcoord.v)
+      assert_equal(100, s.object.id)
+      assert_equal(101, s.id)
+    end
+
+    def test_nested_struct_replace_array_element()
+      s = LIBC::NestedStruct.malloc
+      s.vertices[0].position.x = 5
+
+      vertex_struct = Fiddle::Importer.struct [{
+        position: [ "float x", "float y", "float z" ],
+        texcoord: [ "float u", "float v" ]
+      }]
+      vertex = vertex_struct.malloc
+      vertex.position.x = 100
+      s.vertices[0] = vertex
+
+      # make sure element was copied by value, but things like memory address
+      # should not be changed
+      assert_equal(100,              s.vertices[0].position.x)
+      refute_equal(vertex.object_id, s.vertices[0].object_id)
+      refute_equal(vertex.to_ptr,    s.vertices[0].to_ptr)
+    end
+
+    def test_nested_struct_replace_entire_array()
+      s = LIBC::NestedStruct.malloc
+      vertex_struct = Fiddle::Importer.struct [{
+        position: [ "float x", "float y", "float z" ],
+        texcoord: [ "float u", "float v" ]
+      }]
+
+      different_struct_same_size = Fiddle::Importer.struct [{
+        a: [ 'float i', 'float j', 'float k' ],
+        b: [ 'float l', 'float m' ]
+      }]
+
+      same = [vertex_struct.malloc, vertex_struct.malloc]
+      same[0].position.x = 1; same[1].position.x = 6
+      same[0].position.y = 2; same[1].position.y = 7
+      same[0].position.z = 3; same[1].position.z = 8
+      same[0].texcoord.u = 4; same[1].texcoord.u = 9
+      same[0].texcoord.v = 5; same[1].texcoord.v = 10
+      s.vertices = same
+      assert_equal(1, s.vertices[0].position.x); assert_equal(6,  s.vertices[1].position.x)
+      assert_equal(2, s.vertices[0].position.y); assert_equal(7,  s.vertices[1].position.y)
+      assert_equal(3, s.vertices[0].position.z); assert_equal(8,  s.vertices[1].position.z)
+      assert_equal(4, s.vertices[0].texcoord.u); assert_equal(9,  s.vertices[1].texcoord.u)
+      assert_equal(5, s.vertices[0].texcoord.v); assert_equal(10, s.vertices[1].texcoord.v)
+
+      different = [different_struct_same_size.malloc, different_struct_same_size.malloc]
+      different[0].a.i = 11; different[1].a.i = 16
+      different[0].a.j = 12; different[1].a.j = 17
+      different[0].a.k = 13; different[1].a.k = 18
+      different[0].b.l = 14; different[1].b.l = 19
+      different[0].b.m = 15; different[1].b.m = 20
+      s.vertices = different
+      assert_equal(11, s.vertices[0].position.x); assert_equal(16, s.vertices[1].position.x)
+      assert_equal(12, s.vertices[0].position.y); assert_equal(17, s.vertices[1].position.y)
+      assert_equal(13, s.vertices[0].position.z); assert_equal(18, s.vertices[1].position.z)
+      assert_equal(14, s.vertices[0].texcoord.u); assert_equal(19, s.vertices[1].texcoord.u)
+      assert_equal(15, s.vertices[0].texcoord.v); assert_equal(20, s.vertices[1].texcoord.v)
     end
 
     def test_struct()
