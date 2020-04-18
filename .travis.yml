@@ -15,6 +15,7 @@ matrix:
     - name: "gem"
       rvm: 2.7
       install:
+        - bundle install
         - rake install
       script:
         - mkdir -p tmp
