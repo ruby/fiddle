@@ -17,18 +17,39 @@ when /android/
   end
   libc_so = File.join(libdir, "libc.so")
   libm_so = File.join(libdir, "libm.so")
+when /linux-musl/
+  Dir.glob('/lib/ld-musl-*.so.1') do |ld|
+    libc_so = libm_so = ld
+  end
 when /linux/
   libdir = '/lib'
   case RbConfig::SIZEOF['void*']
   when 4
     # 32-bit ruby
-    libdir = '/lib32' if File.directory? '/lib32'
+    case RUBY_PLATFORM
+    when /armv\w+-linux/
+      # In the ARM 32-bit libc package such as libc6:armhf libc6:armel,
+      # libc.so and libm.so are installed to /lib/arm-linux-gnu*.
+      # It's not installed to /lib32.
+      dir, = Dir.glob('/lib/arm-linux-gnu*')
+      libdir = dir if dir && File.directory?(dir)
+    else
+      libdir = '/lib32' if File.directory? '/lib32'
+    end
   when 8
     # 64-bit ruby
     libdir = '/lib64' if File.directory? '/lib64'
   end
-  libc_so = File.join(libdir, "libc.so.6")
-  libm_so = File.join(libdir, "libm.so.6")
+
+  # Handle musl libc
+  libc_so, = Dir.glob(File.join(libdir, "libc.musl*.so*"))
+  if libc_so
+    libm_so = libc_so
+  else
+    # glibc
+    libc_so = File.join(libdir, "libc.so.6")
+    libm_so = File.join(libdir, "libm.so.6")
+  end
 when /mingw/, /mswin/
   require "rbconfig"
   crtname = RbConfig::CONFIG["RUBY_SO_NAME"][/msvc\w+/] || 'ucrtbase'
@@ -104,6 +125,9 @@ libm_so = nil if !libm_so || (libm_so[0] == ?/ && !File.file?(libm_so))
 
 if !libc_so || !libm_so
   ruby = EnvUtil.rubybin
+  # When the ruby binary is 32-bit and the host is 64-bit,
+  # `ldd ruby` outputs "not a dynamic executable" message.
+  # libc_so and libm_so are not set.
   ldd = `ldd #{ruby}`
   #puts ldd
   libc_so = $& if !libc_so && %r{/\S*/libc\.so\S*} =~ ldd
