@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
-begin
-  require_relative "lib/fiddle/version"
-rescue LoadError
-  # for Ruby core repository
-  require_relative "version"
+version_module = Module.new do
+  version_rb = File.join(__dir__, "lib/fiddle/version.rb")
+  module_eval(File.read(version_rb), version_rb, __LINE__)
 end
 
 Gem::Specification.new do |spec|
   spec.name          = "fiddle"
-  spec.version       = Fiddle::VERSION
+  spec.version       = version_module::Fiddle::VERSION
   spec.authors       = ["Aaron Patterson", "SHIBATA Hiroshi"]
   spec.email         = ["aaron@tenderlovemaking.com", "hsbt@ruby-lang.org"]
 
