@@ -1,0 +1,42 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  CI:
+    name: >-
+      ${{ matrix.os }} ${{ matrix.ruby }}
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu, macos, windows ]
+        ruby: [ 2.3, 2.4, 2.5, 2.6, 2.7, head ]
+        include:
+          - { os: windows , ruby: mingw }
+          - { os: windows , ruby: mswin }
+        exclude:
+          - { os: windows , ruby: head }
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Ruby
+        uses: MSP-Greg/setup-ruby-pkgs@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          mingw: _upgrade_ libffi
+
+      - name: bundle install
+        run:  bundle install
+
+      - name: rake compile
+        run:  rake compile
+
+      - name: rake install
+        run:  rake install
+
+      - name: rake test
+        run:  |
+          ruby -v
+          rake test
