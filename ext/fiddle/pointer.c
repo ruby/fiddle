@@ -24,6 +24,7 @@ struct ptr_data {
     void *ptr;
     long size;
     freefunc_t free;
+    int freed;
     VALUE wrap[2];
 };
 
@@ -57,14 +58,19 @@ fiddle_ptr_mark(void *ptr)
 }
 
 static void
-fiddle_ptr_free(void *ptr)
+fiddle_ptr_free_ptr(void *ptr)
 {
     struct ptr_data *data = ptr;
-    if (data->ptr) {
-	if (data->free) {
-	    (*(data->free))(data->ptr);
-	}
+    if (data->ptr && data->free && !data->freed) {
+	(*(data->free))(data->ptr);
     }
+    data->freed = 1;
+}
+
+static void
+fiddle_ptr_free(void *ptr)
+{
+    fiddle_ptr_free_ptr(ptr);
     xfree(ptr);
 }
 
@@ -89,6 +95,7 @@ rb_fiddle_ptr_new2(VALUE klass, void *ptr, long size, freefunc_t func)
     val = TypedData_Make_Struct(klass, struct ptr_data, &fiddle_ptr_data_type, data);
     data->ptr = ptr;
     data->free = func;
+    data->freed = 0;
     data->size = size;
 
     return val;
@@ -140,6 +147,7 @@ rb_fiddle_ptr_s_allocate(VALUE klass)
     data->ptr = 0;
     data->size = 0;
     data->free = 0;
+    data->freed = 0;
 
     return obj;
 }
@@ -197,11 +205,16 @@ rb_fiddle_ptr_initialize(int argc, VALUE argv[], VALUE self)
  *
  * == Examples
  *
+ *    # Manually freeing but relying on the garbage collector otherwise
+ *    pointer = Fiddle::Pointer.malloc(size, Fiddle::RUBY_FREE)
+ *    ...
+ *    pointer.free!
+ *
  *    # Relying on the garbage collector - may lead to unlimited memory allocated before freeing any, but safe
  *    pointer = Fiddle::Pointer.malloc(size, Fiddle::RUBY_FREE)
  *    ...
  *
- *    # Manual freeing
+ *    # Only manually freeing
  *    pointer = Fiddle::Pointer.malloc(size)
  *    begin
  *      ...
@@ -214,13 +227,15 @@ rb_fiddle_ptr_initialize(int argc, VALUE argv[], VALUE self)
  *    ...
  *
  * Allocate +size+ bytes of memory and associate it with an optional
- * +freefunc+ that will be called when the pointer is garbage collected.
+ * +freefunc+ that will be called when the pointer is garbage collected,
+ * if not already manually called via *free!*.
+ *
  * +freefunc+ must be an address pointing to a function or an instance of
- * +Fiddle::Function+. Using +freefunc+ may lead to unlimited memory being
- * allocated before any is freed as the native memory the pointer references
- * does not contribute to triggering the Ruby garbage collector. Consider
- * manually freeing the memory as illustrated above. You cannot combine
- * the techniques as this may lead to a double-free.
+ * +Fiddle::Function+. Using +freefunc+ without using +free!+ may lead to
+ * unlimited memory being allocated before any is freed as the native memory
+ * the pointer references does not contribute to triggering the Ruby garbage
+ * collector. Consider manually freeing the memory as illustrated above. You
+ * can combine the techniques as +freefunc+ will not be called twice.
  */
 static VALUE
 rb_fiddle_ptr_s_malloc(int argc, VALUE argv[], VALUE klass)
@@ -368,6 +383,34 @@ rb_fiddle_ptr_free_get(VALUE self)
     rb_ary_push(arg_types, INT2NUM(TYPE_VOIDP));
 
     return rb_fiddle_new_function(address, arg_types, ret_type);
+}
+
+/*
+ * call-seq: free! => nil
+ *
+ * Call the free function for this pointer. Calling more than once will do
+ * nothing.
+ */
+static VALUE
+rb_fiddle_ptr_free_bang(VALUE self)
+{
+    struct ptr_data *pdata;
+    TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, pdata);
+    fiddle_ptr_free_ptr(pdata);
+    return Qnil;
+}
+
+/*
+ * call-seq: freed? => bool
+ *
+ * Returns if this pointer has already been freed.
+ */
+static VALUE
+rb_fiddle_ptr_freed_p(VALUE self)
+{
+    struct ptr_data *pdata;
+    TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, pdata);
+    return pdata->freed ? Qtrue : Qfalse;
 }
 
 /*
@@ -711,6 +754,8 @@ Init_fiddle_pointer(void)
     rb_define_method(rb_cPointer, "initialize", rb_fiddle_ptr_initialize, -1);
     rb_define_method(rb_cPointer, "free=", rb_fiddle_ptr_free_set, 1);
     rb_define_method(rb_cPointer, "free",  rb_fiddle_ptr_free_get, 0);
+    rb_define_method(rb_cPointer, "free!",  rb_fiddle_ptr_free_bang, 0);
+    rb_define_method(rb_cPointer, "freed?",  rb_fiddle_ptr_freed_p, 0);
     rb_define_method(rb_cPointer, "to_i",  rb_fiddle_ptr_to_i, 0);
     rb_define_method(rb_cPointer, "to_int",  rb_fiddle_ptr_to_i, 0);
     rb_define_method(rb_cPointer, "to_value",  rb_fiddle_ptr_to_value, 0);
