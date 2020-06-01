@@ -37,6 +37,8 @@ jobs:
         run:  rake install
 
       - name: rake test
+        env:
+          RUBYOPT: --disable=gems
         run:  |
           ruby -v
           rake test
