@@ -390,7 +390,7 @@ rb_fiddle_ptr_free_get(VALUE self)
  * call-seq: free! => nil
  *
  * Call the free function for this pointer. Calling more than once will do
- * nothing.
+ * nothing. Does nothing if there is no free function attached.
  */
 static VALUE
 rb_fiddle_ptr_free_bang(VALUE self)
@@ -404,7 +404,7 @@ rb_fiddle_ptr_free_bang(VALUE self)
 /*
  * call-seq: freed? => bool
  *
- * Returns if this pointer has already been freed.
+ * Returns if the free function for this pointer has been called.
  */
 static VALUE
 rb_fiddle_ptr_freed_p(VALUE self)
