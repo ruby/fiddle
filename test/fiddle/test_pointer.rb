@@ -20,27 +20,16 @@ module Fiddle
       assert_equal free.to_i, Fiddle::RUBY_FREE.to_i
 
       ptr  = Pointer.malloc(10, free.to_i)
-      begin
-        assert_equal 10, ptr.size
-        assert_equal free.to_i, ptr.free.to_i
-      ensure
-        ptr.call_free
-      end
-      assert ptr.freed?
+      assert_equal 10, ptr.size
+      assert_equal free.to_i, ptr.free.to_i
     end
 
     def test_malloc_free_func
       free = Fiddle::Function.new(Fiddle::RUBY_FREE, [TYPE_VOIDP], TYPE_VOID)
 
       ptr  = Pointer.malloc(10, free)
-      refute ptr.freed?
-      begin
-        assert_equal 10, ptr.size
-        assert_equal free.to_i, ptr.free.to_i
-      ensure
-        ptr.call_free
-      end
-      assert ptr.freed?
+      assert_equal 10, ptr.size
+      assert_equal free.to_i, ptr.free.to_i
     end
 
     def test_to_str
@@ -96,20 +85,16 @@ module Fiddle
 
     def test_to_ptr_io
       buf = Pointer.malloc(10, Fiddle::RUBY_FREE)
-      begin
-        File.open(__FILE__, 'r') do |f|
-          ptr = Pointer.to_ptr f
-          fread = Function.new(@libc['fread'],
-                              [TYPE_VOIDP, TYPE_INT, TYPE_INT, TYPE_VOIDP],
-                              TYPE_INT)
-          fread.call(buf.to_i, Fiddle::SIZEOF_CHAR, buf.size - 1, ptr.to_i)
-        end
+      File.open(__FILE__, 'r') do |f|
+        ptr = Pointer.to_ptr f
+        fread = Function.new(@libc['fread'],
+                             [TYPE_VOIDP, TYPE_INT, TYPE_INT, TYPE_VOIDP],
+                             TYPE_INT)
+        fread.call(buf.to_i, Fiddle::SIZEOF_CHAR, buf.size - 1, ptr.to_i)
+      end
 
-        File.open(__FILE__, 'r') do |f|
-          assert_equal f.read(9), buf.to_s
-        end
-      ensure
-        buf.call_free
+      File.open(__FILE__, 'r') do |f|
+        assert_equal f.read(9), buf.to_s
       end
     end
 
