@@ -2,6 +2,7 @@
  * $Id$
  */
 
+#include <stdbool.h>
 #include <ruby/ruby.h>
 #include <ruby/io.h>
 #include <ctype.h>
@@ -24,7 +25,7 @@ struct ptr_data {
     void *ptr;
     long size;
     freefunc_t free;
-    int freed;
+    bool freed;
     VALUE wrap[2];
 };
 
@@ -64,7 +65,7 @@ fiddle_ptr_free_ptr(void *ptr)
     if (data->ptr && data->free && !data->freed) {
 	(*(data->free))(data->ptr);
     }
-    data->freed = 1;
+    data->freed = true;
 }
 
 static void
@@ -95,7 +96,7 @@ rb_fiddle_ptr_new2(VALUE klass, void *ptr, long size, freefunc_t func)
     val = TypedData_Make_Struct(klass, struct ptr_data, &fiddle_ptr_data_type, data);
     data->ptr = ptr;
     data->free = func;
-    data->freed = 0;
+    data->freed = false;
     data->size = size;
 
     return val;
@@ -147,7 +148,7 @@ rb_fiddle_ptr_s_allocate(VALUE klass)
     data->ptr = 0;
     data->size = 0;
     data->free = 0;
-    data->freed = 0;
+    data->freed = false;
 
     return obj;
 }
