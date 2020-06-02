@@ -63,9 +63,9 @@ fiddle_ptr_free_ptr(void *ptr)
 {
     struct ptr_data *data = ptr;
     if (data->ptr && data->free && !data->freed) {
+	data->freed = true;
 	(*(data->free))(data->ptr);
     }
-    data->freed = true;
 }
 
 static void

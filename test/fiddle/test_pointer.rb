@@ -190,9 +190,9 @@ module Fiddle
       ptr = Pointer.malloc(4)
       refute ptr.freed?
       ptr.free!
-      assert ptr.freed?
+      refute ptr.freed?
       ptr.free!                 # you can safely run it again
-      assert ptr.freed?
+      refute ptr.freed?
 
       ptr = Pointer.malloc(4, Fiddle::RUBY_FREE)
       refute ptr.freed?
@@ -205,7 +205,7 @@ module Fiddle
     end
 
     def test_freed?
-      ptr = Pointer.malloc(4)
+      ptr = Pointer.malloc(4, Fiddle::RUBY_FREE)
       refute ptr.freed?
       ptr.free!
       assert ptr.freed?
