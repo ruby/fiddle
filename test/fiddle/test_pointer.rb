@@ -24,7 +24,7 @@ module Fiddle
         assert_equal 10, ptr.size
         assert_equal free.to_i, ptr.free.to_i
       ensure
-        ptr.free!
+        ptr.call_free
       end
       assert ptr.freed?
     end
@@ -38,7 +38,7 @@ module Fiddle
         assert_equal 10, ptr.size
         assert_equal free.to_i, ptr.free.to_i
       ensure
-        ptr.free!
+        ptr.call_free
       end
       assert ptr.freed?
     end
@@ -109,7 +109,7 @@ module Fiddle
           assert_equal f.read(9), buf.to_s
         end
       ensure
-        buf.free!
+        buf.call_free
       end
     end
 
@@ -188,9 +188,9 @@ module Fiddle
     def test_free_with_func
       ptr = Pointer.malloc(4, Fiddle::RUBY_FREE)
       refute ptr.freed?
-      ptr.free!
+      ptr.call_free
       assert ptr.freed?
-      ptr.free!                 # you can safely run it again
+      ptr.call_free                 # you can safely run it again
       assert ptr.freed?
       GC.start                  # you can safely run the GC routine
       assert ptr.freed?
@@ -199,16 +199,16 @@ module Fiddle
     def test_free_with_no_func
       ptr = Pointer.malloc(4)
       refute ptr.freed?
-      ptr.free!
+      ptr.call_free
       refute ptr.freed?
-      ptr.free!                 # you can safely run it again
+      ptr.call_free                 # you can safely run it again
       refute ptr.freed?
     end
 
     def test_freed?
       ptr = Pointer.malloc(4, Fiddle::RUBY_FREE)
       refute ptr.freed?
-      ptr.free!
+      ptr.call_free
       assert ptr.freed?
     end
 

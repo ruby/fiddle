@@ -387,13 +387,13 @@ rb_fiddle_ptr_free_get(VALUE self)
 }
 
 /*
- * call-seq: free! => nil
+ * call-seq: call_free => nil
  *
  * Call the free function for this pointer. Calling more than once will do
  * nothing. Does nothing if there is no free function attached.
  */
 static VALUE
-rb_fiddle_ptr_free_bang(VALUE self)
+rb_fiddle_ptr_call_free(VALUE self)
 {
     struct ptr_data *pdata;
     TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, pdata);
@@ -755,7 +755,7 @@ Init_fiddle_pointer(void)
     rb_define_method(rb_cPointer, "initialize", rb_fiddle_ptr_initialize, -1);
     rb_define_method(rb_cPointer, "free=", rb_fiddle_ptr_free_set, 1);
     rb_define_method(rb_cPointer, "free",  rb_fiddle_ptr_free_get, 0);
-    rb_define_method(rb_cPointer, "free!",  rb_fiddle_ptr_free_bang, 0);
+    rb_define_method(rb_cPointer, "call_free",  rb_fiddle_ptr_call_free, 0);
     rb_define_method(rb_cPointer, "freed?",  rb_fiddle_ptr_freed_p, 0);
     rb_define_method(rb_cPointer, "to_i",  rb_fiddle_ptr_to_i, 0);
     rb_define_method(rb_cPointer, "to_int",  rb_fiddle_ptr_to_i, 0);
