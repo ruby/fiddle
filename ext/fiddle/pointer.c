@@ -232,7 +232,7 @@ rb_fiddle_ptr_initialize(int argc, VALUE argv[], VALUE self)
  * if not already manually called via *call_free*.
  *
  * +freefunc+ must be an address pointing to a function or an instance of
- * +Fiddle::Function+. Using +freefunc+ without using +free!+ may lead to
+ * +Fiddle::Function+. Using +freefunc+ without using +call_free+ may lead to
  * unlimited memory being allocated before any is freed as the native memory
  * the pointer references does not contribute to triggering the Ruby garbage
  * collector. Consider manually freeing the memory as illustrated above. You
