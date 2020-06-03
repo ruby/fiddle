@@ -57,21 +57,24 @@ module Fiddle
     def test_aref_pointer_array
       team = CStructEntity.malloc([[TYPE_VOIDP, 2]], Fiddle::RUBY_FREE)
       team.assign_names(["names"])
-      alice = Fiddle::Pointer.malloc(6, Fiddle::RUBY_FREE)
-      alice[0, 6] = "Alice\0"
-      bob = Fiddle::Pointer.malloc(4, Fiddle::RUBY_FREE)
-      bob[0, 4] = "Bob\0"
-      team["names"] = [alice, bob]
-      assert_equal(["Alice", "Bob"], team["names"].map(&:to_s))
+      Fiddle::Pointer.malloc(6, Fiddle::RUBY_FREE) do |alice|
+        alice[0, 6] = "Alice\0"
+        Fiddle::Pointer.malloc(4, Fiddle::RUBY_FREE) do |bob|
+          bob[0, 4] = "Bob\0"
+          team["names"] = [alice, bob]
+          assert_equal(["Alice", "Bob"], team["names"].map(&:to_s))
+        end
+      end
     end
 
     def test_aref_pointer
       user = CStructEntity.malloc([TYPE_VOIDP], Fiddle::RUBY_FREE)
       user.assign_names(["name"])
-      alice = Fiddle::Pointer.malloc(6, Fiddle::RUBY_FREE)
-      alice[0, 6] = "Alice\0"
-      user["name"] = alice
-      assert_equal("Alice", user["name"].to_s)
+      Fiddle::Pointer.malloc(6, Fiddle::RUBY_FREE) do |alice|
+        alice[0, 6] = "Alice\0"
+        user["name"] = alice
+        assert_equal("Alice", user["name"].to_s)
+      end
     end
   end
 end if defined?(Fiddle)
