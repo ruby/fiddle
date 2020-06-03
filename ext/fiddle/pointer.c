@@ -229,7 +229,7 @@ rb_fiddle_ptr_initialize(int argc, VALUE argv[], VALUE self)
  *
  * Allocate +size+ bytes of memory and associate it with an optional
  * +freefunc+ that will be called when the pointer is garbage collected,
- * if not already manually called via *free!*.
+ * if not already manually called via *call_free*.
  *
  * +freefunc+ must be an address pointing to a function or an instance of
  * +Fiddle::Function+. Using +freefunc+ without using +free!+ may lead to
