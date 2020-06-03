@@ -32,6 +32,24 @@ module Fiddle
       assert_equal free.to_i, ptr.free.to_i
     end
 
+    def test_malloc_block
+      escaped_ptr = nil
+      returned = Pointer.malloc(10, Fiddle::RUBY_FREE) do |ptr|
+        assert_equal 10, ptr.size
+        assert_equal Fiddle::RUBY_FREE, ptr.free.to_i
+        escaped_ptr = ptr
+        :returned
+      end
+      assert_equal :returned, returned
+      assert escaped_ptr.freed?
+    end
+
+    def test_malloc_block_no_free
+      assert_raise Fiddle::DLError do 
+        Pointer.malloc(10) { |ptr| raise }
+      end
+    end
+
     def test_to_str
       str = Marshal.load(Marshal.dump("hello world"))
       ptr = Pointer[str]
