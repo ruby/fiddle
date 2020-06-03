@@ -209,7 +209,7 @@ rb_fiddle_ptr_initialize(int argc, VALUE argv[], VALUE self)
  *    # Manually freeing but relying on the garbage collector otherwise
  *    pointer = Fiddle::Pointer.malloc(size, Fiddle::RUBY_FREE)
  *    ...
- *    pointer.free!
+ *    pointer.call_free
  *
  *    # Relying on the garbage collector - may lead to unlimited memory allocated before freeing any, but safe
  *    pointer = Fiddle::Pointer.malloc(size, Fiddle::RUBY_FREE)
