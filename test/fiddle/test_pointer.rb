@@ -45,8 +45,8 @@ module Fiddle
     end
 
     def test_malloc_block_no_free
-      assert_raise Fiddle::DLError do 
-        Pointer.malloc(10) { |ptr| raise }
+      assert_raise ArgumentError do 
+        Pointer.malloc(10) { |ptr| }
       end
     end
 

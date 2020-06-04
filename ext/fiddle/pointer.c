@@ -272,8 +272,8 @@ rb_fiddle_ptr_s_malloc(int argc, VALUE argv[], VALUE klass)
     if (wrap) RPTR_DATA(obj)->wrap[1] = wrap;
 
     if (rb_block_given_p()) {
-        if (f == NULL) {
-            rb_raise(rb_eFiddleError, "a free function must be supplied to Fiddle::Pointer.malloc when it is called with a block");
+        if (!f) {
+            rb_raise(rb_eArgError, "a free function must be supplied to Fiddle::Pointer.malloc when it is called with a block");
         }
         return rb_ensure(rb_yield, obj, rb_fiddle_ptr_call_free, obj);
     } else {
