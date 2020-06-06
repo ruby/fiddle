@@ -32,6 +32,24 @@ module Fiddle
       assert_equal free.to_i, ptr.free.to_i
     end
 
+    def test_malloc_block
+      escaped_ptr = nil
+      returned = Pointer.malloc(10, Fiddle::RUBY_FREE) do |ptr|
+        assert_equal 10, ptr.size
+        assert_equal Fiddle::RUBY_FREE, ptr.free.to_i
+        escaped_ptr = ptr
+        :returned
+      end
+      assert_equal :returned, returned
+      assert escaped_ptr.freed?
+    end
+
+    def test_malloc_block_no_free
+      assert_raise ArgumentError do 
+        Pointer.malloc(10) { |ptr| }
+      end
+    end
+
     def test_to_str
       str = Marshal.load(Marshal.dump("hello world"))
       ptr = Pointer[str]
@@ -84,17 +102,18 @@ module Fiddle
     end
 
     def test_to_ptr_io
-      buf = Pointer.malloc(10, Fiddle::RUBY_FREE)
-      File.open(__FILE__, 'r') do |f|
-        ptr = Pointer.to_ptr f
-        fread = Function.new(@libc['fread'],
-                             [TYPE_VOIDP, TYPE_INT, TYPE_INT, TYPE_VOIDP],
-                             TYPE_INT)
-        fread.call(buf.to_i, Fiddle::SIZEOF_CHAR, buf.size - 1, ptr.to_i)
-      end
+      Pointer.malloc(10, Fiddle::RUBY_FREE) do |buf|
+        File.open(__FILE__, 'r') do |f|
+          ptr = Pointer.to_ptr f
+          fread = Function.new(@libc['fread'],
+                              [TYPE_VOIDP, TYPE_INT, TYPE_INT, TYPE_VOIDP],
+                              TYPE_INT)
+          fread.call(buf.to_i, Fiddle::SIZEOF_CHAR, buf.size - 1, ptr.to_i)
+        end
 
-      File.open(__FILE__, 'r') do |f|
-        assert_equal f.read(9), buf.to_s
+        File.open(__FILE__, 'r') do |f|
+          assert_equal f.read(9), buf.to_s
+        end
       end
     end
 
@@ -177,7 +196,7 @@ module Fiddle
       assert ptr.freed?
       ptr.call_free                 # you can safely run it again
       assert ptr.freed?
-      GC.start                  # you can safely run the GC routine
+      GC.start                      # you can safely run the GC routine
       assert ptr.freed?
     end
 
@@ -203,21 +222,15 @@ module Fiddle
     end
 
     def test_size
-      ptr = Pointer.malloc(4)
-      begin
+      Pointer.malloc(4, Fiddle::RUBY_FREE) do |ptr|
         assert_equal 4, ptr.size
-      ensure
-        Fiddle.free ptr
       end
     end
 
     def test_size=
-      ptr = Pointer.malloc(4)
-      begin
+      Pointer.malloc(4, Fiddle::RUBY_FREE) do |ptr|
         ptr.size = 10
         assert_equal 10, ptr.size
-      ensure
-        Fiddle.free ptr
       end
     end
 
