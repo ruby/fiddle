@@ -62,7 +62,7 @@ module Fiddle
     # Fiddle::Importer#struct and Fiddle::Importer#union wrap this functionality in an
     # easy-to-use manner.
     #
-    # Example:
+    # Examples:
     #
     #   require 'fiddle/struct'
     #   require 'fiddle/cparser'
@@ -73,6 +73,17 @@ module Fiddle
     #
     #   MyStruct = Fiddle::CStructBuilder.create(Fiddle::CUnion, types, members)
     #
+    #   MyStruct.malloc(Fiddle::RUBY_FREE) do |obj|
+    #     ...
+    #   end
+    #
+    #   obj = MyStruct.malloc(Fiddle::RUBY_FREE)
+    #   begin
+    #     ...
+    #   ensure
+    #     obj.call_free
+    #   end
+    #
     #   obj = MyStruct.malloc
     #   begin
     #     ...
@@ -82,8 +93,8 @@ module Fiddle
     #
     def create(klass, types, members)
       new_class = Class.new(klass){
-        define_method(:initialize){|addr|
-          @entity = klass.entity_class.new(addr, types)
+        define_method(:initialize){|addr, func = nil|
+          @entity = klass.entity_class.new(addr, types, func)
           @entity.assign_names(members)
         }
         define_method(:[]) { |*args| @entity.send(:[], *args) }
@@ -100,9 +111,19 @@ module Fiddle
         def new_class.size()
           #{size}
         end
-        def new_class.malloc()
+        def new_class.malloc(func = nil)
           addr = Fiddle.malloc(#{size})
-          new(addr)
+          struct = new(addr, func)
+          if block_given?
+            raise ArgumentError, 'a free function must be supplied to malloc when it is called with a block' unless func
+            begin
+              yield struct
+            ensure
+              struct.to_ptr.call_free
+            end
+          else
+            struct
+          end
         end
       EOS
       return new_class
@@ -119,8 +140,18 @@ module Fiddle
     #
     # See Fiddle::Pointer.malloc for memory management issues.
     def CStructEntity.malloc(types, func = nil)
-      addr = Fiddle.malloc(CStructEntity.size(types))
-      CStructEntity.new(addr, types, func)
+      addr = Fiddle.malloc(self.size(types))
+      struct = new(addr, types, func)
+      if block_given?
+        raise ArgumentError, 'a free function must be supplied to Fiddle::CStructEntity.malloc when it is called with a block' unless func
+        begin
+          yield struct
+        ensure
+          struct.call_free
+        end
+      else
+        struct
+      end
     end
 
     # Returns the offset for the packed sizes for the given +types+.
@@ -152,6 +183,9 @@ module Fiddle
     #
     # See also Fiddle::Pointer.new
     def initialize(addr, types, func = nil)
+      if func && addr.is_a?(Pointer) && addr.free
+        raise ArgumentError, 'free function specified on both underlying struct Pointer and when creating a CStructEntity - who do you want to free this?'
+      end
       set_ctypes(types)
       super(addr, @size, func)
     end
@@ -261,6 +295,10 @@ module Fiddle
       end
     end
 
+    def size=(new_size) # :nodoc:
+      raise ArgumentError, 'cannot change the size of a struct'
+    end
+
     def to_s() # :nodoc:
       super(@size)
     end
@@ -274,8 +312,7 @@ module Fiddle
     #
     # See Fiddle::Pointer.malloc for memory management issues.
     def CUnionEntity.malloc(types, func=nil)
-      addr = Fiddle.malloc(CUnionEntity.size(types))
-      CUnionEntity.new(addr, types, func)
+      super
     end
 
     # Returns the size needed for the union with the given +types+.
