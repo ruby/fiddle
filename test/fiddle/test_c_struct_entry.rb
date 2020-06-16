@@ -43,15 +43,15 @@ module Fiddle
     end
 
     def test_set_ctypes
-      union = CStructEntity.malloc [TYPE_INT, TYPE_LONG], Fiddle::RUBY_FREE
-      union.assign_names %w[int long]
+      struct = CStructEntity.malloc [TYPE_INT, TYPE_LONG], Fiddle::RUBY_FREE
+      struct.assign_names %w[int long]
 
       # this test is roundabout because the stored ctypes are not accessible
-      union['long'] = 1
-      union['int'] = 2
+      struct['long'] = 1
+      struct['int'] = 2
 
-      assert_equal 1, union['long']
-      assert_equal 2, union['int']
+      assert_equal 1, struct['long']
+      assert_equal 2, struct['int']
     end
 
     def test_aref_pointer_array
