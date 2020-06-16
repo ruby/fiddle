@@ -110,7 +110,7 @@ module Fiddle
     module_function :create
   end
 
-  # A C struct wrapper
+  # A pointer to a C structure
   class CStructEntity < Fiddle::Pointer
     include PackInfo
     include ValueUtil
@@ -266,7 +266,7 @@ module Fiddle
     end
   end
 
-  # A C union wrapper
+  # A pointer to a C union
   class CUnionEntity < CStructEntity
     include PackInfo
 
