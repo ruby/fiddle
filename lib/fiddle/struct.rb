@@ -110,16 +110,12 @@ module Fiddle
           define_method(name + "="){|val| @entity[name] = val }
         }
         define_singleton_method(:malloc) do |func=nil|
-          struct = new(entity_class.malloc(types, func, size))
           if block_given?
-            raise ArgumentError, 'a free function must be supplied to malloc when it is called with a block' unless func
-            begin
-              yield struct
-            ensure
-              struct.to_ptr.call_free
+            entity_class.malloc(types, func, size) do |entity|
+              yield new(entity)
             end
           else
-            struct
+            new(entity_class.malloc(types, func, size))
           end
         end
       }
