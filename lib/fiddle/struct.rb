@@ -298,13 +298,6 @@ module Fiddle
   class CUnionEntity < CStructEntity
     include PackInfo
 
-    # Allocates a C union the +types+ provided.
-    #
-    # See Fiddle::Pointer.malloc for memory management issues.
-    def CUnionEntity.malloc(types, func=nil)
-      super
-    end
-
     # Returns the size needed for the union with the given +types+.
     #
     #   Fiddle::CUnionEntity.size(
