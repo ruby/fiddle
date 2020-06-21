@@ -94,7 +94,11 @@ module Fiddle
     def create(klass, types, members)
       new_class = Class.new(klass){
         define_method(:initialize){|addr, func = nil|
-          @entity = self.class.entity_class.new(addr, types, func)
+          if addr.is_a?(self.class.entity_class)
+            @entity = addr
+          else
+            @entity = self.class.entity_class.new(addr, types, func)
+          end
           @entity.assign_names(members)
         }
         define_method(:[]) { |*args| @entity.send(:[], *args) }
@@ -106,8 +110,7 @@ module Fiddle
           define_method(name + "="){|val| @entity[name] = val }
         }
         define_singleton_method(:malloc) do |func=nil|
-          addr = Fiddle.malloc(size)
-          struct = new(addr, func)
+          struct = new(entity_class.malloc(types, func, size))
           if block_given?
             raise ArgumentError, 'a free function must be supplied to malloc when it is called with a block' unless func
             begin
@@ -140,8 +143,8 @@ module Fiddle
     # Allocates a C struct with the +types+ provided.
     #
     # See Fiddle::Pointer.malloc for memory management issues.
-    def CStructEntity.malloc(types, func = nil)
-      struct = super(size(types), func, &nil)
+    def CStructEntity.malloc(types, func = nil, size = size(types), &block)
+      struct = super(size, func, &nil)
       struct.set_ctypes types
       if block_given?
         raise ArgumentError, 'a free function must be supplied to Fiddle::CStructEntity.malloc when it is called with a block' unless func
