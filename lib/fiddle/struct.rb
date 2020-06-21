@@ -4,7 +4,7 @@ require 'fiddle/value'
 require 'fiddle/pack'
 
 module Fiddle
-  # C struct shell
+  # A base class for objects representing a C structure
   class CStruct
     # accessor to Fiddle::CStructEntity
     def CStruct.entity_class
@@ -12,7 +12,7 @@ module Fiddle
     end
   end
 
-  # C union shell
+  # A base class for objects representing a C union
   class CUnion
     # accessor to Fiddle::CUnionEntity
     def CUnion.entity_class
