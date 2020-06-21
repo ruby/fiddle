@@ -293,10 +293,7 @@ module Fiddle
       end
     end
 
-    def size=(new_size) # :nodoc:
-      raise ArgumentError, 'cannot change the size of a struct'
-    end
-
+    undef_method :size=
     def to_s() # :nodoc:
       super(@size)
     end
