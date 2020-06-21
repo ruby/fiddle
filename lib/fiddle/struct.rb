@@ -94,7 +94,7 @@ module Fiddle
     def create(klass, types, members)
       new_class = Class.new(klass){
         define_method(:initialize){|addr, func = nil|
-          @entity = klass.entity_class.new(addr, types, func)
+          @entity = self.class.entity_class.new(addr, types, func)
           @entity.assign_names(members)
         }
         define_method(:[]) { |*args| @entity.send(:[], *args) }
@@ -105,14 +105,8 @@ module Fiddle
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
-      }
-      size = klass.entity_class.size(types)
-      new_class.module_eval(<<-EOS, __FILE__, __LINE__+1)
-        def new_class.size()
-          #{size}
-        end
-        def new_class.malloc(func = nil)
-          addr = Fiddle.malloc(#{size})
+        define_singleton_method(:malloc) do |func=nil|
+          addr = Fiddle.malloc(size)
           struct = new(addr, func)
           if block_given?
             raise ArgumentError, 'a free function must be supplied to malloc when it is called with a block' unless func
@@ -124,6 +118,13 @@ module Fiddle
           else
             struct
           end
+        end
+      }
+      size = klass.entity_class.size(types)
+      # we use eval here make size into a literal, for performance
+      new_class.module_eval(<<-EOS, __FILE__, __LINE__+1)
+        def new_class.size()
+          #{size}
         end
       EOS
       return new_class
