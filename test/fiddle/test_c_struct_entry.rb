@@ -89,15 +89,6 @@ module Fiddle
       end
     end
 
-    def test_new_double_free
-      types = [TYPE_INT]
-      Pointer.malloc(CStructEntity.size(types), Fiddle::RUBY_FREE) do |pointer|
-        assert_raise ArgumentError do
-          CStructEntity.new(pointer, types, Fiddle::RUBY_FREE)
-        end
-      end
-    end
-
     def test_malloc_block
       escaped_struct = nil
       returned = CStructEntity.malloc([TYPE_INT], Fiddle::RUBY_FREE) do |struct|
