@@ -156,7 +156,7 @@ module Fiddle
 
     def test_size=
       CStructEntity.malloc([TYPE_INT], Fiddle::RUBY_FREE) do |struct|
-        assert_raise ArgumentError do
+        assert_raise NoMethodError do
           struct.size = 1
         end
       end
