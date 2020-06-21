@@ -50,6 +50,13 @@ module Fiddle
       end
     end
 
+    def test_malloc_subclass
+      subclass = Class.new(Pointer)
+      subclass.malloc(10, Fiddle::RUBY_FREE) do |ptr|
+        assert ptr.is_a?(subclass)
+      end
+    end
+
     def test_to_str
       str = Marshal.load(Marshal.dump("hello world"))
       ptr = Pointer[str]

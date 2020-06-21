@@ -109,13 +109,13 @@ rb_fiddle_ptr_new(void *ptr, long size, freefunc_t func)
 }
 
 static VALUE
-rb_fiddle_ptr_malloc(long size, freefunc_t func)
+rb_fiddle_ptr_malloc(VALUE klass, long size, freefunc_t func)
 {
     void *ptr;
 
     ptr = ruby_xmalloc((size_t)size);
     memset(ptr,0,(size_t)size);
-    return rb_fiddle_ptr_new(ptr, size, func);
+    return rb_fiddle_ptr_new2(klass, ptr, size, func);
 }
 
 static void *
@@ -268,7 +268,7 @@ rb_fiddle_ptr_s_malloc(int argc, VALUE argv[], VALUE klass)
 	rb_bug("rb_fiddle_ptr_s_malloc");
     }
 
-    obj = rb_fiddle_ptr_malloc(s,f);
+    obj = rb_fiddle_ptr_malloc(klass, s,f);
     if (wrap) RPTR_DATA(obj)->wrap[1] = wrap;
 
     if (rb_block_given_p()) {

@@ -56,22 +56,18 @@ module Fiddle
 
     def test_struct_memory_access()
       # check memory operations performed directly on struct
-      my_struct = Fiddle::Importer.struct(['int id']).malloc
-      begin
+      Fiddle::Importer.struct(['int id']).malloc(Fiddle::RUBY_FREE) do |my_struct|
         my_struct[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
         assert_equal 0x01010101, my_struct.id
 
         my_struct.id = 0
         assert_equal "\x00".b * Fiddle::SIZEOF_INT, my_struct[0, Fiddle::SIZEOF_INT]
-      ensure
-        Fiddle.free my_struct.to_ptr
       end
     end
 
     def test_struct_ptr_array_subscript_multiarg()
       # check memory operations performed on struct#to_ptr
-      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
-      begin
+      Fiddle::Importer.struct([ 'int x' ]).malloc(Fiddle::RUBY_FREE) do |struct|
         ptr = struct.to_ptr
 
         struct.x = 0x02020202
@@ -79,33 +75,22 @@ module Fiddle
 
         ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
         assert_equal 0x01010101, struct.x
-      ensure
-        Fiddle.free struct.to_ptr
       end
     end
 
     def test_malloc()
-      s1 = LIBC::Timeval.malloc()
-      begin
-        s2 = LIBC::Timeval.malloc()
-        begin
+      LIBC::Timeval.malloc(Fiddle::RUBY_FREE) do |s1|
+        LIBC::Timeval.malloc(Fiddle::RUBY_FREE) do |s2|
           refute_equal(s1.to_ptr.to_i, s2.to_ptr.to_i)
-        ensure
-          Fiddle.free s2.to_ptr
         end
-      ensure
-        Fiddle.free s1.to_ptr
       end
     end
 
     def test_sizeof()
       assert_equal(SIZEOF_VOIDP, LIBC.sizeof("FILE*"))
       assert_equal(LIBC::MyStruct.size(), LIBC.sizeof(LIBC::MyStruct))
-      my_struct = LIBC::MyStruct.malloc()
-      begin
+      LIBC::MyStruct.malloc(Fiddle::RUBY_FREE) do |my_struct|
         assert_equal(LIBC::MyStruct.size(), LIBC.sizeof(my_struct))
-      ensure
-        Fiddle.free my_struct.to_ptr
       end
       assert_equal(SIZEOF_LONG_LONG, LIBC.sizeof("long long")) if defined?(SIZEOF_LONG_LONG)
     end
@@ -151,8 +136,7 @@ module Fiddle
     end
 
     def test_struct_array_assignment()
-      instance = Fiddle::Importer.struct(["unsigned int stages[3]"]).malloc
-      begin
+      Fiddle::Importer.struct(["unsigned int stages[3]"]).malloc(Fiddle::RUBY_FREE) do |instance|
         instance.stages[0] = 1024
         instance.stages[1] = 10
         instance.stages[2] = 100
@@ -163,39 +147,28 @@ module Fiddle
                     instance.to_ptr[0, 3 * Fiddle::SIZEOF_INT]
         assert_raise(IndexError) { instance.stages[-1] = 5 }
         assert_raise(IndexError) { instance.stages[3] = 5 }
-      ensure
-        Fiddle.free instance.to_ptr
       end
     end
 
     def test_struct()
-      s = LIBC::MyStruct.malloc()
-      begin
+      LIBC::MyStruct.malloc(Fiddle::RUBY_FREE) do |s|
         s.num = [0,1,2,3,4]
         s.c = ?a.ord
         s.buff = "012345\377"
         assert_equal([0,1,2,3,4], s.num)
         assert_equal(?a.ord, s.c)
         assert_equal([?0.ord,?1.ord,?2.ord,?3.ord,?4.ord,?5.ord,?\377.ord], s.buff)
-      ensure
-        Fiddle.free s.to_ptr
       end
     end
 
     def test_gettimeofday()
       if( defined?(LIBC.gettimeofday) )
-        timeval = LIBC::Timeval.malloc()
-        begin
-          timezone = LIBC::Timezone.malloc()
-          begin
+        LIBC::Timeval.malloc(Fiddle::RUBY_FREE) do |timeval|
+          LIBC::Timezone.malloc(Fiddle::RUBY_FREE) do |timezone|
             LIBC.gettimeofday(timeval, timezone)
-          ensure
-            Fiddle.free timezone.to_ptr
           end
           cur = Time.now()
           assert(cur.to_i - 2 <= timeval.tv_sec && timeval.tv_sec <= cur.to_i)
-        ensure
-          Fiddle.free timeval.to_ptr
         end
       end
     end

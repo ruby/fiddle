@@ -4,7 +4,7 @@ require 'fiddle/value'
 require 'fiddle/pack'
 
 module Fiddle
-  # C struct shell
+  # A base class for objects representing a C structure
   class CStruct
     # accessor to Fiddle::CStructEntity
     def CStruct.entity_class
@@ -12,7 +12,7 @@ module Fiddle
     end
   end
 
-  # C union shell
+  # A base class for objects representing a C union
   class CUnion
     # accessor to Fiddle::CUnionEntity
     def CUnion.entity_class
@@ -62,7 +62,7 @@ module Fiddle
     # Fiddle::Importer#struct and Fiddle::Importer#union wrap this functionality in an
     # easy-to-use manner.
     #
-    # Example:
+    # Examples:
     #
     #   require 'fiddle/struct'
     #   require 'fiddle/cparser'
@@ -73,6 +73,17 @@ module Fiddle
     #
     #   MyStruct = Fiddle::CStructBuilder.create(Fiddle::CUnion, types, members)
     #
+    #   MyStruct.malloc(Fiddle::RUBY_FREE) do |obj|
+    #     ...
+    #   end
+    #
+    #   obj = MyStruct.malloc(Fiddle::RUBY_FREE)
+    #   begin
+    #     ...
+    #   ensure
+    #     obj.call_free
+    #   end
+    #
     #   obj = MyStruct.malloc
     #   begin
     #     ...
@@ -82,8 +93,12 @@ module Fiddle
     #
     def create(klass, types, members)
       new_class = Class.new(klass){
-        define_method(:initialize){|addr|
-          @entity = klass.entity_class.new(addr, types)
+        define_method(:initialize){|addr, func = nil|
+          if addr.is_a?(self.class.entity_class)
+            @entity = addr
+          else
+            @entity = self.class.entity_class.new(addr, types, func)
+          end
           @entity.assign_names(members)
         }
         define_method(:[]) { |*args| @entity.send(:[], *args) }
@@ -94,23 +109,24 @@ module Fiddle
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
+        size = klass.entity_class.size(types)
+        define_singleton_method(:size) { size }
+        define_singleton_method(:malloc) do |func=nil|
+          if block_given?
+            entity_class.malloc(types, func, size) do |entity|
+              yield new(entity)
+            end
+          else
+            new(entity_class.malloc(types, func, size))
+          end
+        end
       }
-      size = klass.entity_class.size(types)
-      new_class.module_eval(<<-EOS, __FILE__, __LINE__+1)
-        def new_class.size()
-          #{size}
-        end
-        def new_class.malloc()
-          addr = Fiddle.malloc(#{size})
-          new(addr)
-        end
-      EOS
       return new_class
     end
     module_function :create
   end
 
-  # A C struct wrapper
+  # A pointer to a C structure
   class CStructEntity < Fiddle::Pointer
     include PackInfo
     include ValueUtil
@@ -118,9 +134,17 @@ module Fiddle
     # Allocates a C struct with the +types+ provided.
     #
     # See Fiddle::Pointer.malloc for memory management issues.
-    def CStructEntity.malloc(types, func = nil)
-      addr = Fiddle.malloc(CStructEntity.size(types))
-      CStructEntity.new(addr, types, func)
+    def CStructEntity.malloc(types, func = nil, size = size(types), &block)
+      if block_given?
+        super(size, func) do |struct|
+          struct.set_ctypes types
+          yield struct
+        end
+      else
+        struct = super(size, func)
+        struct.set_ctypes types
+        struct
+      end
     end
 
     # Returns the offset for the packed sizes for the given +types+.
@@ -152,6 +176,9 @@ module Fiddle
     #
     # See also Fiddle::Pointer.new
     def initialize(addr, types, func = nil)
+      if func && addr.is_a?(Pointer) && addr.free
+        raise ArgumentError, 'free function specified on both underlying struct Pointer and when creating a CStructEntity - who do you want to free this?'
+      end
       set_ctypes(types)
       super(addr, @size, func)
     end
@@ -261,22 +288,15 @@ module Fiddle
       end
     end
 
+    undef_method :size=
     def to_s() # :nodoc:
       super(@size)
     end
   end
 
-  # A C union wrapper
+  # A pointer to a C union
   class CUnionEntity < CStructEntity
     include PackInfo
-
-    # Allocates a C union the +types+ provided.
-    #
-    # See Fiddle::Pointer.malloc for memory management issues.
-    def CUnionEntity.malloc(types, func=nil)
-      addr = Fiddle.malloc(CUnionEntity.size(types))
-      CUnionEntity.new(addr, types, func)
-    end
 
     # Returns the size needed for the union with the given +types+.
     #
@@ -300,4 +320,3 @@ module Fiddle
     end
   end
 end
-
