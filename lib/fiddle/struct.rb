@@ -109,6 +109,8 @@ module Fiddle
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
+        size = klass.entity_class.size(types)
+        define_singleton_method(:size) { size }
         define_singleton_method(:malloc) do |func=nil|
           if block_given?
             entity_class.malloc(types, func, size) do |entity|
@@ -119,13 +121,6 @@ module Fiddle
           end
         end
       }
-      size = klass.entity_class.size(types)
-      # we use eval here make size into a literal, for performance
-      new_class.module_eval(<<-EOS, __FILE__, __LINE__+1)
-        def new_class.size()
-          #{size}
-        end
-      EOS
       return new_class
     end
     module_function :create
