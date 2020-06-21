@@ -144,16 +144,14 @@ module Fiddle
     #
     # See Fiddle::Pointer.malloc for memory management issues.
     def CStructEntity.malloc(types, func = nil, size = size(types), &block)
-      struct = super(size, func, &nil)
-      struct.set_ctypes types
       if block_given?
-        raise ArgumentError, 'a free function must be supplied to Fiddle::CStructEntity.malloc when it is called with a block' unless func
-        begin
+        super(size, func) do |struct|
+          struct.set_ctypes types
           yield struct
-        ensure
-          struct.call_free
         end
       else
+        struct = super(size, func)
+        struct.set_ctypes types
         struct
       end
     end
@@ -341,4 +339,3 @@ module Fiddle
     end
   end
 end
-
