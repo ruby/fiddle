@@ -1,17 +1,26 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  - push
+  - pull_request
 
 jobs:
-  CI:
+  test:
     name: >-
       ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu, macos, windows ]
-        ruby: [ 2.5, 2.6, 2.7, head ]
+        os:
+          - ubuntu
+          - macos
+          - windows
+        ruby:
+          - 2.5
+          - 2.6
+          - 2.7
+          - head
         include:
           - { os: windows , ruby: mingw }
           # - { os: windows , ruby: mswin } this fails with missing libffi
