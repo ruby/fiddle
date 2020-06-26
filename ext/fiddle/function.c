@@ -113,6 +113,7 @@ initialize(int argc, VALUE argv[], VALUE self)
     Check_Type(args, T_ARRAY);
     len = RARRAY_LENINT(args);
     Check_Max_Args("args", len);
+    /* freeze to prevent inconsistency at calling #to_int later */
     args = rb_ary_subseq(args, 0, len);
     for (i = 0; i < RARRAY_LEN(args); i++) {
         VALUE a = RARRAY_AREF(args, i);
