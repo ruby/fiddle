@@ -113,14 +113,14 @@ initialize(int argc, VALUE argv[], VALUE self)
     Check_Type(args, T_ARRAY);
     len = RARRAY_LENINT(args);
     Check_Max_Args("args", len);
-    ary = rb_ary_subseq(args, 0, len);
+    args = rb_ary_subseq(args, 0, len);
     for (i = 0; i < RARRAY_LEN(args); i++) {
         VALUE a = RARRAY_AREF(args, i);
 	int type = NUM2INT(a);
 	(void)INT2FFI_TYPE(type); /* raise */
-	if (INT2FIX(type) != a) rb_ary_store(ary, i, INT2FIX(type));
+	if (INT2FIX(type) != a) rb_ary_store(args, i, INT2FIX(type));
     }
-    OBJ_FREEZE(ary);
+    OBJ_FREEZE(args);
 
     rb_iv_set(self, "@ptr", ptr);
     rb_iv_set(self, "@args", args);
