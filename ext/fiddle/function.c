@@ -93,7 +93,7 @@ initialize(int argc, VALUE argv[], VALUE self)
     ffi_cif * cif;
     ffi_type **arg_types, *rtype;
     ffi_status result;
-    VALUE ptr, args, ret_type, abi, kwds, ary;
+    VALUE ptr, args, ret_type, abi, kwds;
     int i, len;
     int nabi;
     void *cfunc;
