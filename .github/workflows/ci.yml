@@ -23,7 +23,7 @@ jobs:
           - head
         include:
           - { os: windows , ruby: mingw }
-          # - { os: windows , ruby: mswin } this fails with missing libffi
+          - { os: windows , ruby: mswin }
         exclude:
           - { os: windows , ruby: head }
 
@@ -36,18 +36,12 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           mingw: _upgrade_ libffi
 
-      - name: bundle install
-        run:  bundle install
+      - run: bundle install
 
-      - name: rake compile
-        run:  rake compile
+      - run: rake compile
 
-      - name: rake install
-        run:  rake install
+      - run: rake install
 
-      - name: rake test
+      - run: rake test
         env:
           RUBYOPT: --disable=gems
-        run:  |
-          ruby -v
-          rake test
