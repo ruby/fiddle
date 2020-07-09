@@ -179,6 +179,15 @@ module Fiddle
       assert_equal [TYPE_VOIDP, TYPE_INT, TYPE_INT], args
     end
 
+    def test_signature_variadic_arguments
+      assert_equal([
+                     "printf",
+                     TYPE_INT,
+                     [TYPE_VOIDP, TYPE_VARIADIC],
+                   ],
+                   parse_signature('int printf(const char *format, ...)'))
+    end
+
     def test_signature_return_pointer
       func, ret, args = parse_signature('void* malloc(size_t)')
       assert_equal 'malloc', func

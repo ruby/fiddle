@@ -172,6 +172,8 @@ module Fiddle
         return TYPE_UINTPTR_T
       when /\*/, /\[[\s\d]*\]/
         return TYPE_VOIDP
+      when "..."
+        return TYPE_VARIADIC
       else
         ty = ty.split(' ', 2)[0]
         if( tymap[ty] )
@@ -186,7 +188,7 @@ module Fiddle
 
     def split_arguments(arguments, sep=',')
       return [] if arguments.strip == 'void'
-      arguments.scan(/([\w\*\s]+\(\*\w*\)\(.*?\)|[\w\*\s\[\]]+)(?:#{sep}\s*|$)/).collect {|m| m[0]}
+      arguments.scan(/([\w\*\s]+\(\*\w*\)\(.*?\)|[\w\*\s\[\]]+|\.\.\.)(?:#{sep}\s*|$)/).collect {|m| m[0]}
     end
 
     def compact(signature)
