@@ -622,7 +622,7 @@ rb_fiddle_ptr_aref(int argc, VALUE argv[], VALUE self)
     struct ptr_data *data;
 
     TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, data);
-    if (!data->ptr) rb_raise(rb_eFiddleError, "NULL pointer dereference");
+    if (!data->ptr) rb_raise(rb_eFiddleDLError, "NULL pointer dereference");
     switch( rb_scan_args(argc, argv, "11", &arg0, &arg1) ){
       case 1:
 	offset = NUM2ULONG(arg0);
@@ -660,7 +660,7 @@ rb_fiddle_ptr_aset(int argc, VALUE argv[], VALUE self)
     struct ptr_data *data;
 
     TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, data);
-    if (!data->ptr) rb_raise(rb_eFiddleError, "NULL pointer dereference");
+    if (!data->ptr) rb_raise(rb_eFiddleDLError, "NULL pointer dereference");
     switch( rb_scan_args(argc, argv, "21", &arg0, &arg1, &arg2) ){
       case 2:
 	offset = NUM2ULONG(arg0);
@@ -741,7 +741,7 @@ rb_fiddle_ptr_s_to_ptr(VALUE self, VALUE val)
 	    wrap = 0;
 	}
 	else{
-	    rb_raise(rb_eFiddleError, "to_ptr should return a Fiddle::Pointer object");
+	    rb_raise(rb_eFiddleDLError, "to_ptr should return a Fiddle::Pointer object");
 	}
     }
     else{

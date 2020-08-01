@@ -1,7 +1,7 @@
 #include <fiddle.h>
 
 VALUE mFiddle;
-VALUE rb_eFiddleError;
+VALUE rb_eFiddleDLError;
 
 void Init_fiddle_pointer(void);
 void Init_fiddle_pinned(void);
@@ -138,7 +138,7 @@ Init_fiddle(void)
      *
      * standard dynamic load exception
      */
-    rb_eFiddleError = rb_define_class_under(mFiddle, "DLError", rb_eStandardError);
+    rb_eFiddleDLError = rb_define_class_under(mFiddle, "DLError", rb_eStandardError);
 
     /* Document-const: TYPE_VOID
      *
