@@ -4,6 +4,7 @@ VALUE mFiddle;
 VALUE rb_eFiddleError;
 
 void Init_fiddle_pointer(void);
+void Init_fiddle_pinned(void);
 
 /*
  * call-seq: Fiddle.malloc(size)
@@ -439,5 +440,6 @@ Init_fiddle(void)
     Init_fiddle_closure();
     Init_fiddle_handle();
     Init_fiddle_pointer();
+    Init_fiddle_pinned();
 }
 /* vim: set noet sws=4 sw=4: */
