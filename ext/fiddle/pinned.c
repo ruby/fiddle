@@ -102,6 +102,8 @@ cleared_p(VALUE self)
     }
 }
 
+extern VALUE rb_eFiddleError;
+
 void
 Init_fiddle_pinned(void)
 {
@@ -117,5 +119,5 @@ Init_fiddle_pinned(void)
      *
      * Cleared reference exception
      */
-    rb_eFiddleClearedReferenceError = rb_define_class_under(mFiddle, "ClearedReferenceError", rb_eStandardError);
+    rb_eFiddleClearedReferenceError = rb_define_class_under(mFiddle, "ClearedReferenceError", rb_eFiddleError);
 }

@@ -2,6 +2,7 @@
 
 VALUE mFiddle;
 VALUE rb_eFiddleDLError;
+VALUE rb_eFiddleError;
 
 void Init_fiddle_pointer(void);
 void Init_fiddle_pinned(void);
@@ -134,11 +135,18 @@ Init_fiddle(void)
     mFiddle = rb_define_module("Fiddle");
 
     /*
+     * Document-class: Fiddle::Error
+     *
+     * Generic error class for Fiddle
+     */
+    rb_eFiddleError = rb_define_class_under(mFiddle, "Error", rb_eStandardError);
+
+    /*
      * Document-class: Fiddle::DLError
      *
      * standard dynamic load exception
      */
-    rb_eFiddleDLError = rb_define_class_under(mFiddle, "DLError", rb_eStandardError);
+    rb_eFiddleDLError = rb_define_class_under(mFiddle, "DLError", rb_eFiddleError);
 
     /* Document-const: TYPE_VOID
      *
