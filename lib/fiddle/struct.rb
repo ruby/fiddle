@@ -390,14 +390,7 @@ module Fiddle
       0
     end
 
-    # Allocates a C union the +types+ provided.
-    #
-    # When the instance is garbage collected, the C function +func+ is called.
-    def CUnionEntity.malloc(types, func=nil)
-      addr = Fiddle.malloc(CUnionEntity.size(types))
-      CUnionEntity.new(addr, types, func)
-    end
-
+    # Returns the size needed for the union with the given +types+.
     #
     #   Fiddle::CUnionEntity.size(
     #     [ Fiddle::TYPE_DOUBLE,

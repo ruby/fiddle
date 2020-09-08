@@ -80,9 +80,6 @@ module Fiddle
     def test_struct_memory_access()
       # check memory operations performed directly on struct
       Fiddle::Importer.struct(['int id']).malloc(Fiddle::RUBY_FREE) do |my_struct|
-        my_struct['id'] = 1
-        assert_equal 1, my_struct.id
-
         my_struct[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
         assert_equal 0x01010101, my_struct.id
 
@@ -102,18 +99,6 @@ module Fiddle
         ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
         assert_equal 0x01010101, struct.x
       end
-    end
-
-    def test_struct_ptr_array_subscript_multiarg()
-      # check memory operations performed on struct#to_ptr
-      struct = Fiddle::Importer.struct([ 'int x' ]).malloc
-      ptr = struct.to_ptr
-
-      struct.x = 0x02020202
-      assert_equal("\x02".b * Fiddle::SIZEOF_INT, ptr[0, Fiddle::SIZEOF_INT])
-
-      ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
-      assert_equal 0x01010101, struct.x
     end
 
     def test_malloc()
@@ -193,15 +178,6 @@ module Fiddle
                     instance.to_ptr[0, 3 * Fiddle::SIZEOF_INT]
         assert_raise(IndexError) { instance.stages[-1] = 5 }
         assert_raise(IndexError) { instance.stages[3] = 5 }
-      end
-    end
-
-    def test_struct_array_subscript_multiarg()
-      Fiddle::Importer.struct([ 'int x' ]).malloc(Fiddle::RUBY_FREE) do |struct|
-        assert_equal("\x00".b * Fiddle::SIZEOF_INT, struct.to_ptr[0, Fiddle::SIZEOF_INT])
-
-        struct.to_ptr[0, Fiddle::SIZEOF_INT] = "\x01".b * Fiddle::SIZEOF_INT
-        assert_equal 16843009, struct.x
       end
     end
 
