@@ -223,7 +223,6 @@ module Fiddle
       if func && addr.is_a?(Pointer) && addr.free
         raise ArgumentError, 'free function specified on both underlying struct Pointer and when creating a CStructEntity - who do you want to free this?'
       end
-      @addr = addr
       set_ctypes(types)
       super(addr, @size, func)
     end
@@ -240,10 +239,10 @@ module Fiddle
           entity_class = CStructBuilder.create(CStruct, ty[0], members[idx][1])
           @nested_structs[member] ||= if ty[1]
             NestedStructArray.new(ty[1].times.map do |i|
-              entity_class.new(@addr + @offset[idx] + i * (ty[2] || CStructEntity).size(ty[0]))
+              entity_class.new(to_i + @offset[idx] + i * (ty[2] || CStructEntity).size(ty[0]))
             end)
           else
-            entity_class.new(@addr + @offset[idx])
+            entity_class.new(to_i + @offset[idx])
           end
         end
       end
