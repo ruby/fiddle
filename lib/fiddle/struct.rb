@@ -50,7 +50,7 @@ module Fiddle
   # Wrapper for arrays of structs within a struct
   class NestedStructArray < Array
     def []=(index, value)
-      self[index].to_ptr.memcpy(value.to_ptr)
+      Fiddle.memcpy(self[index], value)
     end
   end
 
@@ -353,10 +353,10 @@ module Fiddle
       if @nested_structs[name]
         if @nested_structs[name].kind_of?(Array)
           val.size.times do |i|
-            @nested_structs[name][i].to_ptr.memcpy(val[i].to_ptr)
+            Fiddle.memcpy(@nested_structs[name][i], val[i])
           end
         else
-          @nested_structs[name].to_ptr.memcpy(val.to_ptr)
+          Fiddle.memcpy(@nested_structs[name], val)
         end
         return
       end
