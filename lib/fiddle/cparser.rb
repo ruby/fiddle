@@ -35,7 +35,7 @@ module Fiddle
     def parse_struct_signature(signature, tymap=nil)
       if signature.is_a?(String)
         signature = split_arguments(signature, /[,;]/)
-      elsif signature.kind_of?(Hash)
+      elsif signature.is_a?(Hash)
         signature = [signature]
       elsif signature.respond_to?(:types) && signature.respond_to?(:members)
         return signature.types, signature.members, signature.entity_class

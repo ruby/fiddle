@@ -117,7 +117,7 @@ module Fiddle
         define_singleton_method(:members) { members }
         define_singleton_method(:offset_of) { |mbr| klass.entity_class.compute_offset(types, members, mbr) }
         members.each{|name|
-          name = name[0] if name.kind_of?(Array) # name is a nested struct
+          name = name[0] if name.is_a?(Array) # name is a nested struct
           next if method_defined?(name)
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
@@ -147,7 +147,7 @@ module Fiddle
     def CStructEntity.alignment(types)
       max = 1
       types.each do |type, count = 1|
-        if type.kind_of?(Array) # nested struct
+        if type.is_a?(Array) # nested struct
           n = CStructEntity.alignment(type)
         else
           n = ALIGN_MAP[type]
@@ -159,7 +159,7 @@ module Fiddle
 
     def CStructEntity.compute_offset(types, members, mbr)
       members.each_with_index do |m, idx|
-        if (m.kind_of?(Array) ? m[0] : m) == mbr.to_s
+        if (m.is_a?(Array) ? m[0] : m) == mbr.to_s
           return idx == 0 ? 0 : CStructEntity.size(types[0...idx])
         end
       end
@@ -195,7 +195,7 @@ module Fiddle
       max_align = types.map { |type, count = 1, klass = CStructEntity|
         last_offset = offset
 
-        if type.kind_of?(Array) # type is a nested array representing a nested struct
+        if type.is_a?(Array) # type is a nested array representing a nested struct
           align = klass.alignment(type)
           total_size = klass.size(type)
           offset = PackInfo.align(last_offset, align) +
@@ -227,13 +227,13 @@ module Fiddle
 
     # Set the names of the +members+ in this C struct
     def assign_names(members)
-      @members = members.map { |member| member.kind_of?(Array) ? member[0] : member }
+      @members = members.map { |member| member.is_a?(Array) ? member[0] : member }
 
       @nested_structs = {}
       @ctypes.each_with_index do |ty, idx|
-        if ty.kind_of?(Array) && ty[0].kind_of?(Array)
+        if ty.is_a?(Array) && ty[0].is_a?(Array)
           member = members[idx]
-          member = member[0] if member.kind_of?(Array)
+          member = member[0] if member.is_a?(Array)
           entity_class = CStructBuilder.create(CStruct, ty[0], members[idx][1])
           @nested_structs[member] ||= if ty[1]
             NestedStructArray.new(ty[1].times.map do |i|
@@ -254,7 +254,7 @@ module Fiddle
 
       max_align = types.map { |type, count = 1, klass = CStructEntity|
         orig_offset = offset
-        if type.kind_of?(Array) # type is a nested array representing a nested struct
+        if type.is_a?(Array) # type is a nested array representing a nested struct
           align = klass.alignment(type)
           total_size = klass.size(type)
           offset = PackInfo.align(orig_offset, align)
@@ -299,7 +299,7 @@ module Fiddle
       end
       ty = @ctypes[idx]
       if( ty.is_a?(Array) )
-        if ty.first.kind_of?(Array)
+        if ty.first.is_a?(Array)
           return @nested_structs[name]
         else
           r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
@@ -349,7 +349,7 @@ module Fiddle
         raise(ArgumentError, "no such member: #{name}")
       end
       if @nested_structs[name]
-        if @nested_structs[name].kind_of?(Array)
+        if @nested_structs[name].is_a?(Array)
           val.size.times do |i|
             Fiddle.memcpy(@nested_structs[name][i], val[i])
           end
@@ -396,7 +396,7 @@ module Fiddle
     #       Fiddle::TYPE_VOIDP ]) #=> 8
     def CUnionEntity.size(types)
       types.map { |type, count = 1, klass = CStructEntity|
-        if type.kind_of?(Array) # type is a nested array representing a nested struct
+        if type.is_a?(Array) # type is a nested array representing a nested struct
           klass.size(type) * (count || 1)
         else
           PackInfo::SIZE_MAP[type] * count
