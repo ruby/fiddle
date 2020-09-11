@@ -226,22 +226,33 @@ module Fiddle
 
     # Set the names of the +members+ in this C struct
     def assign_names(members)
-      @members = members.map { |member| member.is_a?(Array) ? member[0] : member }
-
+      @members = []
       @nested_structs = {}
-      @ctypes.each_with_index do |ty, idx|
-        if ty.is_a?(Array) && ty[0].is_a?(Array)
-          member = members[idx]
-          member = member[0] if member.is_a?(Array)
-          entity_class = CStructBuilder.create(CStruct, ty[0], members[idx][1])
-          @nested_structs[member] ||= if ty[1]
-            NestedStructArray.new(ty[1].times.map do |i|
-              entity_class.new(to_i + @offset[idx] + i * (ty[2] || CStructEntity).size(ty[0]))
-            end)
+      members.each_with_index do |member, index|
+        if member.is_a?(Array) # nested struct
+          member_name = member[0]
+          struct_member_names = member[1]
+          type = @ctypes[index]
+          struct_types = type[0]
+          count = type[1] || 1
+          entity_class = type[2] || CStructEntity
+          struct_class = CStructBuilder.create(CStruct,
+                                               struct_types,
+                                               struct_member_names)
+          if count == 1
+            struct = struct_class.new(to_i + @offset[index])
           else
-            entity_class.new(to_i + @offset[idx])
+            entity_size = entity_class.size(struct_types)
+            structs = count.times.map do |i|
+              struct_class.new(to_i + @offset[index] + i * entity_size)
+            end
+            struct = NestedStructArray.new(structs)
           end
+          @nested_structs[member_name] = struct
+        else
+          member_name = member
         end
+        @members << member_name
       end
     end
 
