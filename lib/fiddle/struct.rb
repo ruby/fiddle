@@ -197,14 +197,13 @@ module Fiddle
 
         if type.is_a?(Array) # type is a nested array representing a nested struct
           align = klass.alignment(type)
-          total_size = klass.size(type)
-          offset = PackInfo.align(last_offset, align) +
-                  (total_size * count)
+          type_size = klass.size(type)
         else
           align = PackInfo::ALIGN_MAP[type]
-          offset = PackInfo.align(last_offset, align) +
-                   (PackInfo::SIZE_MAP[type] * count)
+          type_size = PackInfo::SIZE_MAP[type]
         end
+        offset = PackInfo.align(last_offset, align) +
+                 (type_size * count)
 
         align
       }.max
@@ -256,16 +255,14 @@ module Fiddle
         orig_offset = offset
         if type.is_a?(Array) # type is a nested array representing a nested struct
           align = klass.alignment(type)
-          total_size = klass.size(type)
-          offset = PackInfo.align(orig_offset, align)
-          @offset << offset
-          offset += (total_size * count)
+          type_size = klass.size(type)
         else
           align = ALIGN_MAP[type]
-          offset = PackInfo.align(orig_offset, align)
-          @offset << offset
-          offset += (SIZE_MAP[type] * count)
+          type_size = SIZE_MAP[type]
         end
+        offset = PackInfo.align(orig_offset, align)
+        @offset << offset
+        offset += (type_size * count)
 
         align
       }.max
