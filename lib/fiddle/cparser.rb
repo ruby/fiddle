@@ -47,8 +47,10 @@ module Fiddle
         case msig
         when Hash
           msig.each do |structure_name, struct_signature|
+            structure_name = structure_name.to_s if structure_name.is_a?(Symbol)
+            structure_name = compact(structure_name)
             structure_count = nil
-            if structure_name.to_s =~ /^([\w\*\s]+)\[(\d+)\]$/
+            if structure_name =~ /^([\w\*\s]+)\[(\d+)\]$/
               structure_count = $2.to_i
               structure_name = $1
             end
@@ -58,7 +60,7 @@ module Fiddle
             structure_klass   = structure_parsed[2]
             ty = [structure_types, structure_count]
             ty << structure_klass if structure_klass
-            mems.push([structure_name.to_s, structure_members])
+            mems.push([structure_name, structure_members])
             tys.push(ty)
           end
         when /^[\w\*\s]+[\*\s](\w+)$/
