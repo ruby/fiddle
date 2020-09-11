@@ -199,7 +199,7 @@ module Fiddle
           align = klass.alignment(type)
           total_size = klass.size(type)
           offset = PackInfo.align(last_offset, align) +
-                  (total_size * (count || 1))
+                  (total_size * count)
         else
           align = PackInfo::ALIGN_MAP[type]
           offset = PackInfo.align(last_offset, align) +
@@ -259,12 +259,12 @@ module Fiddle
           total_size = klass.size(type)
           offset = PackInfo.align(orig_offset, align)
           @offset << offset
-          offset += (total_size * (count || 1))
+          offset += (total_size * count)
         else
           align = ALIGN_MAP[type]
           offset = PackInfo.align(orig_offset, align)
           @offset << offset
-          offset += (SIZE_MAP[type] * (count || 1))
+          offset += (SIZE_MAP[type] * count)
         end
 
         align
@@ -397,7 +397,7 @@ module Fiddle
     def CUnionEntity.size(types)
       types.map { |type, count = 1, klass = CStructEntity|
         if type.is_a?(Array) # type is a nested array representing a nested struct
-          klass.size(type) * (count || 1)
+          klass.size(type) * count
         else
           PackInfo::SIZE_MAP[type] * count
         end

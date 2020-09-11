@@ -58,8 +58,12 @@ module Fiddle
             structure_types   = structure_parsed[0]
             structure_members = structure_parsed[1]
             structure_klass   = structure_parsed[2]
-            ty = [structure_types, structure_count]
-            ty << structure_klass if structure_klass
+            ty = [structure_types]
+            ty << structure_count if structure_count
+            if structure_klass
+              ty[2] = structure_klass
+              ty[1] ||= 1
+            end
             mems.push([structure_name, structure_members])
             tys.push(ty)
           end
