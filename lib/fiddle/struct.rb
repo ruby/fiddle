@@ -117,10 +117,8 @@ module Fiddle
         define_singleton_method(:members) { members }
         define_singleton_method(:offset_of) { |mbr| klass.entity_class.compute_offset(types, members, mbr) }
         members.each{|name|
-          if name.kind_of?(Array) # name is a nested struct
-            next if method_defined?(name[0])
-            name = name[0]
-          end
+          name = name[0] if name.kind_of?(Array) # name is a nested struct
+          next if method_defined?(name)
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
