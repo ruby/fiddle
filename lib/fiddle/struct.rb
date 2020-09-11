@@ -148,7 +148,7 @@ module Fiddle
       max = 1
       types.each do |type, count = 1|
         if type.is_a?(Array) # nested struct
-          n = CStructEntity.alignment(type)
+          n = alignment(type)
         else
           n = ALIGN_MAP[type]
         end
@@ -160,7 +160,7 @@ module Fiddle
     def CStructEntity.compute_offset(types, members, mbr)
       members.each_with_index do |m, idx|
         if (m.is_a?(Array) ? m[0] : m) == mbr.to_s
-          return idx == 0 ? 0 : CStructEntity.size(types[0...idx])
+          return idx == 0 ? 0 : size(types[0...idx])
         end
       end
       raise(ArgumentError, "no such member: #{mbr}")
