@@ -146,9 +146,9 @@ module Fiddle
 
     def CStructEntity.alignment(types)
       max = 1
-      types.each do |type, count = 1|
+      types.each do |type, count = 1, klass = CStructEntity|
         if type.is_a?(Array) # nested struct
-          n = alignment(type)
+          n = klass.alignment(type)
         else
           n = ALIGN_MAP[type]
         end
