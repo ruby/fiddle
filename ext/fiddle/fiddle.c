@@ -53,94 +53,6 @@ rb_fiddle_free(VALUE self, VALUE addr)
     return Qnil;
 }
 
-static void
-rb_fiddle_extract_address(VALUE object, void **address, long *size)
-{
-    ID id_to_ptr;
-    ID id_to_i;
-    ID id_size;
-    CONST_ID(id_to_ptr, "to_ptr");
-    CONST_ID(id_to_i, "to_i");
-    CONST_ID(id_size, "size");
-
-    if (RB_TEST(rb_respond_to(object, id_to_ptr))) {
-        object = rb_funcall(object, id_to_ptr, 0);
-    }
-    *size = -1;
-    if (!RB_INTEGER_TYPE_P(object)) {
-        if (RB_TEST(rb_respond_to(object, id_size))) {
-            *size = NUM2LONG(rb_funcall(object, id_size, 0));
-        }
-        object = rb_funcall(object, id_to_i, 0);
-    }
-    *address = NUM2PTR(object);
-
-    if (!*address) {
-        rb_raise(rb_eArgError,
-                 "must not NULL pointer: %"PRIsVALUE,
-                 object);
-    }
-}
-
-/*
- * call-seq:
- *
- *   Fiddle.memcpy(dest, src)    => number
- *   Fiddle.memcpy(dest, src, n) => number
- *
- * Copies the contents of the given +src+ pointer like object into the
- * given +dest+ pointer like object. If +n+ is specified, +n+ bytes
- * data of +src+ is copied to +dest+. If +n+ isn't specified, it will
- * copy up to the allocated size of the given +src+ pointer like
- * object or the allocated size of the given +src+ pointer like
- * object, whichever is smaller (to prevent overflow).
- *
- * Returns the number of bytes actually copied.
- */
-static VALUE
-rb_fiddle_memcpy(int argc, VALUE *argv, VALUE self)
-{
-    VALUE dest;
-    VALUE src;
-    VALUE n;
-
-    rb_scan_args(argc, argv, "21", &dest, &src, &n);
-
-    void *dest_address = NULL;
-    long dest_size = -1;
-    void *src_address = NULL;
-    long src_size = -1;
-    rb_fiddle_extract_address(dest, &dest_address, &dest_size);
-    rb_fiddle_extract_address(src, &src_address, &src_size);
-
-    size_t memcpy_size = 0;
-    if (NIL_P(n)) {
-        if (dest_size < 0 && src_size < 0) {
-            rb_raise(rb_eArgError,
-                     "must specify copy size for raw pointers: "
-                     "dest: %"PRIsVALUE ", src: %" PRIsVALUE,
-                     dest, src);
-        }
-        if (dest_size < 0) {
-            memcpy_size = src_size;
-        }
-        else if (src_size < 0) {
-            memcpy_size = src_size;
-        }
-        else
-        {
-            memcpy_size = dest_size > src_size ? src_size : dest_size;
-        }
-    }
-    else {
-        memcpy_size = NUM2SIZET(n);
-    }
-
-    memcpy(dest_address, src_address, memcpy_size);
-
-    return SIZET2NUM(memcpy_size);
-}
-
 /*
  * call-seq: Fiddle.dlunwrap(addr)
  *
@@ -545,7 +457,6 @@ Init_fiddle(void)
     rb_define_module_function(mFiddle, "malloc", rb_fiddle_malloc, 1);
     rb_define_module_function(mFiddle, "realloc", rb_fiddle_realloc, 2);
     rb_define_module_function(mFiddle, "free", rb_fiddle_free, 1);
-    rb_define_module_function(mFiddle, "memcpy", rb_fiddle_memcpy, -1);
 
     Init_fiddle_function();
     Init_fiddle_closure();
