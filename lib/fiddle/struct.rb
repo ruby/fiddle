@@ -321,11 +321,10 @@ module Fiddle
       when Array
         case ty[0]
         when TYPE_VOIDP
-          val = val.collect{|v| v = Pointer.new(v); v.size = SIZEOF_VOIDP; v }
+          val = val.collect{|v| Pointer.new(v) }
         end
       when TYPE_VOIDP
         val = Pointer.new(val[0])
-        val.size = SIZEOF_VOIDP
       else
         val = val[0]
       end

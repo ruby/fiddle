@@ -42,7 +42,7 @@ module Fiddle
           position: [ "float x", "float y", "float z" ],
           texcoord: [ "float u", "float v" ]
         },
-        object:  [ "int id" ]
+        object: [ "int id", "void *user_data" ],
       },
       "int id"
     ]
@@ -185,7 +185,16 @@ module Fiddle
       position_struct = Fiddle::Importer.struct([ 'float x', 'float y', 'float z' ])
       texcoord_struct = Fiddle::Importer.struct([ 'float u', 'float v' ])
       vertex_struct   = Fiddle::Importer.struct(position: position_struct, texcoord: texcoord_struct)
-      mesh_struct     = Fiddle::Importer.struct([{"vertices[2]" => vertex_struct, object: [ "int id" ]}, "int id"])
+      mesh_struct     = Fiddle::Importer.struct([
+                                                  {
+                                                    "vertices[2]" => vertex_struct,
+                                                    object: [
+                                                      "int id",
+                                                      "void *user_data",
+                                                    ],
+                                                  },
+                                                  "int id",
+                                                ])
       assert_equal LIBC::StructNestedStruct.size, mesh_struct.size
 
 
@@ -218,6 +227,8 @@ module Fiddle
       s.vertices[1].texcoord.u = 9
       s.vertices[1].texcoord.v = 10
       s.object.id              = 100
+      user_data = Fiddle::Pointer.malloc(24)
+      s.object.user_data       = user_data
       s.id                     = 101
       assert_equal(1,   s.vertices[0].position.x)
       assert_equal(2,   s.vertices[0].position.y)
@@ -230,6 +241,7 @@ module Fiddle
       assert_equal(9,   s.vertices[1].texcoord.u)
       assert_equal(10,  s.vertices[1].texcoord.v)
       assert_equal(100, s.object.id)
+      assert_equal(user_data, s.object.user_data)
       assert_equal(101, s.id)
     end
 
@@ -239,12 +251,6 @@ module Fiddle
       s.keyboard.key   = 101
       assert_equal(100, s.mouse.button)
       refute_equal(  0, s.mouse.x)
-    end
-
-    def test_size_of_struct_accessor_returning_void_pointer()
-      s = Fiddle::Importer.struct(['void *x', 'void *y[2]']).malloc
-      assert_equal Fiddle::SIZEOF_VOIDP, s['x'].size
-      assert_equal Fiddle::SIZEOF_VOIDP, s['y'][0].size
     end
 
     def test_struct_size_and_offset_of_nested_unions()
