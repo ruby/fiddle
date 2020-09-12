@@ -13,4 +13,5 @@ class TestFiddle < Fiddle::TestCase
       refute Fiddle::WINDOWS, "Fiddle::WINDOWS should be 'false' on non-Windows platforms"
     end
   end
+
 end if defined?(Fiddle)

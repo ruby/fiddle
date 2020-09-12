@@ -316,7 +316,9 @@ module Fiddle
           type_size = SIZE_MAP[type]
         end
         offset = PackInfo.align(orig_offset, align)
+
         @offset << offset
+
         offset += (type_size * count)
 
         align
@@ -362,7 +364,7 @@ module Fiddle
       when Array
         case ty[0]
         when TYPE_VOIDP
-          val = val.collect{|v| Pointer.new(v) }
+          val = val.collect{|v| Pointer.new(v)}
         end
       when TYPE_VOIDP
         val = Pointer.new(val[0])
