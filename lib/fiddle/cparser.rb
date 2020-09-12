@@ -52,8 +52,7 @@ module Fiddle
               struct_count = $2.to_i
               struct_name = $1
             end
-            if struct_signature.respond_to?(:types) &&
-               struct_signature.respond_to?(:members)
+            if struct_signature.respond_to?(:entity_class)
               struct_type = struct_signature
             else
               parsed_struct = parse_struct_signature(struct_signature, tymap)

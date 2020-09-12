@@ -84,7 +84,7 @@ module Fiddle
     def initialize(ptr, type, initial_values)
       @ptr = ptr
       @type = type
-      @is_struct = @type.respond_to?(:alignment)
+      @is_struct = @type.respond_to?(:entity_class)
       if @is_struct
         super(initial_values)
       else
@@ -206,7 +206,7 @@ module Fiddle
     def CStructEntity.alignment(types)
       max = 1
       types.each do |type, count = 1|
-        if type.respond_to?(:alignment)
+        if type.respond_to?(:entity_class)
           n = type.alignment
         else
           n = ALIGN_MAP[type]
@@ -245,7 +245,7 @@ module Fiddle
       max_align = types.map { |type, count = 1|
         last_offset = offset
 
-        if type.respond_to?(:alignment)
+        if type.respond_to?(:entity_class)
           align = type.alignment
           type_size = type.size
         else
@@ -308,7 +308,7 @@ module Fiddle
 
       max_align = types.map { |type, count = 1|
         orig_offset = offset
-        if type.respond_to?(:alignment)
+        if type.respond_to?(:entity_class)
           align = type.alignment
           type_size = type.size
         else
@@ -346,12 +346,12 @@ module Fiddle
       end
       ty = @ctypes[idx]
       if( ty.is_a?(Array) )
-        if ty.first.respond_to?(:alignment)
+        if ty.first.respond_to?(:entity_class)
           return @nested_structs[name]
         else
           r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
         end
-      elsif ty.respond_to?(:alignment)
+      elsif ty.respond_to?(:entity_class)
         return @nested_structs[name]
       else
         r = super(@offset[idx], SIZE_MAP[ty.abs])
@@ -447,7 +447,7 @@ module Fiddle
     #       Fiddle::TYPE_VOIDP ]) #=> 8
     def CUnionEntity.size(types)
       types.map { |type, count = 1|
-        if type.respond_to?(:alignment)
+        if type.respond_to?(:entity_class)
           type.size * count
         else
           PackInfo::SIZE_MAP[type] * count
