@@ -39,10 +39,10 @@ module Fiddle
     StructNestedStruct = struct [
       {
         "vertices[2]" => {
-          position: [ "float x", "float y", "float z" ],
-          texcoord: [ "float u", "float v" ]
+          position: ["float x", "float y", "float z"],
+          texcoord: ["float u", "float v"]
         },
-        object: [ "int id", "void *user_data" ],
+        object: ["int id", "void *user_data"],
       },
       "int id"
     ]
@@ -182,8 +182,8 @@ module Fiddle
     end
 
     def test_nested_struct_reusing_other_structs()
-      position_struct = Fiddle::Importer.struct([ 'float x', 'float y', 'float z' ])
-      texcoord_struct = Fiddle::Importer.struct([ 'float u', 'float v' ])
+      position_struct = Fiddle::Importer.struct(['float x', 'float y', 'float z'])
+      texcoord_struct = Fiddle::Importer.struct(['float u', 'float v'])
       vertex_struct   = Fiddle::Importer.struct(position: position_struct, texcoord: texcoord_struct)
       mesh_struct     = Fiddle::Importer.struct([
                                                   {
@@ -198,8 +198,8 @@ module Fiddle
       assert_equal LIBC::StructNestedStruct.size, mesh_struct.size
 
 
-      keyboard_event_struct = Fiddle::Importer.struct([ 'unsigned int state', 'char key' ])
-      mouse_event_struct    = Fiddle::Importer.struct([ 'unsigned int button', 'unsigned short x', 'unsigned short y' ])
+      keyboard_event_struct = Fiddle::Importer.struct(['unsigned int state', 'char key'])
+      mouse_event_struct    = Fiddle::Importer.struct(['unsigned int button', 'unsigned short x', 'unsigned short y'])
       event_union           = Fiddle::Importer.union([{ keboard: keyboard_event_struct, mouse: mouse_event_struct}])
       assert_equal LIBC::UnionNestedStruct.size, event_union.size
     end
@@ -207,56 +207,79 @@ module Fiddle
     def test_nested_struct_alignment_is_not_its_size()
       inner = Fiddle::Importer.struct(['int x', 'int y', 'int z', 'int w'])
       outer = Fiddle::Importer.struct(['char a', { 'nested' => inner }, 'char b'])
-      instance = outer.malloc
-      offset = instance.to_ptr.instance_variable_get(:"@offset")
-      assert_equal Fiddle::SIZEOF_INT * 5, offset.last
-      assert_equal Fiddle::SIZEOF_INT * 6, outer.size
-      assert_equal instance.to_ptr.size, outer.size
+      outer.malloc(Fiddle::RUBY_FREE) do |instance|
+        offset = instance.to_ptr.instance_variable_get(:"@offset")
+        assert_equal Fiddle::SIZEOF_INT * 5, offset.last
+        assert_equal Fiddle::SIZEOF_INT * 6, outer.size
+        assert_equal instance.to_ptr.size, outer.size
+      end
     end
 
     def test_struct_nested_struct_members()
-      s = LIBC::StructNestedStruct.malloc
-      s.vertices[0].position.x = 1
-      s.vertices[0].position.y = 2
-      s.vertices[0].position.z = 3
-      s.vertices[0].texcoord.u = 4
-      s.vertices[0].texcoord.v = 5
-      s.vertices[1].position.x = 6
-      s.vertices[1].position.y = 7
-      s.vertices[1].position.z = 8
-      s.vertices[1].texcoord.u = 9
-      s.vertices[1].texcoord.v = 10
-      s.object.id              = 100
-      user_data = Fiddle::Pointer.malloc(24)
-      s.object.user_data       = user_data
-      s.id                     = 101
-      assert_equal(1,   s.vertices[0].position.x)
-      assert_equal(2,   s.vertices[0].position.y)
-      assert_equal(3,   s.vertices[0].position.z)
-      assert_equal(4,   s.vertices[0].texcoord.u)
-      assert_equal(5,   s.vertices[0].texcoord.v)
-      assert_equal(6,   s.vertices[1].position.x)
-      assert_equal(7,   s.vertices[1].position.y)
-      assert_equal(8,   s.vertices[1].position.z)
-      assert_equal(9,   s.vertices[1].texcoord.u)
-      assert_equal(10,  s.vertices[1].texcoord.v)
-      assert_equal(100, s.object.id)
-      assert_equal(user_data, s.object.user_data)
-      assert_equal(101, s.id)
+      LIBC::StructNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        Fiddle::Pointer.malloc(24, Fiddle::RUBY_FREE) do |user_data|
+          s.vertices[0].position.x = 1
+          s.vertices[0].position.y = 2
+          s.vertices[0].position.z = 3
+          s.vertices[0].texcoord.u = 4
+          s.vertices[0].texcoord.v = 5
+          s.vertices[1].position.x = 6
+          s.vertices[1].position.y = 7
+          s.vertices[1].position.z = 8
+          s.vertices[1].texcoord.u = 9
+          s.vertices[1].texcoord.v = 10
+          s.object.id              = 100
+          s.object.user_data       = user_data
+          s.id                     = 101
+          assert_equal({
+                         "vertices" => [
+                           {
+                             "position" => {
+                               "x" => 1,
+                               "y" => 2,
+                               "z" => 3,
+                             },
+                             "texcoord" => {
+                               "u" => 4,
+                               "v" => 5,
+                             },
+                           },
+                           {
+                             "position" => {
+                               "x" => 6,
+                               "y" => 7,
+                               "z" => 8,
+                             },
+                             "texcoord" => {
+                               "u" => 9,
+                               "v" => 10,
+                             },
+                           },
+                         ],
+                         "object" => {
+                           "id" => 100,
+                           "user_data" => user_data,
+                         },
+                         "id" => 101,
+                       },
+                       s.to_h)
+        end
+      end
     end
 
     def test_union_nested_struct_members()
-      s = LIBC::UnionNestedStruct.malloc
-      s.keyboard.state = 100
-      s.keyboard.key   = 101
-      assert_equal(100, s.mouse.button)
-      refute_equal(  0, s.mouse.x)
+      LIBC::UnionNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        s.keyboard.state = 100
+        s.keyboard.key   = 101
+        assert_equal(100, s.mouse.button)
+        refute_equal(  0, s.mouse.x)
+      end
     end
 
     def test_struct_size_and_offset_of_nested_unions()
       a = Fiddle::Importer.union ['float f[4]', 'int i[2]']
       b = Fiddle::Importer.struct ['float x', 'int y']
-      c = Fiddle::Importer.struct [ a: a, b: b ]
+      c = Fiddle::Importer.struct [a: a, b: b]
 
       assert_equal                        0, a.offset_of(:f)
       assert_equal                        0, a.offset_of(:i)
@@ -277,146 +300,159 @@ module Fiddle
     end
 
     def test_struct_nested_struct_replace_array_element()
-      s = LIBC::StructNestedStruct.malloc
-      s.vertices[0].position.x = 5
+      LIBC::StructNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        s.vertices[0].position.x = 5
 
-      vertex_struct = Fiddle::Importer.struct [{
-        position: [ "float x", "float y", "float z" ],
-        texcoord: [ "float u", "float v" ]
-      }]
-      vertex = vertex_struct.malloc
-      vertex.position.x = 100
-      s.vertices[0] = vertex
+        vertex_struct = Fiddle::Importer.struct [{
+          position: ["float x", "float y", "float z"],
+          texcoord: ["float u", "float v"]
+        }]
+        vertex_struct.malloc(Fiddle::RUBY_FREE) do |vertex|
+          vertex.position.x = 100
+          s.vertices[0] = vertex
 
-      # make sure element was copied by value, but things like memory address
-      # should not be changed
-      assert_equal(100,              s.vertices[0].position.x)
-      refute_equal(vertex.object_id, s.vertices[0].object_id)
-      refute_equal(vertex.to_ptr,    s.vertices[0].to_ptr)
+          # make sure element was copied by value, but things like memory address
+          # should not be changed
+          assert_equal(100,              s.vertices[0].position.x)
+          refute_equal(vertex.object_id, s.vertices[0].object_id)
+          refute_equal(vertex.to_ptr,    s.vertices[0].to_ptr)
+        end
+      end
     end
 
     def test_struct_nested_struct_replace_array_element_nil()
-      s = LIBC::StructNestedStruct.malloc
-      s.vertices[0].position.x = 5
-      s.vertices[0] = nil
-      assert_equal({
-                     "position" => {
-                       "x" => 0.0,
-                       "y" => 0.0,
-                       "z" => 0.0,
+      LIBC::StructNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        s.vertices[0].position.x = 5
+        s.vertices[0] = nil
+        assert_equal({
+                       "position" => {
+                         "x" => 0.0,
+                         "y" => 0.0,
+                         "z" => 0.0,
+                       },
+                       "texcoord" => {
+                         "u" => 0.0,
+                         "v" => 0.0,
+                       },
                      },
-                     "texcoord" => {
-                       "u" => 0.0,
-                       "v" => 0.0,
-                     },
-                   },
-                   s.vertices[0].to_h)
+                     s.vertices[0].to_h)
+      end
     end
 
     def test_struct_nested_struct_replace_array_element_hash()
-      s = LIBC::StructNestedStruct.malloc
-      s.vertices[0].position.x = 5
-      s.vertices[0] = {
-        position: {
-          x: 10,
-          y: 100,
+      LIBC::StructNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        s.vertices[0] = {
+          position: {
+            x: 10,
+            y: 100,
+          }
         }
-      }
-      assert_equal({
-                     "position" => {
-                       "x" => 10.0,
-                       "y" => 100.0,
-                       "z" => 0.0,
+        assert_equal({
+                       "position" => {
+                         "x" => 10.0,
+                         "y" => 100.0,
+                         "z" => 0.0,
+                       },
+                       "texcoord" => {
+                         "u" => 0.0,
+                         "v" => 0.0,
+                       },
                      },
-                     "texcoord" => {
-                       "u" => 0.0,
-                       "v" => 0.0,
-                     },
-                   },
-                   s.vertices[0].to_h)
+                     s.vertices[0].to_h)
+      end
     end
 
     def test_struct_nested_struct_replace_entire_array()
-      s = LIBC::StructNestedStruct.malloc
-      vertex_struct = Fiddle::Importer.struct [{
-        position: [ "float x", "float y", "float z" ],
-        texcoord: [ "float u", "float v" ]
-      }]
+      LIBC::StructNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        vertex_struct = Fiddle::Importer.struct [{
+          position: ["float x", "float y", "float z"],
+          texcoord: ["float u", "float v"]
+        }]
 
-      same = [vertex_struct.malloc, vertex_struct.malloc]
-      same[0].position.x = 1; same[1].position.x = 6
-      same[0].position.y = 2; same[1].position.y = 7
-      same[0].position.z = 3; same[1].position.z = 8
-      same[0].texcoord.u = 4; same[1].texcoord.u = 9
-      same[0].texcoord.v = 5; same[1].texcoord.v = 10
-      s.vertices = same
-      assert_equal([
-                     {
-                       "position" => {
-                         "x" => 1.0,
-                         "y" => 2.0,
-                         "z" => 3.0,
-                       },
-                       "texcoord" => {
-                         "u" => 4.0,
-                         "v" => 5.0,
-                       },
-                     },
-                     {
-                       "position" => {
-                         "x" => 6.0,
-                         "y" => 7.0,
-                         "z" => 8.0,
-                       },
-                       "texcoord" => {
-                         "u" => 9.0,
-                         "v" => 10.0,
-                       },
-                     }
-                   ],
-                   s.vertices.collect(&:to_h))
+        vertex_struct.malloc(Fiddle::RUBY_FREE) do |same0|
+          vertex_struct.malloc(Fiddle::RUBY_FREE) do |same1|
+            same = [same0, same1]
+            same[0].position.x = 1; same[1].position.x = 6
+            same[0].position.y = 2; same[1].position.y = 7
+            same[0].position.z = 3; same[1].position.z = 8
+            same[0].texcoord.u = 4; same[1].texcoord.u = 9
+            same[0].texcoord.v = 5; same[1].texcoord.v = 10
+            s.vertices = same
+            assert_equal([
+                           {
+                             "position" => {
+                               "x" => 1.0,
+                               "y" => 2.0,
+                               "z" => 3.0,
+                             },
+                             "texcoord" => {
+                               "u" => 4.0,
+                               "v" => 5.0,
+                             },
+                           },
+                           {
+                             "position" => {
+                               "x" => 6.0,
+                               "y" => 7.0,
+                               "z" => 8.0,
+                             },
+                             "texcoord" => {
+                               "u" => 9.0,
+                               "v" => 10.0,
+                             },
+                           }
+                         ],
+                         s.vertices.collect(&:to_h))
+          end
+        end
+      end
     end
 
     def test_struct_nested_struct_replace_entire_array_with_different_struct()
-      s = LIBC::StructNestedStruct.malloc
-      different_struct_same_size = Fiddle::Importer.struct [{
-        a: [ 'float i', 'float j', 'float k' ],
-        b: [ 'float l', 'float m' ]
-      }]
+      LIBC::StructNestedStruct.malloc(Fiddle::RUBY_FREE) do |s|
+        different_struct_same_size = Fiddle::Importer.struct [{
+          a: ['float i', 'float j', 'float k'],
+          b: ['float l', 'float m']
+        }]
 
-      different = [different_struct_same_size.malloc, different_struct_same_size.malloc]
-      different[0].a.i = 11; different[1].a.i = 16
-      different[0].a.j = 12; different[1].a.j = 17
-      different[0].a.k = 13; different[1].a.k = 18
-      different[0].b.l = 14; different[1].b.l = 19
-      different[0].b.m = 15; different[1].b.m = 20
-      s.vertices[0][0, s.vertices[0].class.size] = different[0].to_ptr
-      s.vertices[1][0, s.vertices[1].class.size] = different[1].to_ptr
-      assert_equal([
-                     {
-                       "position" => {
-                         "x" => 11.0,
-                         "y" => 12.0,
-                         "z" => 13.0,
-                       },
-                       "texcoord" => {
-                         "u" => 14.0,
-                         "v" => 15.0,
-                       },
-                     },
-                     {
-                       "position" => {
-                         "x" => 16.0,
-                         "y" => 17.0,
-                         "z" => 18.0,
-                       },
-                       "texcoord" => {
-                         "u" => 19.0,
-                         "v" => 20.0,
-                       },
-                     }
-                   ],
-                   s.vertices.collect(&:to_h))
+        different_struct_same_size.malloc(Fiddle::RUBY_FREE) do |different0|
+          different_struct_same_size.malloc(Fiddle::RUBY_FREE) do |different1|
+            different = [different0, different1]
+            different[0].a.i = 11; different[1].a.i = 16
+            different[0].a.j = 12; different[1].a.j = 17
+            different[0].a.k = 13; different[1].a.k = 18
+            different[0].b.l = 14; different[1].b.l = 19
+            different[0].b.m = 15; different[1].b.m = 20
+            s.vertices[0][0, s.vertices[0].class.size] = different[0].to_ptr
+            s.vertices[1][0, s.vertices[1].class.size] = different[1].to_ptr
+            assert_equal([
+                           {
+                             "position" => {
+                               "x" => 11.0,
+                               "y" => 12.0,
+                               "z" => 13.0,
+                             },
+                             "texcoord" => {
+                               "u" => 14.0,
+                               "v" => 15.0,
+                             },
+                           },
+                           {
+                             "position" => {
+                               "x" => 16.0,
+                               "y" => 17.0,
+                               "z" => 18.0,
+                             },
+                             "texcoord" => {
+                               "u" => 19.0,
+                               "v" => 20.0,
+                             },
+                           }
+                         ],
+                         s.vertices.collect(&:to_h))
+          end
+        end
+      end
     end
 
     def test_struct()
