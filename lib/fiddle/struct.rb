@@ -84,10 +84,14 @@ module Fiddle
     def initialize(ptr, type, initial_values)
       @ptr = ptr
       @type = type
-      @align = PackInfo::ALIGN_MAP[type]
-      @size = Fiddle::PackInfo::SIZE_MAP[type]
-      @pack_format = Fiddle::PackInfo::PACK_MAP[type]
-      super(initial_values.collect { |v| unsigned_value(v, type) })
+      @is_struct = @type.respond_to?(:alignment)
+      if @is_struct
+        super(initial_values)
+      else
+        @size = Fiddle::PackInfo::SIZE_MAP[type]
+        @pack_format = Fiddle::PackInfo::PACK_MAP[type]
+        super(initial_values.collect { |v| unsigned_value(v, type) })
+      end
     end
 
     def to_ptr
@@ -99,15 +103,12 @@ module Fiddle
         raise IndexError, 'index %d outside of array bounds 0...%d' % [index, size]
       end
 
-      to_ptr[index * @size, @size] = [value].pack(@pack_format)
-      super(index, value)
-    end
-  end
-
-  # Wrapper for arrays of structs within a struct
-  class NestedStructArray < Array
-    def []=(index, value)
-      self[index].replace(value)
+      if @is_struct
+        self[index].replace(value)
+      else
+        to_ptr[index * @size, @size] = [value].pack(@pack_format)
+        super(index, value)
+      end
     end
   end
 
@@ -287,7 +288,9 @@ module Fiddle
             structs = struct_count.times.map do |i|
               struct_type.new(to_i + @offset[index] + i * struct_type.size)
             end
-            struct = NestedStructArray.new(structs)
+            struct = StructArray.new(to_i + @offset[index],
+                                     struct_type,
+                                     structs)
           end
           @nested_structs[member_name] = struct
         else
@@ -392,7 +395,7 @@ module Fiddle
       name = name.to_s if name.is_a?(Symbol)
       nested_struct = @nested_structs[name]
       if nested_struct
-        if nested_struct.is_a?(NestedStructArray)
+        if nested_struct.is_a?(StructArray)
           if val.nil?
             nested_struct.each do |s|
               s.replace(nil)
