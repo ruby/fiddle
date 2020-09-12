@@ -156,10 +156,8 @@ module Fiddle
         define_method(:[]=) { |*args| @entity.send(:[]=, *args) }
         define_method(:to_ptr){ @entity }
         define_method(:to_i){ @entity.to_i }
-        define_method(:offset_of) { |*args| @entity.offset_of(*args) }
         define_singleton_method(:types) { types }
         define_singleton_method(:members) { members }
-        define_singleton_method(:offset_of) { |mbr| klass.entity_class.compute_offset(types, members, mbr) }
         members.each{|name|
           name = name[0] if name.is_a?(Array) # name is a nested struct
           next if method_defined?(name)
@@ -199,15 +197,6 @@ module Fiddle
         max = n if n > max
       end
       max
-    end
-
-    def CStructEntity.compute_offset(types, members, mbr)
-      members.each_with_index do |m, idx|
-        if (m.is_a?(Array) ? m[0] : m) == mbr.to_s
-          return idx == 0 ? 0 : size(types[0...idx])
-        end
-      end
-      raise(ArgumentError, "no such member: #{mbr}")
     end
 
     # Allocates a C struct with the +types+ provided.
@@ -325,11 +314,6 @@ module Fiddle
       @size = PackInfo.align(offset, max_align)
     end
 
-    def offset_of(mbr)
-      idx = @members.index(mbr.to_s) || raise(ArgumentError, "no such member: #{mbr}")
-      @offset[idx]
-    end
-
     # Fetch struct member +name+ if only one argument is specified. If two
     # arguments are specified, the first is an offset and the second is a
     # length and this method returns the string of +length+ bytes beginning at
@@ -440,11 +424,6 @@ module Fiddle
   # A pointer to a C union
   class CUnionEntity < CStructEntity
     include PackInfo
-
-    def CUnionEntity.compute_offset(types, members, mbr)
-      # all members begin at offset 0
-      0
-    end
 
     # Returns the size needed for the union with the given +types+.
     #
