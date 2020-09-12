@@ -295,16 +295,52 @@ module Fiddle
       refute_equal(vertex.to_ptr,    s.vertices[0].to_ptr)
     end
 
+    def test_struct_nested_struct_replace_array_element_nil()
+      s = LIBC::StructNestedStruct.malloc
+      s.vertices[0].position.x = 5
+      s.vertices[0] = nil
+      assert_equal({
+                     "position" => {
+                       "x" => 0.0,
+                       "y" => 0.0,
+                       "z" => 0.0,
+                     },
+                     "texcoord" => {
+                       "u" => 0.0,
+                       "v" => 0.0,
+                     },
+                   },
+                   s.vertices[0].to_h)
+    end
+
+    def test_struct_nested_struct_replace_array_element_hash()
+      s = LIBC::StructNestedStruct.malloc
+      s.vertices[0].position.x = 5
+      s.vertices[0] = {
+        position: {
+          x: 10,
+          y: 100,
+        }
+      }
+      assert_equal({
+                     "position" => {
+                       "x" => 10.0,
+                       "y" => 100.0,
+                       "z" => 0.0,
+                     },
+                     "texcoord" => {
+                       "u" => 0.0,
+                       "v" => 0.0,
+                     },
+                   },
+                   s.vertices[0].to_h)
+    end
+
     def test_struct_nested_struct_replace_entire_array()
       s = LIBC::StructNestedStruct.malloc
       vertex_struct = Fiddle::Importer.struct [{
         position: [ "float x", "float y", "float z" ],
         texcoord: [ "float u", "float v" ]
-      }]
-
-      different_struct_same_size = Fiddle::Importer.struct [{
-        a: [ 'float i', 'float j', 'float k' ],
-        b: [ 'float l', 'float m' ]
       }]
 
       same = [vertex_struct.malloc, vertex_struct.malloc]
@@ -314,11 +350,39 @@ module Fiddle
       same[0].texcoord.u = 4; same[1].texcoord.u = 9
       same[0].texcoord.v = 5; same[1].texcoord.v = 10
       s.vertices = same
-      assert_equal(1, s.vertices[0].position.x); assert_equal(6,  s.vertices[1].position.x)
-      assert_equal(2, s.vertices[0].position.y); assert_equal(7,  s.vertices[1].position.y)
-      assert_equal(3, s.vertices[0].position.z); assert_equal(8,  s.vertices[1].position.z)
-      assert_equal(4, s.vertices[0].texcoord.u); assert_equal(9,  s.vertices[1].texcoord.u)
-      assert_equal(5, s.vertices[0].texcoord.v); assert_equal(10, s.vertices[1].texcoord.v)
+      assert_equal([
+                     {
+                       "position" => {
+                         "x" => 1.0,
+                         "y" => 2.0,
+                         "z" => 3.0,
+                       },
+                       "texcoord" => {
+                         "u" => 4.0,
+                         "v" => 5.0,
+                       },
+                     },
+                     {
+                       "position" => {
+                         "x" => 6.0,
+                         "y" => 7.0,
+                         "z" => 8.0,
+                       },
+                       "texcoord" => {
+                         "u" => 9.0,
+                         "v" => 10.0,
+                       },
+                     }
+                   ],
+                   s.vertices.collect(&:to_h))
+    end
+
+    def test_struct_nested_struct_replace_entire_array_with_different_struct()
+      s = LIBC::StructNestedStruct.malloc
+      different_struct_same_size = Fiddle::Importer.struct [{
+        a: [ 'float i', 'float j', 'float k' ],
+        b: [ 'float l', 'float m' ]
+      }]
 
       different = [different_struct_same_size.malloc, different_struct_same_size.malloc]
       different[0].a.i = 11; different[1].a.i = 16
@@ -326,12 +390,33 @@ module Fiddle
       different[0].a.k = 13; different[1].a.k = 18
       different[0].b.l = 14; different[1].b.l = 19
       different[0].b.m = 15; different[1].b.m = 20
-      s.vertices = different
-      assert_equal(11, s.vertices[0].position.x); assert_equal(16, s.vertices[1].position.x)
-      assert_equal(12, s.vertices[0].position.y); assert_equal(17, s.vertices[1].position.y)
-      assert_equal(13, s.vertices[0].position.z); assert_equal(18, s.vertices[1].position.z)
-      assert_equal(14, s.vertices[0].texcoord.u); assert_equal(19, s.vertices[1].texcoord.u)
-      assert_equal(15, s.vertices[0].texcoord.v); assert_equal(20, s.vertices[1].texcoord.v)
+      s.vertices[0][0, s.vertices[0].class.size] = different[0].to_ptr
+      s.vertices[1][0, s.vertices[1].class.size] = different[1].to_ptr
+      assert_equal([
+                     {
+                       "position" => {
+                         "x" => 11.0,
+                         "y" => 12.0,
+                         "z" => 13.0,
+                       },
+                       "texcoord" => {
+                         "u" => 14.0,
+                         "v" => 15.0,
+                       },
+                     },
+                     {
+                       "position" => {
+                         "x" => 16.0,
+                         "y" => 17.0,
+                         "z" => 18.0,
+                       },
+                       "texcoord" => {
+                         "u" => 19.0,
+                         "v" => 20.0,
+                       },
+                     }
+                   ],
+                   s.vertices.collect(&:to_h))
     end
 
     def test_struct()

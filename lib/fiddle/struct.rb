@@ -6,9 +6,53 @@ require 'fiddle/pack'
 module Fiddle
   # A base class for objects representing a C structure
   class CStruct
+    include Enumerable
+
     # accessor to Fiddle::CStructEntity
     def CStruct.entity_class
       CStructEntity
+    end
+
+    def each
+      return enum_for(__function__) unless block_given?
+
+      self.class.members.each do |name,|
+        yield(self[name])
+      end
+    end
+
+    def each_pair
+      return enum_for(__function__) unless block_given?
+
+      self.class.members.each do |name,|
+        yield(name, self[name])
+      end
+    end
+
+    def to_h
+      hash = {}
+      each_pair do |name, value|
+        value = value.to_h if value.is_a?(CStruct)
+        hash[name] = value
+      end
+      hash
+    end
+
+    def replace(another)
+      if another.nil?
+        self.class.members.each do |name,|
+          self[name] = nil
+        end
+      elsif another.respond_to?(:each_pair)
+        another.each_pair do |name, value|
+          self[name] = value
+        end
+      else
+        another.each do |name, value|
+          self[name] = value
+        end
+      end
+      self
     end
   end
 
@@ -50,7 +94,7 @@ module Fiddle
   # Wrapper for arrays of structs within a struct
   class NestedStructArray < Array
     def []=(index, value)
-      Fiddle.memcpy(self[index], value)
+      self[index].replace(value)
     end
   end
 
@@ -351,19 +395,27 @@ module Fiddle
     def []=(*args)
       return super(*args) if args.size > 2
       name, val = *args
+      name = name.to_s if name.is_a?(Symbol)
+      nested_struct = @nested_structs[name]
+      if nested_struct
+        if nested_struct.is_a?(NestedStructArray)
+          if val.nil?
+            nested_struct.each do |s|
+              s.replace(nil)
+            end
+          else
+            val.each_with_index do |v, i|
+              nested_struct[i] = v
+            end
+          end
+        else
+          nested_struct.replace(val)
+        end
+        return val
+      end
       idx = @members.index(name)
       if( idx.nil? )
         raise(ArgumentError, "no such member: #{name}")
-      end
-      if @nested_structs[name]
-        if @nested_structs[name].is_a?(Array)
-          val.size.times do |i|
-            Fiddle.memcpy(@nested_structs[name][i], val[i])
-          end
-        else
-          Fiddle.memcpy(@nested_structs[name], val)
-        end
-        return
       end
       ty  = @ctypes[idx]
       packer = Packer.new([ty])
