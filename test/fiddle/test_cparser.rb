@@ -69,6 +69,19 @@ module Fiddle
       assert_equal(-TYPE_LONG, parse_ctype('DWORD', {"DWORD" => "unsigned long"}))
     end
 
+    def expand_struct_types(types)
+      types.collect do |type|
+        case type
+        when Class
+          [expand_struct_types(type.types)]
+        when Array
+          [expand_struct_types([type[0]])[0][0], type[1]]
+        else
+          type
+        end
+      end
+    end
+
     def test_struct_basic
       assert_equal [[TYPE_INT, TYPE_CHAR], ['i', 'c']], parse_struct_signature(['int i', 'char c'])
     end
@@ -78,80 +91,90 @@ module Fiddle
     end
 
     def test_struct_nested_struct
-      assert_equal [[TYPE_INT, [[TYPE_INT, TYPE_CHAR]]],
+      types, members = parse_struct_signature([
+                                                'int x',
+                                                {inner: ['int i', 'char c']},
+                                              ])
+      assert_equal([[TYPE_INT, [[TYPE_INT, TYPE_CHAR]]],
                     ['x', ['inner', ['i', 'c']]]],
-                   parse_struct_signature([
-                                            'int x',
-                                            {inner: ['int i', 'char c']},
-                                          ])
+                   [expand_struct_types(types),
+                    members])
     end
 
     def test_struct_nested_defined_struct
       inner = Fiddle::Importer.struct(['int i', 'char c'])
-      assert_equal [[TYPE_INT, [[TYPE_INT, TYPE_CHAR], 1, inner.entity_class]],
+      assert_equal([[TYPE_INT, inner],
                     ['x', ['inner', ['i', 'c']]]],
                    parse_struct_signature([
                                             'int x',
                                             {inner: inner},
-                                          ])
+                                          ]))
     end
 
     def test_struct_double_nested_struct
-      assert_equal [[TYPE_INT, [[TYPE_INT, [[TYPE_INT, TYPE_CHAR]]]]],
+      types, members = parse_struct_signature([
+                                                'int x',
+                                                {
+                                                  outer: [
+                                                    'int y',
+                                                    {inner: ['int i', 'char c']},
+                                                  ],
+                                                },
+                                              ])
+      assert_equal([[TYPE_INT, [[TYPE_INT, [[TYPE_INT, TYPE_CHAR]]]]],
                     ['x', ['outer', ['y', ['inner', ['i', 'c']]]]]],
-                   parse_struct_signature([
-                                            'int x',
-                                            {
-                                              outer: [
-                                                'int y',
-                                                {inner: ['int i', 'char c']},
-                                              ],
-                                            },
-                                          ])
+                   [expand_struct_types(types),
+                    members])
     end
 
     def test_struct_nested_struct_array
-      assert_equal [[TYPE_INT, [[TYPE_INT, TYPE_CHAR], 2]],
+      types, members = parse_struct_signature([
+                                                'int x',
+                                                {
+                                                  'inner[2]' => [
+                                                    'int i',
+                                                    'char c',
+                                                  ],
+                                                },
+                                              ])
+      assert_equal([[TYPE_INT, [[TYPE_INT, TYPE_CHAR], 2]],
                     ['x', ['inner', ['i', 'c']]]],
-                   parse_struct_signature([
-                                            'int x',
-                                            {
-                                              'inner[2]' => [
-                                                'int i',
-                                                'char c',
-                                              ],
-                                            },
-                                          ])
+                   [expand_struct_types(types),
+                    members])
     end
 
     def test_struct_double_nested_struct_inner_array
-      assert_equal [[[[TYPE_INT, [[TYPE_INT, TYPE_CHAR], 2]]]],
+      types, members = parse_struct_signature(outer: [
+                                                'int x',
+                                                {
+                                                  'inner[2]' => [
+                                                    'int i',
+                                                    'char c',
+                                                  ],
+                                                },
+                                              ])
+      assert_equal([[[[TYPE_INT, [[TYPE_INT, TYPE_CHAR], 2]]]],
                     [['outer', ['x', ['inner', ['i', 'c']]]]]],
-                   parse_struct_signature(outer: [
-                                            'int x',
-                                            {
-                                              'inner[2]' => [
-                                                'int i',
-                                                'char c',
-                                              ],
-                                            },
-                                          ])
+                   [expand_struct_types(types),
+                    members])
     end
 
     def test_struct_double_nested_struct_outer_array
-      assert_equal [[TYPE_INT, [[[[TYPE_INT, TYPE_CHAR]]], 2]],
+      types, members = parse_struct_signature([
+                                                'int x',
+                                                {
+                                                  'outer[2]' => {
+                                                    inner: [
+                                                      'int i',
+                                                      'char c',
+                                                    ],
+                                                  },
+                                                },
+                                              ])
+      assert_equal([[TYPE_INT, [[[[TYPE_INT, TYPE_CHAR]]], 2]],
                     ['x', ['outer', [['inner', ['i', 'c']]]]]],
-                   parse_struct_signature([
-                                            'int x',
-                                            {
-                                              'outer[2]' => {
-                                                inner: [
-                                                  'int i',
-                                                  'char c',
-                                                ],
-                                              },
-                                            },
-                                          ])
+                   [expand_struct_types(types),
+                    members])
     end
 
     def test_struct_array_str

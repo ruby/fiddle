@@ -37,8 +37,6 @@ module Fiddle
         signature = split_arguments(signature, /[,;]/)
       elsif signature.is_a?(Hash)
         signature = [signature]
-      elsif signature.respond_to?(:types) && signature.respond_to?(:members)
-        return signature.types, signature.members, signature.entity_class
       end
       mems = []
       tys  = []
@@ -46,25 +44,27 @@ module Fiddle
         msig = compact(msig) if msig.is_a?(String)
         case msig
         when Hash
-          msig.each do |structure_name, struct_signature|
-            structure_name = structure_name.to_s if structure_name.is_a?(Symbol)
-            structure_name = compact(structure_name)
-            structure_count = nil
-            if structure_name =~ /^([\w\*\s]+)\[(\d+)\]$/
-              structure_count = $2.to_i
-              structure_name = $1
+          msig.each do |struct_name, struct_signature|
+            struct_name = struct_name.to_s if struct_name.is_a?(Symbol)
+            struct_name = compact(struct_name)
+            struct_count = nil
+            if struct_name =~ /^([\w\*\s]+)\[(\d+)\]$/
+              struct_count = $2.to_i
+              struct_name = $1
             end
-            structure_parsed  = parse_struct_signature(struct_signature, tymap)
-            structure_types   = structure_parsed[0]
-            structure_members = structure_parsed[1]
-            structure_klass   = structure_parsed[2]
-            ty = [structure_types]
-            ty << structure_count if structure_count
-            if structure_klass
-              ty[2] = structure_klass
-              ty[1] ||= 1
+            if struct_signature.respond_to?(:types) &&
+               struct_signature.respond_to?(:members)
+              struct_type = struct_signature
+            else
+              parsed_struct = parse_struct_signature(struct_signature, tymap)
+              struct_type = CStructBuilder.create(CStruct, *parsed_struct)
             end
-            mems.push([structure_name, structure_members])
+            if struct_count
+              ty = [struct_type, struct_count]
+            else
+              ty = struct_type
+            end
+            mems.push([struct_name, struct_type.members])
             tys.push(ty)
           end
         when /^[\w\*\s]+[\*\s](\w+)$/

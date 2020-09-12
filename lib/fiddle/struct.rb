@@ -177,7 +177,10 @@ module Fiddle
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
-        size = klass.entity_class.size(types)
+        entity_class = klass.entity_class
+        alignment = entity_class.alignment(types)
+        size = entity_class.size(types)
+        define_singleton_method(:alignment) { alignment }
         define_singleton_method(:size) { size }
         define_singleton_method(:malloc) do |func=nil|
           if block_given?
@@ -201,9 +204,9 @@ module Fiddle
 
     def CStructEntity.alignment(types)
       max = 1
-      types.each do |type, count = 1, klass = CStructEntity|
-        if type.is_a?(Array) # nested struct
-          n = klass.alignment(type)
+      types.each do |type, count = 1|
+        if type.respond_to?(:alignment)
+          n = type.alignment
         else
           n = ALIGN_MAP[type]
         end
@@ -238,12 +241,12 @@ module Fiddle
     def CStructEntity.size(types)
       offset = 0
 
-      max_align = types.map { |type, count = 1, klass = CStructEntity|
+      max_align = types.map { |type, count = 1|
         last_offset = offset
 
-        if type.is_a?(Array) # type is a nested array representing a nested struct
-          align = klass.alignment(type)
-          type_size = klass.size(type)
+        if type.respond_to?(:alignment)
+          align = type.alignment
+          type_size = type.size
         else
           align = PackInfo::ALIGN_MAP[type]
           type_size = PackInfo::SIZE_MAP[type]
@@ -277,20 +280,12 @@ module Fiddle
       members.each_with_index do |member, index|
         if member.is_a?(Array) # nested struct
           member_name = member[0]
-          struct_member_names = member[1]
-          type = @ctypes[index]
-          struct_types = type[0]
-          count = type[1] || 1
-          entity_class = type[2] || CStructEntity
-          struct_class = CStructBuilder.create(CStruct,
-                                               struct_types,
-                                               struct_member_names)
-          if count == 1
-            struct = struct_class.new(to_i + @offset[index])
+          struct_type, struct_count = @ctypes[index]
+          if struct_count.nil?
+            struct = struct_type.new(to_i + @offset[index])
           else
-            entity_size = entity_class.size(struct_types)
-            structs = count.times.map do |i|
-              struct_class.new(to_i + @offset[index] + i * entity_size)
+            structs = struct_count.times.map do |i|
+              struct_type.new(to_i + @offset[index] + i * struct_type.size)
             end
             struct = NestedStructArray.new(structs)
           end
@@ -308,11 +303,11 @@ module Fiddle
       @offset = []
       offset = 0
 
-      max_align = types.map { |type, count = 1, klass = CStructEntity|
+      max_align = types.map { |type, count = 1|
         orig_offset = offset
-        if type.is_a?(Array) # type is a nested array representing a nested struct
-          align = klass.alignment(type)
-          type_size = klass.size(type)
+        if type.respond_to?(:alignment)
+          align = type.alignment
+          type_size = type.size
         else
           align = ALIGN_MAP[type]
           type_size = SIZE_MAP[type]
@@ -348,11 +343,13 @@ module Fiddle
       end
       ty = @ctypes[idx]
       if( ty.is_a?(Array) )
-        if ty.first.is_a?(Array)
+        if ty.first.respond_to?(:alignment)
           return @nested_structs[name]
         else
           r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
         end
+      elsif ty.respond_to?(:alignment)
+        return @nested_structs[name]
       else
         r = super(@offset[idx], SIZE_MAP[ty.abs])
       end
@@ -446,9 +443,9 @@ module Fiddle
     #       Fiddle::TYPE_CHAR,
     #       Fiddle::TYPE_VOIDP ]) #=> 8
     def CUnionEntity.size(types)
-      types.map { |type, count = 1, klass = CStructEntity|
-        if type.is_a?(Array) # type is a nested array representing a nested struct
-          klass.size(type) * count
+      types.map { |type, count = 1|
+        if type.respond_to?(:alignment)
+          type.size * count
         else
           PackInfo::SIZE_MAP[type] * count
         end
