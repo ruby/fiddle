@@ -32,8 +32,7 @@ module Fiddle
     def to_h
       hash = {}
       each_pair do |name, value|
-        value = value.to_h if value.is_a?(CStruct)
-        hash[name] = value
+        hash[name] = unstruct(value)
       end
       hash
     end
@@ -53,6 +52,20 @@ module Fiddle
         end
       end
       self
+    end
+
+    private
+    def unstruct(value)
+      case value
+      when CStruct
+        value.to_h
+      when Array
+        value.collect do |v|
+          unstruct(v)
+        end
+      else
+        value
+      end
     end
   end
 
