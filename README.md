@@ -42,6 +42,57 @@ floor = Fiddle::Function.new(
 puts floor.call(3.14159) #=> 3.0
 ```
 
+### Nested Structs
+
+You can use hashes to create nested structs, where the hash keys are member names and the values are the nested structs:
+
+```ruby
+StudentCollegeDetail = struct [
+  'int college_id',
+  'char college_name[50]'
+]
+
+StudentDetail = struct [
+  'int id',
+  'char name[20]',
+  { clg_data: StudentCollegeDetail }
+]
+```
+
+You can also specify an anonymous nested struct, like so:
+
+```ruby
+StudentDetail = struct [
+  'int id',
+  'char name[20]',
+  {
+    clg_data: struct([
+                      'int college_id',
+                      'char college_name[50]'
+                    ])
+  }
+]
+```
+
+The position of a hash (and the order of the keys in the hash, in the case of a hash with multiple entries), dictate the offsets of the nested struct in memory. The following examples are both syntactically valid but will lay out the structs differently in memory:
+
+```ruby
+# order of members in memory: position, id, dimensions
+Rect = struct [ { position: struct(['float x', 'float y']) },
+                'int id',
+                { dimensions: struct(['float w', 'float h']) }
+              ]
+
+# order of members in memory: id, position, dimensions
+Rect = struct [ 'int id',
+                {
+                  position: struct(['float x', 'float y']),
+                  dimensions: struct(['float w', 'float h'])
+                }
+              ]
+```
+
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

@@ -6,9 +6,66 @@ require 'fiddle/pack'
 module Fiddle
   # A base class for objects representing a C structure
   class CStruct
+    include Enumerable
+
     # accessor to Fiddle::CStructEntity
     def CStruct.entity_class
       CStructEntity
+    end
+
+    def each
+      return enum_for(__function__) unless block_given?
+
+      self.class.members.each do |name,|
+        yield(self[name])
+      end
+    end
+
+    def each_pair
+      return enum_for(__function__) unless block_given?
+
+      self.class.members.each do |name,|
+        yield(name, self[name])
+      end
+    end
+
+    def to_h
+      hash = {}
+      each_pair do |name, value|
+        hash[name] = unstruct(value)
+      end
+      hash
+    end
+
+    def replace(another)
+      if another.nil?
+        self.class.members.each do |name,|
+          self[name] = nil
+        end
+      elsif another.respond_to?(:each_pair)
+        another.each_pair do |name, value|
+          self[name] = value
+        end
+      else
+        another.each do |name, value|
+          self[name] = value
+        end
+      end
+      self
+    end
+
+    private
+    def unstruct(value)
+      case value
+      when CStruct
+        value.to_h
+      when Array
+        value.collect do |v|
+          unstruct(v)
+        end
+      else
+        value
+      end
     end
   end
 
@@ -27,10 +84,14 @@ module Fiddle
     def initialize(ptr, type, initial_values)
       @ptr = ptr
       @type = type
-      @align = PackInfo::ALIGN_MAP[type]
-      @size = Fiddle::PackInfo::SIZE_MAP[type]
-      @pack_format = Fiddle::PackInfo::PACK_MAP[type]
-      super(initial_values.collect { |v| unsigned_value(v, type) })
+      @is_struct = @type.respond_to?(:entity_class)
+      if @is_struct
+        super(initial_values)
+      else
+        @size = Fiddle::PackInfo::SIZE_MAP[type]
+        @pack_format = Fiddle::PackInfo::PACK_MAP[type]
+        super(initial_values.collect { |v| unsigned_value(v, type) })
+      end
     end
 
     def to_ptr
@@ -42,8 +103,12 @@ module Fiddle
         raise IndexError, 'index %d outside of array bounds 0...%d' % [index, size]
       end
 
-      to_ptr[index * @size, @size] = [value].pack(@pack_format)
-      super(index, value)
+      if @is_struct
+        self[index].replace(value)
+      else
+        to_ptr[index * @size, @size] = [value].pack(@pack_format)
+        super(index, value)
+      end
     end
   end
 
@@ -105,11 +170,18 @@ module Fiddle
         define_method(:[]=) { |*args| @entity.send(:[]=, *args) }
         define_method(:to_ptr){ @entity }
         define_method(:to_i){ @entity.to_i }
+        define_singleton_method(:types) { types }
+        define_singleton_method(:members) { members }
         members.each{|name|
+          name = name[0] if name.is_a?(Array) # name is a nested struct
+          next if method_defined?(name)
           define_method(name){ @entity[name] }
           define_method(name + "="){|val| @entity[name] = val }
         }
-        size = klass.entity_class.size(types)
+        entity_class = klass.entity_class
+        alignment = entity_class.alignment(types)
+        size = entity_class.size(types)
+        define_singleton_method(:alignment) { alignment }
         define_singleton_method(:size) { size }
         define_singleton_method(:malloc) do |func=nil, &block|
           if block
@@ -130,6 +202,19 @@ module Fiddle
   class CStructEntity < Fiddle::Pointer
     include PackInfo
     include ValueUtil
+
+    def CStructEntity.alignment(types)
+      max = 1
+      types.each do |type, count = 1|
+        if type.respond_to?(:entity_class)
+          n = type.alignment
+        else
+          n = ALIGN_MAP[type]
+        end
+        max = n if n > max
+      end
+      max
+    end
 
     # Allocates a C struct with the +types+ provided.
     #
@@ -160,9 +245,15 @@ module Fiddle
       max_align = types.map { |type, count = 1|
         last_offset = offset
 
-        align = PackInfo::ALIGN_MAP[type]
+        if type.respond_to?(:entity_class)
+          align = type.alignment
+          type_size = type.size
+        else
+          align = PackInfo::ALIGN_MAP[type]
+          type_size = PackInfo::SIZE_MAP[type]
+        end
         offset = PackInfo.align(last_offset, align) +
-                 (PackInfo::SIZE_MAP[type] * count)
+                 (type_size * count)
 
         align
       }.max
@@ -185,7 +276,28 @@ module Fiddle
 
     # Set the names of the +members+ in this C struct
     def assign_names(members)
-      @members = members
+      @members = []
+      @nested_structs = {}
+      members.each_with_index do |member, index|
+        if member.is_a?(Array) # nested struct
+          member_name = member[0]
+          struct_type, struct_count = @ctypes[index]
+          if struct_count.nil?
+            struct = struct_type.new(to_i + @offset[index])
+          else
+            structs = struct_count.times.map do |i|
+              struct_type.new(to_i + @offset[index] + i * struct_type.size)
+            end
+            struct = StructArray.new(to_i + @offset[index],
+                                     struct_type,
+                                     structs)
+          end
+          @nested_structs[member_name] = struct
+        else
+          member_name = member
+        end
+        @members << member_name
+      end
     end
 
     # Calculates the offsets and sizes for the given +types+ in the struct.
@@ -196,12 +308,18 @@ module Fiddle
 
       max_align = types.map { |type, count = 1|
         orig_offset = offset
-        align = ALIGN_MAP[type]
+        if type.respond_to?(:entity_class)
+          align = type.alignment
+          type_size = type.size
+        else
+          align = ALIGN_MAP[type]
+          type_size = SIZE_MAP[type]
+        end
         offset = PackInfo.align(orig_offset, align)
 
         @offset << offset
 
-        offset += (SIZE_MAP[type] * count)
+        offset += (type_size * count)
 
         align
       }.max
@@ -230,7 +348,13 @@ module Fiddle
       end
       ty = @ctypes[idx]
       if( ty.is_a?(Array) )
-        r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
+        if ty.first.respond_to?(:entity_class)
+          return @nested_structs[name]
+        else
+          r = super(@offset[idx], SIZE_MAP[ty[0]] * ty[1])
+        end
+      elsif ty.respond_to?(:entity_class)
+        return @nested_structs[name]
       else
         r = super(@offset[idx], SIZE_MAP[ty.abs])
       end
@@ -270,6 +394,24 @@ module Fiddle
     def []=(*args)
       return super(*args) if args.size > 2
       name, val = *args
+      name = name.to_s if name.is_a?(Symbol)
+      nested_struct = @nested_structs[name]
+      if nested_struct
+        if nested_struct.is_a?(StructArray)
+          if val.nil?
+            nested_struct.each do |s|
+              s.replace(nil)
+            end
+          else
+            val.each_with_index do |v, i|
+              nested_struct[i] = v
+            end
+          end
+        else
+          nested_struct.replace(val)
+        end
+        return val
+      end
       idx = @members.index(name)
       if( idx.nil? )
         raise(ArgumentError, "no such member: #{name}")
@@ -307,7 +449,11 @@ module Fiddle
     #       Fiddle::TYPE_VOIDP ]) #=> 8
     def CUnionEntity.size(types)
       types.map { |type, count = 1|
-        PackInfo::SIZE_MAP[type] * count
+        if type.respond_to?(:entity_class)
+          type.size * count
+        else
+          PackInfo::SIZE_MAP[type] * count
+        end
       }.max
     end
 
