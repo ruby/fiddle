@@ -183,10 +183,10 @@ module Fiddle
         size = entity_class.size(types)
         define_singleton_method(:alignment) { alignment }
         define_singleton_method(:size) { size }
-        define_singleton_method(:malloc) do |func=nil|
-          if block_given?
+        define_singleton_method(:malloc) do |func=nil, &block|
+          if block
             entity_class.malloc(types, func, size) do |entity|
-              yield new(entity)
+              block.call(new(entity))
             end
           else
             new(entity_class.malloc(types, func, size))
