@@ -4,10 +4,16 @@ notifications:
 
 matrix:
   include:
-    - name: "2.7 on macOS with Xcode 12.0"
+    - name: "2.7 - Xcode 12.0 - bundled"
       rvm: 2.7
       os: osx
       osx_image: xcode12
+      script:
+        - cd ext/fiddle
+        - ruby extconf.rb --enable-bundled-libffi
+        - make -j
+        - cd -
+        - ruby -I ext/fiddle test/run.rb
     - name: "gem"
       rvm: 2.7
       install:
