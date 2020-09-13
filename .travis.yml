@@ -11,6 +11,7 @@ matrix:
       script:
         - cd ext/fiddle
         - ruby extconf.rb --enable-bundled-libffi
+        - cat mkmf.log
         - make -j
         - cd -
         - ruby -I ext/fiddle test/run.rb
