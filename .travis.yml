@@ -4,18 +4,10 @@ notifications:
 
 matrix:
   include:
-    - name: "2.5"
-      rvm: 2.5
-    - name: "2.6"
-      rvm: 2.6
-    - name: "2.7"
-      rvm: 2.7
     - name: "2.7 on macOS with Xcode 12.0"
       rvm: 2.7
       os: osx
       osx_image: xcode12
-    - name: "master"
-      rvm: ruby-head
     - name: "gem"
       rvm: 2.7
       install:
