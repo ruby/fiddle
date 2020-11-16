@@ -40,7 +40,9 @@ jobs:
 
       - run: rake compile
 
-      - run: rake install
+      - run: rake build
+
+      - run: gem install pkg/*.gem
 
       - run: rake test
         env:
