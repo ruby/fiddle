@@ -49,9 +49,8 @@ jobs:
 
       - name: Run test
         run: |
-          ruby -run -e mkdir tmp
+          ruby -run -e cp -- -pr test/ tmp/
           cd tmp
-          ruby -run -e cp -- -pr ../test/ ./
           ruby test/run.rb
         env:
           RUBYOPT: --disable=gems
