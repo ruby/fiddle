@@ -47,7 +47,7 @@ jobs:
         env:
           RUBYOPT: --disable=gems
 
-      - name: Run test
+      - name: Run test against installed gem
         # We can't use Fiddle gem with RubyInstaller because
         # RubyInstaller requires Fiddle before rubygems is loaded:
         # https://github.com/oneclick/rubyinstaller2/blob/master/lib/ruby_installer/build/dll_directory.rb#L1
