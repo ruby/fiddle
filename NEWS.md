@@ -1,5 +1,11 @@
 # News
 
+## 1.0.2 - 2020-11-18
+
+### Fixes
+
+  * Suppressed a compile time warning.
+
 ## 1.0.1 - 2020-11-17
 
 ### Improvements
