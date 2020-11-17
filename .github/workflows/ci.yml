@@ -46,3 +46,12 @@ jobs:
       - run: rake test
         env:
           RUBYOPT: --disable=gems
+
+      - name: Run test
+        run: |
+          ruby -run -e mkdir tmp
+          cd tmp
+          ruby -run -e cp -- -pr ../test/ ./
+          ruby test/run.rb
+        env:
+          RUBYOPT: --disable=gems
