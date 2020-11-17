@@ -49,6 +49,7 @@ jobs:
 
       - name: Run test
         run: |
+          ruby -e 'require "fiddle"; pp $LOADED_FEATURES'
           ruby -run -e cp -- -pr test/ tmp/
           cd tmp
           ruby test/run.rb
