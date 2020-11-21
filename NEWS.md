@@ -1,5 +1,16 @@
 # News
 
+## 1.0.3 - 2020-11-22
+
+### Improvements
+
+  * Added support for Fedora.
+    [GitHub#49][Reported by Steve Fishman]
+
+### Thanks
+
+  * Steve Fishman
+
 ## 1.0.2 - 2020-11-18
 
 ### Fixes
