@@ -67,7 +67,7 @@ jobs:
       fail-fast: false
       matrix:
         service:
-          - fedora-rawhide
+          - fedora-33
 
     steps:
       - uses: actions/checkout@v2
