@@ -1,0 +1,11 @@
+version: "3.5"
+
+services:
+  fedora-33:
+    build:
+      context: .
+      dockerfile: dockerfiles/fedora-33.dockerfile
+    volumes:
+      - .:/source:delegated
+    command:
+      /source/dockerfiles/run-test.sh

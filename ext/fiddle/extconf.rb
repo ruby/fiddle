@@ -172,6 +172,8 @@ types.each do |type, signed|
     if signed
       check_signedness(type.downcase, "stddef.h")
     end
+  else
+    check_signedness(type.downcase, "stddef.h")
   end
 end
 

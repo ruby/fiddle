@@ -5,7 +5,7 @@ on:
   - pull_request
 
 jobs:
-  test:
+  host:
     name: >-
       ${{ matrix.os }} ${{ matrix.ruby }}
     runs-on: ${{ matrix.os }}-latest
@@ -58,3 +58,20 @@ jobs:
           ruby -run -e cp -- -pr test/ tmp/
           cd tmp
           ruby test/run.rb
+
+  docker:
+    name: >-
+      ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - fedora-rawhide
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: docker-compose build ${{ matrix.service }}
+
+      - run: docker-compose run --rm ${{ matrix.service }}
