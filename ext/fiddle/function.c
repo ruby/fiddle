@@ -432,6 +432,8 @@ Init_fiddle_function(void)
      * Calls the constructed Function, with +args+.
      * Caller must ensure the underlying function is called in a
      * thread-safe manner if running in a multi-threaded process.
+     * Note that it is not thread-safe to use this method to
+     * directly or indirectly call many Ruby C-extension APIs.
      *
      * For an example see Fiddle::Function
      *
