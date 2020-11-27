@@ -8,24 +8,25 @@ jobs:
   host:
     name: >-
       ${{ matrix.os }} ${{ matrix.ruby }}
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
-          - ubuntu
-          - macos
-          - windows
+          - macos-10.15
+          - macos-11.0
+          - ubuntu-latest
+          - windows-latest
         ruby:
           - 2.5
           - 2.6
           - 2.7
           - head
         include:
-          - { os: windows , ruby: mingw }
-          - { os: windows , ruby: mswin }
+          - { os: windows-latest , ruby: mingw }
+          - { os: windows-latest , ruby: mswin }
         exclude:
-          - { os: windows , ruby: head }
+          - { os: windows-latest , ruby: head }
 
     steps:
       - uses: actions/checkout@v2
