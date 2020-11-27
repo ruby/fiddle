@@ -53,8 +53,8 @@ jobs:
         # RubyInstaller requires Fiddle before rubygems is loaded:
         # https://github.com/oneclick/rubyinstaller2/blob/master/lib/ruby_installer/build/dll_directory.rb#L1
         if: >-
-          matrix.os != 'windows' ||
-          (matrix.os == 'windows' && matrix.ruby == 'mswin')
+          matrix.os != 'windows-latest' ||
+          (matrix.os == 'windows-latest' && matrix.ruby == 'mswin')
         run: |
           ruby -run -e cp -- -pr test/ tmp/
           cd tmp
