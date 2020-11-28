@@ -21,6 +21,17 @@ module Fiddle
       assert_equal 'sin', func.name
     end
 
+    def test_need_gvl?
+      libruby = Fiddle.dlopen(nil)
+      rb_str_dup = Function.new(libruby['rb_str_dup'],
+                                [:voidp],
+                                :voidp,
+                                need_gvl: true)
+      assert(rb_str_dup.need_gvl?)
+      assert_equal('Hello',
+                   Fiddle.dlunwrap(rb_str_dup.call(Fiddle.dlwrap('Hello'))))
+    end
+
     def test_argument_errors
       assert_raise(TypeError) do
         Function.new(@libm['sin'], TYPE_DOUBLE, TYPE_DOUBLE)
