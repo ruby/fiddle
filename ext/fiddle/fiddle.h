@@ -189,6 +189,10 @@
 #define ALIGN_INT32_T ALIGN_OF(int32_t)
 #define ALIGN_INT64_T ALIGN_OF(int64_t)
 
+#ifdef HAVE_TYPE_RB_MEMORY_VIEW_T
+# define FIDDLE_MEMORY_VIEW
+#endif
+
 extern VALUE mFiddle;
 extern VALUE rb_eFiddleDLError;
 

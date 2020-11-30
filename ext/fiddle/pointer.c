@@ -5,6 +5,11 @@
 #include <stdbool.h>
 #include <ruby/ruby.h>
 #include <ruby/io.h>
+
+#ifdef HAVE_RUBY_MEMORY_VIEW_H
+# include <ruby/memory_view.h>
+#endif
+
 #include <ctype.h>
 #include <fiddle.h>
 
@@ -86,6 +91,38 @@ static const rb_data_type_t fiddle_ptr_data_type = {
     "fiddle/pointer",
     {fiddle_ptr_mark, fiddle_ptr_free, fiddle_ptr_memsize,},
 };
+
+#ifdef FIDDLE_MEMORY_VIEW
+static struct ptr_data *
+fiddle_ptr_check_memory_view(VALUE obj)
+{
+    struct ptr_data *data;
+    TypedData_Get_Struct(obj, struct ptr_data, &fiddle_ptr_data_type, data);
+    if (data->ptr == NULL || data->size == 0) return NULL;
+    return data;
+}
+
+static int
+fiddle_ptr_memory_view_available_p(VALUE obj)
+{
+    return fiddle_ptr_check_memory_view(obj) != NULL;
+}
+
+static int
+fiddle_ptr_get_memory_view(VALUE obj, rb_memory_view_t *view, int flags)
+{
+    struct ptr_data *data = fiddle_ptr_check_memory_view(obj);
+    rb_memory_view_init_as_byte_array(view, obj, data->ptr, data->size, true);
+
+    return 1;
+}
+
+static const rb_memory_view_entry_t fiddle_ptr_memory_view_entry = {
+    fiddle_ptr_get_memory_view,
+    NULL,
+    fiddle_ptr_memory_view_available_p
+};
+#endif
 
 static VALUE
 rb_fiddle_ptr_new2(VALUE klass, void *ptr, long size, freefunc_t func)
@@ -794,6 +831,10 @@ Init_fiddle_pointer(void)
     rb_define_method(rb_cPointer, "[]=", rb_fiddle_ptr_aset, -1);
     rb_define_method(rb_cPointer, "size", rb_fiddle_ptr_size_get, 0);
     rb_define_method(rb_cPointer, "size=", rb_fiddle_ptr_size_set, 1);
+
+#ifdef FIDDLE_MEMORY_VIEW
+    rb_memory_view_register(rb_cPointer, &fiddle_ptr_memory_view_entry);
+#endif
 
     /*  Document-const: NULL
      *
