@@ -204,6 +204,38 @@ Init_fiddle(void)
     rb_define_const(mFiddle, "TYPE_LONG_LONG", INT2NUM(TYPE_LONG_LONG));
 #endif
 
+#ifdef TYPE_INT8_T
+    /* Document-const: TYPE_INT8_T
+     *
+     * C type - int8_t
+     */
+    rb_define_const(mFiddle, "TYPE_INT8_T",    INT2NUM(TYPE_INT8_T));
+#endif
+
+#ifdef TYPE_INT16_T
+    /* Document-const: TYPE_INT16_T
+     *
+     * C type - int16_t
+     */
+    rb_define_const(mFiddle, "TYPE_INT16_T",   INT2NUM(TYPE_INT16_T));
+#endif
+
+#ifdef TYPE_INT32_T
+    /* Document-const: TYPE_INT32_T
+     *
+     * C type - int32_t
+     */
+    rb_define_const(mFiddle, "TYPE_INT32_T",   INT2NUM(TYPE_INT32_T));
+#endif
+
+#ifdef TYPE_INT64_T
+    /* Document-const: TYPE_INT64_T
+     *
+     * C type - int64_t
+     */
+    rb_define_const(mFiddle, "TYPE_INT64_T",   INT2NUM(TYPE_INT64_T));
+#endif
+
     /* Document-const: TYPE_FLOAT
      *
      * C type - float
@@ -298,6 +330,30 @@ Init_fiddle(void)
     rb_define_const(mFiddle, "ALIGN_LONG_LONG",  INT2NUM(ALIGN_LONG_LONG));
 #endif
 
+    /* Document-const: ALIGN_INT8_T
+     *
+     * The alignment size of a int8_t
+     */
+    rb_define_const(mFiddle, "ALIGN_INT8_T",  INT2NUM(ALIGN_INT8_T));
+
+    /* Document-const: ALIGN_INT16_T
+     *
+     * The alignment size of a int16_t
+     */
+    rb_define_const(mFiddle, "ALIGN_INT16_T", INT2NUM(ALIGN_INT16_T));
+
+    /* Document-const: ALIGN_INT32_T
+     *
+     * The alignment size of a int32_t
+     */
+    rb_define_const(mFiddle, "ALIGN_INT32_T", INT2NUM(ALIGN_INT32_T));
+
+    /* Document-const: ALIGN_INT64_T
+     *
+     * The alignment size of a int64_t
+     */
+    rb_define_const(mFiddle, "ALIGN_INT64_T", INT2NUM(ALIGN_INT64_T));
+
     /* Document-const: ALIGN_FLOAT
      *
      * The alignment size of a float
@@ -387,6 +443,30 @@ Init_fiddle(void)
      */
     rb_define_const(mFiddle, "SIZEOF_LONG_LONG",  INT2NUM(sizeof(LONG_LONG)));
 #endif
+
+    /* Document-const: SIZEOF_INT8_T
+     *
+     * size of a int8_t
+     */
+    rb_define_const(mFiddle, "SIZEOF_INT8_T",  INT2NUM(sizeof(int8_t)));
+
+    /* Document-const: SIZEOF_INT16_T
+     *
+     * size of a int16_t
+     */
+    rb_define_const(mFiddle, "SIZEOF_INT16_T", INT2NUM(sizeof(int16_t)));
+
+    /* Document-const: SIZEOF_INT32_T
+     *
+     * size of a int32_t
+     */
+    rb_define_const(mFiddle, "SIZEOF_INT32_T", INT2NUM(sizeof(int32_t)));
+
+    /* Document-const: SIZEOF_INT64_T
+     *
+     * size of a int64_t
+     */
+    rb_define_const(mFiddle, "SIZEOF_INT64_T", INT2NUM(sizeof(int64_t)));
 
     /* Document-const: SIZEOF_FLOAT
      *

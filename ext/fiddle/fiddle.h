@@ -118,6 +118,27 @@
 #define TYPE_VARIADIC 9
 #define TYPE_CONST_STRING 10
 
+#define TYPE_INT8_T TYPE_CHAR
+#if SIZEOF_SHORT == 2
+# define TYPE_INT16_T TYPE_SHORT
+#elif SIZEOF_INT == 2
+# define TYPE_INT16_T TYPE_INT
+#endif
+#if SIZEOF_SHORT == 4
+# define TYPE_INT32_T TYPE_SHORT
+#elif SIZEOF_INT == 4
+# define TYPE_INT32_T TYPE_INT
+#elif SIZEOF_LONG == 4
+# define TYPE_INT32_T TYPE_LONG
+#endif
+#if SIZEOF_INT == 8
+# define TYPE_INT64_T TYPE_INT
+#elif SIZEOF_LONG == 8
+# define TYPE_INT64_T TYPE_LONG
+#elif defined(TYPE_LONG_LONG)
+# define TYPE_INT64_T TYPE_LONG_LONG
+#endif
+
 #ifndef TYPE_SSIZE_T
 # if SIZEOF_SIZE_T == SIZEOF_INT
 #   define TYPE_SSIZE_T TYPE_INT
@@ -153,8 +174,8 @@
 #define ALIGN_OF(type) offsetof(struct {char align_c; type align_x;}, align_x)
 
 #define ALIGN_VOIDP  ALIGN_OF(void*)
-#define ALIGN_SHORT  ALIGN_OF(short)
 #define ALIGN_CHAR   ALIGN_OF(char)
+#define ALIGN_SHORT  ALIGN_OF(short)
 #define ALIGN_INT    ALIGN_OF(int)
 #define ALIGN_LONG   ALIGN_OF(long)
 #if HAVE_LONG_LONG
@@ -162,6 +183,11 @@
 #endif
 #define ALIGN_FLOAT  ALIGN_OF(float)
 #define ALIGN_DOUBLE ALIGN_OF(double)
+
+#define ALIGN_INT8_T  ALIGN_OF(int8_t)
+#define ALIGN_INT16_T ALIGN_OF(int16_t)
+#define ALIGN_INT32_T ALIGN_OF(int32_t)
+#define ALIGN_INT64_T ALIGN_OF(int64_t)
 
 extern VALUE mFiddle;
 extern VALUE rb_eFiddleDLError;

@@ -154,17 +154,15 @@ module Fiddle
       when 'void'
         return TYPE_VOID
       when /\A(?:(?:signed\s+)?long\s+long(?:\s+int\s+)?|int64_t)(?:\s+\w+)?\z/
-        if( defined?(TYPE_LONG_LONG) )
-          return TYPE_LONG_LONG
-        else
+        unless Fiddle.const_defined?(:TYPE_LONG_LONG)
           raise(RuntimeError, "unsupported type: #{ty}")
         end
+        return TYPE_LONG_LONG
       when /\A(?:unsigned\s+long\s+long(?:\s+int\s+)?|uint64_t)(?:\s+\w+)?\z/
-        if( defined?(TYPE_LONG_LONG) )
-          return -TYPE_LONG_LONG
-        else
+        unless Fiddle.const_defined?(:TYPE_LONG_LONG)
           raise(RuntimeError, "unsupported type: #{ty}")
         end
+        return -TYPE_LONG_LONG
       when /\A(?:signed\s+)?long(?:\s+int\s+)?(?:\s+\w+)?\z/
         return TYPE_LONG
       when /\Aunsigned\s+long(?:\s+int\s+)?(?:\s+\w+)?\z/
@@ -181,6 +179,46 @@ module Fiddle
         return TYPE_CHAR
       when /\Aunsigned\s+char(?:\s+\w+)?\z/
         return  -TYPE_CHAR
+      when /\Aint8_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT8_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return TYPE_INT8_T
+      when /\Auint8_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT8_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return -TYPE_INT8_T
+      when /\Aint16_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT16_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return TYPE_INT16_T
+      when /\Auint16_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT16_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return -TYPE_INT16_T
+      when /\Aint32_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT32_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return TYPE_INT32_T
+      when /\Auint32_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT32_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return -TYPE_INT32_T
+      when /\Aint64_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT64_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return TYPE_INT64_T
+      when /\Auint64_t(?:\s+\w+)?\z/
+        unless Fiddle.const_defined?(:TYPE_INT64_T)
+          raise(RuntimeError, "unsupported type: #{ty}")
+        end
+        return -TYPE_INT64_T
       when /\Afloat(?:\s+\w+)?\z/
         return TYPE_FLOAT
       when /\Adouble(?:\s+\w+)?\z/
