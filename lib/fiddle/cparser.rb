@@ -153,47 +153,47 @@ module Fiddle
         return [parse_ctype(ty[0], tymap), ty[1]]
       when 'void'
         return TYPE_VOID
-      when /^(?:(?:signed\s+)?long\s+long(?:\s+int\s+)?|int64_t)(?:\s+\w+)?$/
+      when /\A(?:(?:signed\s+)?long\s+long(?:\s+int\s+)?|int64_t)(?:\s+\w+)?\z/
         if( defined?(TYPE_LONG_LONG) )
           return TYPE_LONG_LONG
         else
           raise(RuntimeError, "unsupported type: #{ty}")
         end
-      when /^(?:unsigned\s+long\s+long(?:\s+int\s+)?|uint64_t)(?:\s+\w+)?$/
+      when /\A(?:unsigned\s+long\s+long(?:\s+int\s+)?|uint64_t)(?:\s+\w+)?\z/
         if( defined?(TYPE_LONG_LONG) )
           return -TYPE_LONG_LONG
         else
           raise(RuntimeError, "unsupported type: #{ty}")
         end
-      when /^(?:signed\s+)?long(?:\s+int\s+)?(?:\s+\w+)?$/
+      when /\A(?:signed\s+)?long(?:\s+int\s+)?(?:\s+\w+)?\z/
         return TYPE_LONG
-      when /^unsigned\s+long(?:\s+int\s+)?(?:\s+\w+)?$/
+      when /\Aunsigned\s+long(?:\s+int\s+)?(?:\s+\w+)?\z/
         return -TYPE_LONG
-      when /^(?:signed\s+)?int(?:\s+\w+)?$/
+      when /\A(?:signed\s+)?int(?:\s+\w+)?\z/
         return TYPE_INT
-      when /^(?:unsigned\s+int|uint)(?:\s+\w+)?$/
+      when /\A(?:unsigned\s+int|uint)(?:\s+\w+)?\z/
         return -TYPE_INT
-      when /^(?:signed\s+)?short(?:\s+int\s+)?(?:\s+\w+)?$/
+      when /\A(?:signed\s+)?short(?:\s+int\s+)?(?:\s+\w+)?\z/
         return TYPE_SHORT
-      when /^unsigned\s+short(?:\s+int\s+)?(?:\s+\w+)?$/
+      when /\Aunsigned\s+short(?:\s+int\s+)?(?:\s+\w+)?\z/
         return -TYPE_SHORT
-      when /^(?:signed\s+)?char(?:\s+\w+)?$/
+      when /\A(?:signed\s+)?char(?:\s+\w+)?\z/
         return TYPE_CHAR
-      when /^unsigned\s+char(?:\s+\w+)?$/
+      when /\Aunsigned\s+char(?:\s+\w+)?\z/
         return  -TYPE_CHAR
-      when /^float(?:\s+\w+)?$/
+      when /\Afloat(?:\s+\w+)?\z/
         return TYPE_FLOAT
-      when /^double(?:\s+\w+)?$/
+      when /\Adouble(?:\s+\w+)?\z/
         return TYPE_DOUBLE
-      when /^size_t(?:\s+\w+)?$/
+      when /\Asize_t(?:\s+\w+)?\z/
         return TYPE_SIZE_T
-      when /^ssize_t(?:\s+\w+)?$/
+      when /\Assize_t(?:\s+\w+)?\z/
         return TYPE_SSIZE_T
-      when /^ptrdiff_t(?:\s+\w+)?$/
+      when /\Aptrdiff_t(?:\s+\w+)?\z/
         return TYPE_PTRDIFF_T
-      when /^intptr_t(?:\s+\w+)?$/
+      when /\Aintptr_t(?:\s+\w+)?\z/
         return TYPE_INTPTR_T
-      when /^uintptr_t(?:\s+\w+)?$/
+      when /\Auintptr_t(?:\s+\w+)?\z/
         return TYPE_UINTPTR_T
       when /\*/, /\[[\s\d]*\]/
         return TYPE_VOIDP
@@ -213,7 +213,7 @@ module Fiddle
 
     def split_arguments(arguments, sep=',')
       return [] if arguments.strip == 'void'
-      arguments.scan(/([\w\*\s]+\(\*\w*\)\(.*?\)|[\w\*\s\[\]]+|\.\.\.)(?:#{sep}\s*|$)/).collect {|m| m[0]}
+      arguments.scan(/([\w\*\s]+\(\*\w*\)\(.*?\)|[\w\*\s\[\]]+|\.\.\.)(?:#{sep}\s*|\z)/).collect {|m| m[0]}
     end
 
     def compact(signature)
