@@ -58,38 +58,38 @@
 # error "CHAR_BIT not supported"
 #endif
 
-# if SIZEOF_SHORT == 2
-#  define ffi_type_ushort ffi_type_uint16
-#  define ffi_type_sshort ffi_type_sint16
-# elif SIZEOF_SHORT == 4
-#  define ffi_type_ushort ffi_type_uint32
-#  define ffi_type_sshort ffi_type_sint32
-# else
-#  error "short size not supported"
-# endif
+#if SIZEOF_SHORT == 2
+# define ffi_type_ushort ffi_type_uint16
+# define ffi_type_sshort ffi_type_sint16
+#elif SIZEOF_SHORT == 4
+# define ffi_type_ushort ffi_type_uint32
+# define ffi_type_sshort ffi_type_sint32
+#else
+# error "short size not supported"
+#endif
 
-# if SIZEOF_INT == 2
-#  define ffi_type_uint	ffi_type_uint16
-#  define ffi_type_sint	ffi_type_sint16
-# elif SIZEOF_INT == 4
-#  define ffi_type_uint	ffi_type_uint32
-#  define ffi_type_sint	ffi_type_sint32
-# elif SIZEOF_INT == 8
-#  define ffi_type_uint	ffi_type_uint64
-#  define ffi_type_sint	ffi_type_sint64
-# else
-#  error "int size not supported"
-# endif
+#if SIZEOF_INT == 2
+# define ffi_type_uint	ffi_type_uint16
+# define ffi_type_sint	ffi_type_sint16
+#elif SIZEOF_INT == 4
+# define ffi_type_uint	ffi_type_uint32
+# define ffi_type_sint	ffi_type_sint32
+#elif SIZEOF_INT == 8
+# define ffi_type_uint	ffi_type_uint64
+# define ffi_type_sint	ffi_type_sint64
+#else
+# error "int size not supported"
+#endif
 
-# if SIZEOF_LONG == 4
-#  define ffi_type_ulong ffi_type_uint32
-#  define ffi_type_slong ffi_type_sint32
-# elif SIZEOF_LONG == 8
-#  define ffi_type_ulong ffi_type_uint64
-#  define ffi_type_slong ffi_type_sint64
-# else
-#  error "long size not supported"
-# endif
+#if SIZEOF_LONG == 4
+# define ffi_type_ulong ffi_type_uint32
+# define ffi_type_slong ffi_type_sint32
+#elif SIZEOF_LONG == 8
+# define ffi_type_ulong ffi_type_uint64
+# define ffi_type_slong ffi_type_sint64
+#else
+# error "long size not supported"
+#endif
 
 #if HAVE_LONG_LONG
 # if SIZEOF_LONG_LONG == 8
