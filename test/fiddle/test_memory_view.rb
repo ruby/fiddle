@@ -4,10 +4,17 @@ begin
 rescue LoadError
 end
 
-require '-test-/memory_view'
+begin
+  require '-test-/memory_view'
+rescue LoadError
+end
 
 module Fiddle
   class TestMemoryView < TestCase
+    def setup
+      skip "MemoryView is unavailable" unless defined? Fiddle::MemoryView
+    end
+
     def test_null_ptr
       assert_raise(ArgumentError) do
         MemoryView.new(Fiddle::NULL)
@@ -40,7 +47,8 @@ module Fiddle
     end
 
     def test_memory_view_multi_dimensional
-      m = MemoryViewTestUtils
+      skip "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
+
       buf = [ 1, 2, 3, 4,
               5, 6, 7, 8,
               9, 10, 11, 12 ].pack("l!*")
@@ -54,6 +62,8 @@ module Fiddle
     end
 
     def test_memory_view_multi_dimensional_with_strides
+      skip "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
+
       buf = [ 1, 2,  3,  4,  5,  6,  7,  8,
               9, 10, 11, 12, 13, 14, 15, 16 ].pack("l!*")
       shape = [2, 8]
