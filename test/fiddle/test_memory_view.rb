@@ -4,6 +4,8 @@ begin
 rescue LoadError
 end
 
+require '-test-/memory_view'
+
 module Fiddle
   class TestMemoryView < TestCase
     def test_null_ptr
@@ -35,6 +37,33 @@ module Fiddle
 
       codes = str.codepoints
       assert_equal(codes, (0...str.length).map {|i| mview[i] })
+    end
+
+    def test_memory_view_multi_dimensional
+      m = MemoryViewTestUtils
+      buf = [ 1, 2, 3, 4,
+              5, 6, 7, 8,
+              9, 10, 11, 12 ].pack("l!*")
+      shape = [3, 4]
+      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, shape, nil)
+      mview = Fiddle::MemoryView.new(md)
+      assert_equal(1, mview[0, 0])
+      assert_equal(4, mview[0, 3])
+      assert_equal(6, mview[1, 1])
+      assert_equal(10, mview[2, 1])
+    end
+
+    def test_memory_view_multi_dimensional_with_strides
+      buf = [ 1, 2,  3,  4,  5,  6,  7,  8,
+              9, 10, 11, 12, 13, 14, 15, 16 ].pack("l!*")
+      shape = [2, 8]
+      strides = [4*Fiddle::SIZEOF_LONG*2, Fiddle::SIZEOF_LONG*2]
+      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, shape, strides)
+      mview = Fiddle::MemoryView.new(md)
+      assert_equal(1, mview[0, 0])
+      assert_equal(5, mview[0, 2])
+      assert_equal(9, mview[1, 0])
+      assert_equal(15, mview[1, 3])
     end
   end
 end
