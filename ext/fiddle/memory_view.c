@@ -146,7 +146,15 @@ rb_fiddle_memview_get_shape(VALUE obj)
     TypedData_Get_Struct(obj, struct memview_data, &fiddle_memview_data_type, data);
 
     if (NIL_P(data->view.obj)) return Qnil;
-    return Qnil; /*TODO*/
+    if (data->view.shape == NULL) return Qnil;
+
+    const ssize_t ndim = data->view.ndim;
+    VALUE shape = rb_ary_new_capa(ndim);
+    ssize_t i;
+    for (i = 0; i < ndim; ++i) {
+        rb_ary_push(shape, SSIZET2NUM(data->view.shape[i]));
+    }
+    return shape;
 }
 
 static VALUE
@@ -156,7 +164,15 @@ rb_fiddle_memview_get_strides(VALUE obj)
     TypedData_Get_Struct(obj, struct memview_data, &fiddle_memview_data_type, data);
 
     if (NIL_P(data->view.obj)) return Qnil;
-    return Qnil;/*TODO*/
+    if (data->view.strides == NULL) return Qnil;
+
+    const ssize_t ndim = data->view.ndim;
+    VALUE strides = rb_ary_new_capa(ndim);
+    ssize_t i;
+    for (i = 0; i < ndim; ++i) {
+        rb_ary_push(strides, SSIZET2NUM(data->view.strides[i]));
+    }
+    return strides;
 }
 
 static VALUE
@@ -166,7 +182,15 @@ rb_fiddle_memview_get_sub_offsets(VALUE obj)
     TypedData_Get_Struct(obj, struct memview_data, &fiddle_memview_data_type, data);
 
     if (NIL_P(data->view.obj)) return Qnil;
-    return Qnil;/*TODO*/
+    if (data->view.sub_offsets == NULL) return Qnil;
+
+    const ssize_t ndim = data->view.ndim;
+    VALUE sub_offsets = rb_ary_new_capa(ndim);
+    ssize_t i;
+    for (i = 0; i < ndim; ++i) {
+        rb_ary_push(sub_offsets, SSIZET2NUM(data->view.sub_offsets[i]));
+    }
+    return sub_offsets;
 }
 
 static VALUE
