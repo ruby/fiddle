@@ -179,7 +179,7 @@ rb_fiddle_memview_aref(int argc, VALUE *argv, VALUE obj)
 
     const ssize_t ndim = data->view.ndim;
     if (argc != ndim) {
-        rb_raise(rb_eIndexError, "wrong number of index (%d for %"PRIdSIZE, argc, ndim);
+        rb_raise(rb_eIndexError, "wrong number of index (%d for %"PRIdSIZE")", argc, ndim);
     }
 
     VALUE indices_v = 0;
