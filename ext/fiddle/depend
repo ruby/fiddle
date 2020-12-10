@@ -76,6 +76,8 @@ handle.o: conversions.h
 handle.o: fiddle.h
 handle.o: function.h
 handle.o: handle.c
+memory_view.o: fiddle.h
+memory_view.o: memory_view.c
 pointer.o: closure.h
 pointer.o: conversions.h
 pointer.o: fiddle.h

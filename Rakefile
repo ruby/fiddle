@@ -7,5 +7,6 @@ end
 
 require 'rake/extensiontask'
 Rake::ExtensionTask.new("fiddle")
+Rake::ExtensionTask.new("-test-/memory_view")
 
 task :default => [:compile, :test]
