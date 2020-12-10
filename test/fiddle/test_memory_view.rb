@@ -53,7 +53,7 @@ module Fiddle
               5, 6, 7, 8,
               9, 10, 11, 12 ].pack("l!*")
       shape = [3, 4]
-      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, shape, nil)
+      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, "l!", shape, nil)
       mview = Fiddle::MemoryView.new(md)
       assert_equal(1, mview[0, 0])
       assert_equal(4, mview[0, 3])
@@ -68,12 +68,27 @@ module Fiddle
               9, 10, 11, 12, 13, 14, 15, 16 ].pack("l!*")
       shape = [2, 8]
       strides = [4*Fiddle::SIZEOF_LONG*2, Fiddle::SIZEOF_LONG*2]
-      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, shape, strides)
+      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, "l!", shape, strides)
       mview = Fiddle::MemoryView.new(md)
       assert_equal(1, mview[0, 0])
       assert_equal(5, mview[0, 2])
       assert_equal(9, mview[1, 0])
       assert_equal(15, mview[1, 3])
+    end
+
+    def test_memory_view_multi_dimensional_with_multiple_members
+      skip "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
+
+      buf = [ 1, 2,  3,  4,  5,  6,  7,  8,
+             -1, -2, -3, -4, -5, -6, -7, -8].pack("s*")
+      shape = [2, 4]
+      strides = [4*Fiddle::SIZEOF_SHORT*2, Fiddle::SIZEOF_SHORT*2]
+      md = MemoryViewTestUtils::MultiDimensionalView.new(buf, "ss", shape, strides)
+      mview = Fiddle::MemoryView.new(md)
+      assert_equal([1, 2], mview[0, 0])
+      assert_equal([5, 6], mview[0, 2])
+      assert_equal([-1, -2], mview[1, 0])
+      assert_equal([-7, -8], mview[1, 3])
     end
   end
 end
