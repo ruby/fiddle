@@ -1,5 +1,21 @@
 # News
 
+## 1.0.4 - 2020-12-10
+
+### Improvements
+
+  * Experimentally support MemoryView feature in Ruby 3.0.
+    [GitHub#54]
+
+  * Add support for `intNN_t` and `uintNN_t`.
+
+  * Add `:need_gvl` option in `Fiddle::Function#initialize`.
+    [Reported by Alan Wu]
+
+### Thanks
+
+  * Alan Wu
+
 ## 1.0.3 - 2020-11-22
 
 ### Improvements
