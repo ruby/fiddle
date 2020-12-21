@@ -1,5 +1,16 @@
 # News
 
+## 1.0.5 - 2020-12-21
+
+### Improvements
+
+  * Added a workaround for build failure with macOS 10.15 and Homebrew.
+    [GitHub#52][Reported by Yaroslav Berezovskiy]
+
+### Thanks
+
+  * Yaroslav Berezovskiy
+
 ## 1.0.4 - 2020-12-10
 
 ### Improvements
