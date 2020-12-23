@@ -14,7 +14,7 @@ static VALUE sym_offset;
 static VALUE sym_size;
 static VALUE sym_repeat;
 static VALUE sym_obj;
-static VALUE sym_len;
+static VALUE sym_byte_size;
 static VALUE sym_readonly;
 static VALUE sym_format;
 static VALUE sym_item_size;
@@ -26,15 +26,15 @@ static VALUE sym_endianness;
 static VALUE sym_little_endian;
 static VALUE sym_big_endian;
 
-static int
+static bool
 exportable_string_get_memory_view(VALUE obj, rb_memory_view_t *view, int flags)
 {
     VALUE str = rb_ivar_get(obj, id_str);
     rb_memory_view_init_as_byte_array(view, obj, RSTRING_PTR(str), RSTRING_LEN(str), true);
-    return 1;
+    return true;
 }
 
-static int
+static bool
 exportable_string_memory_view_available_p(VALUE obj)
 {
     VALUE str = rb_ivar_get(obj, id_str);
@@ -124,7 +124,7 @@ memory_view_get_memory_view_info(VALUE mod, VALUE obj)
 
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, sym_obj, view.obj);
-    rb_hash_aset(hash, sym_len, SSIZET2NUM(view.len));
+    rb_hash_aset(hash, sym_byte_size, SSIZET2NUM(view.byte_size));
     rb_hash_aset(hash, sym_readonly, view.readonly ? Qtrue : Qfalse);
     rb_hash_aset(hash, sym_format, view.format ? rb_str_new_cstr(view.format) : Qnil);
     rb_hash_aset(hash, sym_item_size, SSIZET2NUM(view.item_size));
@@ -262,7 +262,7 @@ expstr_initialize(VALUE obj, VALUE s)
     return Qnil;
 }
 
-static int
+static bool
 mdview_get_memory_view(VALUE obj, rb_memory_view_t *view, int flags)
 {
     VALUE buf_v = rb_ivar_get(obj, id_str);
@@ -270,11 +270,10 @@ mdview_get_memory_view(VALUE obj, rb_memory_view_t *view, int flags)
     VALUE shape_v = rb_ivar_get(obj, SYM2ID(sym_shape));
     VALUE strides_v = rb_ivar_get(obj, SYM2ID(sym_strides));
 
-    const char *format = RSTRING_PTR(format_v);
     const char *err;
-    const ssize_t item_size = rb_memory_view_item_size_from_format(format, &err);
+    const ssize_t item_size = rb_memory_view_item_size_from_format(RSTRING_PTR(format_v), &err);
     if (item_size < 0) {
-        return 0;
+        return false;
     }
 
     ssize_t ndim = RARRAY_LEN(shape_v);
@@ -304,16 +303,26 @@ mdview_get_memory_view(VALUE obj, rb_memory_view_t *view, int flags)
     }
 
     rb_memory_view_init_as_byte_array(view, obj, RSTRING_PTR(buf_v), RSTRING_LEN(buf_v), true);
-    view->format = StringValueCStr(format_v);
+    view->format = RSTRING_PTR(format_v);
     view->item_size = item_size;
     view->ndim = ndim;
     view->shape = shape;
     view->strides = strides;
+    view->sub_offsets = NULL;
 
-    return 1;
+    return true;
 }
 
-static int
+static bool
+mdview_release_memory_view(VALUE obj, rb_memory_view_t *view)
+{
+    if (view->shape) xfree((void *)view->shape);
+    if (view->strides) xfree((void *)view->strides);
+
+    return true;
+}
+
+static bool
 mdview_memory_view_available_p(VALUE obj)
 {
     return true;
@@ -321,7 +330,7 @@ mdview_memory_view_available_p(VALUE obj)
 
 static const rb_memory_view_entry_t mdview_memory_view_entry = {
     mdview_get_memory_view,
-    NULL,
+    mdview_release_memory_view,
     mdview_memory_view_available_p
 };
 
@@ -402,7 +411,7 @@ Init_memory_view(void)
     sym_size = ID2SYM(rb_intern_const("size"));
     sym_repeat = ID2SYM(rb_intern_const("repeat"));
     sym_obj = ID2SYM(rb_intern_const("obj"));
-    sym_len = ID2SYM(rb_intern_const("len"));
+    sym_byte_size = ID2SYM(rb_intern_const("byte_size"));
     sym_readonly = ID2SYM(rb_intern_const("readonly"));
     sym_format = ID2SYM(rb_intern_const("format"));
     sym_item_size = ID2SYM(rb_intern_const("item_size"));
