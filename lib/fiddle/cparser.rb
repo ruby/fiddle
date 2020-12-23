@@ -112,7 +112,7 @@ module Fiddle
                         when /^(?:[\w\*\s]+)\(\*(\w+)\((.*?)\)\)(?:\[\w*\]|\(.*?\));?$/
                           [TYPE_VOIDP, $1, $2]
                         when /^([\w\*\s]+[\*\s])(\w+)\((.*?)\);?$/
-                          [parse_ctype($1.strip), $2, $3]
+                          [parse_ctype($1.strip, tymap), $2, $3]
                         else
                           raise("can't parse the function prototype: #{signature}")
                         end
