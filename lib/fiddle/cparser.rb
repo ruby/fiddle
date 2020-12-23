@@ -109,9 +109,9 @@ module Fiddle
     def parse_signature(signature, tymap=nil)
       tymap ||= {}
       ctype, func, args = case compact(signature)
-                        when /^(?:[\w*\s]+)\(\*(\w+)\((.*?)\)\)(?:\[\w*\]|\(.*?\));?$/
+                        when /^(?:[\w\*\s]+)\(\*(\w+)\((.*?)\)\)(?:\[\w*\]|\(.*?\));?$/
                           [TYPE_VOIDP, $1, $2]
-                        when /^([\w*\s]+[*\s])(\w+)\((.*?)\);?$/
+                        when /^([\w\*\s]+[\*\s])(\w+)\((.*?)\);?$/
                           [parse_ctype($1.strip), $2, $3]
                         else
                           raise("can't parse the function prototype: #{signature}")
