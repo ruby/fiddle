@@ -108,15 +108,15 @@ module Fiddle
     #
     def parse_signature(signature, tymap=nil)
       tymap ||= {}
-      ret, func, args = case compact(signature)
+      ctype, func, args = case compact(signature)
                         when /^(?:[\w*\s]+)\(\*(\w+)\((.*?)\)\)(?:\[\w*\]|\(.*?\));?$/
                           [TYPE_VOIDP, $1, $2]
                         when /^([\w*\s]+[*\s])(\w+)\((.*?)\);?$/
-                          [$1.strip, $2, $3]
+                          [parse_ctype($1.strip), $2, $3]
                         else
                           raise("can't parse the function prototype: #{signature}")
                         end
-      [func, parse_ctype(ret, tymap), split_arguments(args).collect {|arg| parse_ctype(arg, tymap)}]
+      [func, ctype, split_arguments(args).collect {|arg| parse_ctype(arg, tymap)}]
     end
 
     # Given a String of C type +ty+, returns the corresponding Fiddle constant.
