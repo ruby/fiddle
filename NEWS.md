@@ -1,5 +1,11 @@
 # News
 
+## 1.0.6 - 2020-12-23
+
+### Improvements
+
+  * Modify Fiddle::MemoryView for the latest Ruby master branch.
+
 ## 1.0.5 - 2020-12-21
 
 ### Improvements
