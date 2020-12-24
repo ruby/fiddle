@@ -1,5 +1,18 @@
 # News
 
+## 1.0.7 - 2020-12-25
+
+### Improvements
+
+  * `Fiddle::Closure`: Added support for specifying a type as `Symbol`.
+
+  * `Fiddle::Closure`: Added support for `const char *`.
+    [GitHub#62][Reported by Cody Krieger]
+
+### Thanks
+
+  * Cody Krieger
+
 ## 1.0.6 - 2020-12-23
 
 ### Improvements
