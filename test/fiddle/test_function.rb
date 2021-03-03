@@ -164,7 +164,7 @@ module Fiddle
       begin
         poll = @libc['poll']
       rescue Fiddle::DLError
-        skip 'poll(2) not available'
+        pend 'poll(2) not available'
       end
       f = Function.new(poll, [TYPE_VOIDP, TYPE_INT, TYPE_INT], TYPE_INT)
 
