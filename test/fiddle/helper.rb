@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require 'test/unit'
 require 'fiddle'
+require 'rbconfig'
+require 'rbconfig/sizeof'
 
 # FIXME: this is stolen from DL and needs to be refactored.
 
