@@ -9,8 +9,22 @@ module Fiddle
     include Enumerable
 
     # accessor to Fiddle::CStructEntity
-    def CStruct.entity_class
+    def self.entity_class
       CStructEntity
+    end
+
+    def self.malloc(func=nil, &block)
+      if block
+        entity_class.malloc(types, func, size) do |entity|
+          block.call(new(entity))
+        end
+      else
+        new(entity_class.malloc(types, func, size))
+      end
+    end
+
+    def initialize_copy(other)
+      @entity = other.to_ptr.dup
     end
 
     def each
@@ -74,6 +88,16 @@ module Fiddle
     # accessor to Fiddle::CUnionEntity
     def CUnion.entity_class
       CUnionEntity
+    end
+
+    def self.malloc(func=nil, &block)
+      if block
+        entity_class.malloc(types, func, size) do |entity|
+          block.call(new(entity))
+        end
+      else
+        new(entity_class.malloc(types, func, size))
+      end
     end
   end
 
@@ -183,15 +207,6 @@ module Fiddle
         size = entity_class.size(types)
         define_singleton_method(:alignment) { alignment }
         define_singleton_method(:size) { size }
-        define_singleton_method(:malloc) do |func=nil, &block|
-          if block
-            entity_class.malloc(types, func, size) do |entity|
-              block.call(new(entity))
-            end
-          else
-            new(entity_class.malloc(types, func, size))
-          end
-        end
       }
       return new_class
     end
@@ -272,6 +287,12 @@ module Fiddle
       end
       set_ctypes(types)
       super(addr, @size, func)
+    end
+
+    # Initialize the memory for a struct and copy members from +other+.
+    def initialize_copy(other)
+      # TODO
+      super
     end
 
     # Set the names of the +members+ in this C struct
