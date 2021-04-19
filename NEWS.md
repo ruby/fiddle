@@ -1,5 +1,32 @@
 # News
 
+## 1.0.8 - 2021-04-19
+
+### Improvements
+
+  * Added support for `const` in C type.
+    [GitHub#68][Reported by kojix2]
+
+  * Added `Fiddle.win32_last_socket_error` and
+    `Fiddle.win32_last_socket_error=`. They manage the last socket
+    error on Windows. Users can't use `WSAGetLastError()` with Ruby
+    3.0 or later because `rb_funcall()` resets the last socket error
+    internally.
+    [GitHub#72][Reported by Kentaro Hayashi]
+
+### Fixes
+
+  * Fixed wrong type aliases for 64-bit Windows in `Fiddle::Win32Types`.
+    [GitHub#63][Patch by Orgad Shaneh]
+
+### Thanks
+
+  * Orgad Shaneh
+
+  * kojix2
+
+  * Kentaro Hayashi
+
 ## 1.0.7 - 2020-12-25
 
 ### Improvements
