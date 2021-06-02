@@ -68,8 +68,9 @@ jobs:
         run: |
           ruby -run -e cp -- -pr test/ tmp/
           cd tmp
-          export RUBYOPT="-Ilib -Itest/lib -rbundler/setup -rhelper"
           ruby test/run.rb
+        env:
+          RUBYOPT: -Itest/lib -rhelper
 
   docker:
     name: >-
