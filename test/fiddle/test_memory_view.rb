@@ -112,6 +112,24 @@ module Fiddle
       assert_equal([-7, -8], mview[1, 3])
     end
 
+    def test_get
+      str = Marshal.load(Marshal.dump("hello world"))
+      ptr = Pointer[str]
+      mview_str = MemoryView.get(ptr) do |mview|
+        mview.to_s
+      end
+      assert_equal(str, mview_str)
+    end
+
+    def test_release
+      str = Marshal.load(Marshal.dump("hello world"))
+      ptr = Pointer[str]
+      mview = MemoryView.new(ptr)
+      assert_same(ptr, mview.obj)
+      mview.release
+      assert_nil(mview.obj)
+    end
+
     def test_to_s
       # U+3042 HIRAGANA LETTER A
       data = "\u{3042}"
