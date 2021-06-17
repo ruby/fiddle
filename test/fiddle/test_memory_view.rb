@@ -112,18 +112,16 @@ module Fiddle
       assert_equal([-7, -8], mview[1, 3])
     end
 
-    def test_get
-      str = Marshal.load(Marshal.dump("hello world"))
-      ptr = Pointer[str]
-      mview_str = MemoryView.get(ptr) do |mview|
+    def test_export
+      str = "hello world"
+      mview_str = MemoryView.export(Pointer[str]) do |mview|
         mview.to_s
       end
       assert_equal(str, mview_str)
     end
 
     def test_release
-      str = Marshal.load(Marshal.dump("hello world"))
-      ptr = Pointer[str]
+      ptr = Pointer["hello world"]
       mview = MemoryView.new(ptr)
       assert_same(ptr, mview.obj)
       mview.release
