@@ -1,5 +1,30 @@
 # News
 
+## 1.0.9 - 2021-06-19
+
+### Improvements
+
+  * Added `Fiddle::Function#to_proc`.
+
+  * Added `Fiddle::MemoryView#to_s`.
+    [GitHub#74][Reported by dsisnero]
+
+  * Added `Fiddle::MemoryView.export` and `Fiddle::MemoryView#release`.
+    [GitHub#79][Reported by xtkoba]
+
+### Fixes
+
+  * Changed to use `GetLastError()` for `Fiddle.win32_last_error`.
+    [Ruby#11579][Patch by cremno phobia]
+
+### Thanks
+
+  * cremno phobia
+
+  * dsisnero
+
+  * xtkoba
+
 ## 1.0.8 - 2021-04-19
 
 ### Improvements
