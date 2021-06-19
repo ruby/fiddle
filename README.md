@@ -1,6 +1,6 @@
 # Fiddle
 
-[![Build Status](https://travis-ci.org/ruby/fiddle.svg?branch=master)](https://travis-ci.org/ruby/fiddle)
+[![CI](https://github.com/ruby/fiddle/actions/workflows/ci.yml/badge.svg)](https://github.com/ruby/fiddle/actions/workflows/ci.yml)
 
 A libffi wrapper for Ruby.
 
