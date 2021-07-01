@@ -33,4 +33,4 @@ module Fiddle
       assert_equal 0, my_struct.offsetof("c")
     end
   end
-end
+end if defined?(Fiddle)
