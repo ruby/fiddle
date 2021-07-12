@@ -15,7 +15,7 @@ module Fiddle
       begin
         f = Function.new(@libm['sinf'], [TYPE_FLOAT], TYPE_FLOAT)
       rescue Fiddle::DLError
-        skip "libm may not have sinf()"
+        pend "libm may not have sinf()"
       end
       assert_in_delta 1.0, f.call(90 * Math::PI / 180), 0.0001
     end
@@ -82,7 +82,7 @@ module Fiddle
 
     def test_snprintf
       unless Fiddle.const_defined?("TYPE_VARIADIC")
-        skip "libffi doesn't support variadic arguments"
+        pend "libffi doesn't support variadic arguments"
       end
       if Fiddle::WINDOWS
         snprintf_name = "_snprintf"
@@ -92,7 +92,7 @@ module Fiddle
       begin
         snprintf_pointer = @libc[snprintf_name]
       rescue Fiddle::DLError
-        skip "Can't find #{snprintf_name}: #{$!.message}"
+        pend "Can't find #{snprintf_name}: #{$!.message}"
       end
       snprintf = Function.new(snprintf_pointer,
                               [

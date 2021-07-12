@@ -12,7 +12,7 @@ end
 module Fiddle
   class TestMemoryView < TestCase
     def setup
-      skip "MemoryView is unavailable" unless defined? Fiddle::MemoryView
+      pend "MemoryView is unavailable" unless defined? Fiddle::MemoryView
     end
 
     def test_null_ptr
@@ -47,7 +47,7 @@ module Fiddle
     end
 
     def test_memory_view_multi_dimensional
-      skip "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
+      pend "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
 
       buf = [ 1, 2, 3, 4,
               5, 6, 7, 8,
@@ -69,7 +69,7 @@ module Fiddle
     end
 
     def test_memory_view_multi_dimensional_with_strides
-      skip "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
+      pend "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
 
       buf = [ 1, 2,  3,  4,  5,  6,  7,  8,
               9, 10, 11, 12, 13, 14, 15, 16 ].pack("l!*")
@@ -91,7 +91,7 @@ module Fiddle
     end
 
     def test_memory_view_multi_dimensional_with_multiple_members
-      skip "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
+      pend "MemoryViewTestUtils is unavailable" unless defined? MemoryViewTestUtils
 
       buf = [ 1, 2,  3,  4,  5,  6,  7,  8,
              -1, -2, -3, -4, -5, -6, -7, -8].pack("s*")

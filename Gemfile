@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in fiddle.gemspec
 gemspec
+
+gem "rake"
+gem "rake-compiler"
+gem "test-unit"
