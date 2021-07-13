@@ -1,6 +1,6 @@
-#ifdef HAVE_RUBY_MEMORY_VIEW_H
-
 #include "ruby.h"
+
+#ifdef HAVE_RUBY_MEMORY_VIEW_H
 #include "ruby/memory_view.h"
 
 #define STRUCT_ALIGNOF(T, result) do { \
