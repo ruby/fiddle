@@ -259,7 +259,7 @@ rb_fiddle_handle_to_i(VALUE self)
     struct dl_handle *fiddle_handle;
 
     TypedData_Get_Struct(self, struct dl_handle, &fiddle_handle_data_type, fiddle_handle);
-    return PTR2NUM(fiddle_handle);
+    return PTR2NUM(fiddle_handle->ptr);
 }
 
 static VALUE fiddle_handle_sym(void *handle, VALUE symbol);
