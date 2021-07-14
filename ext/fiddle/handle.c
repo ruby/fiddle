@@ -393,7 +393,7 @@ rb_fiddle_handle_file_name(VALUE self)
 	}
 	else {
 #if defined(HAVE_DLERROR)
-	    rb_raise(rb_eFiddleDLError, "%s", dlerror());
+	    rb_raise(rb_eFiddleDLError, "could not get handle file name: %s", dlerror());
 #else
 	    rb_raise(rb_eFiddleDLError, "could not get handle file name");
 #endif
