@@ -2,7 +2,6 @@
 #define FIDDLE_H
 
 #include <ruby.h>
-#include <ruby/version.h>
 #include <errno.h>
 
 #if defined(_WIN32)
@@ -189,10 +188,6 @@
 #define ALIGN_INT16_T ALIGN_OF(int16_t)
 #define ALIGN_INT32_T ALIGN_OF(int32_t)
 #define ALIGN_INT64_T ALIGN_OF(int64_t)
-
-#if RUBY_API_VERSION_MAJOR >= 3
-# define FIDDLE_MEMORY_VIEW
-#endif
 
 extern VALUE mFiddle;
 extern VALUE rb_eFiddleDLError;

@@ -1,6 +1,6 @@
-#ifdef HAVE_TYPE_RB_MEMORY_VIEW_T
-
 #include "ruby.h"
+
+#ifdef HAVE_RUBY_MEMORY_VIEW_H
 #include "ruby/memory_view.h"
 
 #define STRUCT_ALIGNOF(T, result) do { \
@@ -378,12 +378,12 @@ mdview_aref(VALUE obj, VALUE indices_v)
     return result;
 }
 
-#endif /* HAVE_TYPE_RB_MEMORY_VIEW_T */
+#endif /* HAVE_RUBY_MEMORY_VIEW_H */
 
 void
 Init_memory_view(void)
 {
-#ifdef HAVE_TYPE_RB_MEMORY_VIEW_T
+#ifdef HAVE_RUBY_MEMORY_VIEW_H
     VALUE mMemoryViewTestUtils = rb_define_module("MemoryViewTestUtils");
 
     rb_define_module_function(mMemoryViewTestUtils, "available?", memory_view_available_p, 1);
@@ -448,5 +448,5 @@ Init_memory_view(void)
 
 #undef DEF_ALIGNMENT_CONST
 
-#endif /* HAVE_TYPE_RB_MEMORY_VIEW_T */
+#endif /* HAVE_RUBY_MEMORY_VIEW_H */
 }
