@@ -404,7 +404,7 @@ rb_fiddle_handle_file_name(VALUE self)
 	char filename[MAX_PATH];
 	DWORD res = GetModuleFileName(fiddle_handle->ptr, filename, MAX_PATH);
 	if (res == 0) {
-	    rb_raise(rb_eFiddleDLError, "%s", dlerror());
+	    rb_raise(rb_eFiddleDLError, "could not get handle file name: %s", dlerror());
 	}
 	return rb_str_new_cstr(filename);
     }
