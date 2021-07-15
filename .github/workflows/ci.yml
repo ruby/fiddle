@@ -42,8 +42,6 @@ jobs:
 
       - run: rake compile
 
-      - run: rake build
-
       # If Fiddle in Ruby's master has the same version of this Fiddle,
       # "gem install pkg/*.gem" fails.
       - run: rake version:bump
