@@ -52,6 +52,8 @@ jobs:
           matrix.ruby == 'mingw' ||
           matrix.ruby == 'mswin'
 
+      - run: rake build
+
       - run: gem install pkg/*.gem
 
       - run: rake test
