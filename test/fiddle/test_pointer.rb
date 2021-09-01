@@ -179,16 +179,6 @@ module Fiddle
     end
 
     def test_free=
-      assert_normal_exit(<<-"End", '[ruby-dev:39269]')
-        require 'fiddle'
-        include Fiddle
-        free = Fiddle::Function.new(Fiddle::RUBY_FREE, [TYPE_VOIDP], TYPE_VOID)
-        ptr = Fiddle::Pointer.malloc(4)
-        ptr.free = free
-        free.ptr
-        ptr.free.ptr
-      End
-
       free = Function.new(Fiddle::RUBY_FREE, [TYPE_VOIDP], TYPE_VOID)
       ptr = Pointer.malloc(4)
       ptr.free = free
