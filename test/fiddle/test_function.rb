@@ -197,7 +197,7 @@ module Fiddle
         sizeof_fiddle_generic = Fiddle::SIZEOF_VOIDP # Rough
         size_per_try =
           (sizeof_fiddle_generic * n_arguments) +
-          (Fiddle::SIZEOF_VOIDP * n_arguments)
+          (Fiddle::SIZEOF_VOIDP * (n_arguments + 1))
         assert_nothing_leaked_memory(size_per_try * n_tries) do
           n_tries.times do
             begin
