@@ -272,7 +272,16 @@ module Fiddle
     end
 
     def test_no_memory_leak
-      assert_no_memory_leak(%w[-W0 -rfiddle.so], '', '100_000.times {Fiddle::Pointer.allocate}', rss: true)
+      if respond_to?(:assert_nothing_leaked_memory)
+        n_tries = 100_000
+        assert_nothing_leaked_memory(SIZEOF_VOIDP * (n_tries / 100)) do
+          n_tries.times do
+            Fiddle::Pointer.allocate
+          end
+        end
+      else
+        assert_no_memory_leak(%w[-W0 -rfiddle.so], '', '100_000.times {Fiddle::Pointer.allocate}', rss: true)
+      end
     end
   end
 end if defined?(Fiddle)

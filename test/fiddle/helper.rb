@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
+require 'rbconfig/sizeof'
 require 'test/unit'
 require 'fiddle'
-require 'rbconfig'
-require 'rbconfig/sizeof'
 
 # FIXME: this is stolen from DL and needs to be refactored.
 
@@ -166,6 +166,13 @@ module Fiddle
       if /linux/ =~ RUBY_PLATFORM
         GC.start
       end
+    end
+
+    def under_gc_stress
+      stress, GC.stress = GC.stress, true
+      yield
+    ensure
+      GC.stress = stress
     end
   end
 end

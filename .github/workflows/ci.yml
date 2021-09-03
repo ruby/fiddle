@@ -69,8 +69,6 @@ jobs:
           ruby -run -e cp -- -pr test/ tmp/
           cd tmp
           ruby test/run.rb
-        env:
-          RUBYOPT: -Itest/lib -rhelper
 
   docker:
     name: >-

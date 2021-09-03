@@ -4,4 +4,4 @@ gemspec
 
 gem "rake"
 gem "rake-compiler"
-gem "test-unit"
+gem "test-unit", ">= 3.4.5"

@@ -26,14 +26,13 @@ module Fiddle
     end
 
     def test_string
-      stress, GC.stress = GC.stress, true
-      f = Function.new(@libc['strcpy'], [TYPE_VOIDP, TYPE_VOIDP], TYPE_VOIDP)
-      buff = +"000"
-      str = f.call(buff, "123")
-      assert_equal("123", buff)
-      assert_equal("123", str.to_s)
-    ensure
-      GC.stress = stress
+      under_gc_stress do
+        f = Function.new(@libc['strcpy'], [TYPE_VOIDP, TYPE_VOIDP], TYPE_VOIDP)
+        buff = +"000"
+        str = f.call(buff, "123")
+        assert_equal("123", buff)
+        assert_equal("123", str.to_s)
+      end
     end
 
     def test_isdigit
@@ -76,15 +75,8 @@ module Fiddle
 
       bug4929 = '[ruby-core:37395]'
       buff = "9341"
-      if GC.respond_to?(:with_stress)
-        GC.with_stress(true) {qsort.call(buff, buff.size, 1, cb)}
-      else
-        stress, GC.stress = GC.stress, true
-        begin
-          qsort.call(buff, buff.size, 1, cb)
-        ensure
-          GC.stress = stress
-        end
+      under_gc_stress do
+        qsort.call(buff, buff.size, 1, cb)
       end
       assert_equal("1349", buff, bug4929)
     end
