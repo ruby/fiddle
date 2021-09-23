@@ -12,6 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        build_flags:
+          - ""
+          - " -- --enable-bundled-libffi"
         os:
           - macos-10.15
           - macos-11.0
@@ -40,7 +43,7 @@ jobs:
 
       - run: bundle install
 
-      - run: rake compile
+      - run: rake compile ${{ matrix.build_flags }}
 
       # If Fiddle in Ruby's master has the same version of this Fiddle,
       # "gem install pkg/*.gem" fails.
