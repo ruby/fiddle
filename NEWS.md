@@ -1,5 +1,28 @@
 # News
 
+## 1.1.0 - 2021-10-23
+
+### Improvements
+
+  * Added `Fiddle::Struct.offsetof`.
+
+  * Improved memory view availability detection.
+    [GitHub#84][Reported by Jun Aruga]
+
+  * Changed `Fiddle::Handle#to_i` value to wrapped pointer from
+    internal handle data pointer. It's a backward incompatible change
+    but the previous behavior was meaningless. No users must depend on
+    the previous behavior. So this will not cause any backward
+    incompatible problem.
+
+  * Added `Fiddle::Handle#to_ptr`.
+
+  * Added `Fiddle::Handle#file_name`.
+
+### Thanks
+
+  * Jun Aruga
+
 ## 1.0.9 - 2021-06-19
 
 ### Improvements
