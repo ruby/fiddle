@@ -46,7 +46,7 @@ end
 
 libffi_version = nil
 have_libffi = false
-bundle = enable_config('bundled-libffi')
+bundle = enable_config('bundled-libffi') && $mswin
 unless bundle
   dir_config 'libffi'
 
