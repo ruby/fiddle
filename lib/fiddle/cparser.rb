@@ -66,12 +66,12 @@ module Fiddle
             mems.push([struct_name, struct_type.members])
             tys.push(ty)
           end
-        when /^[\w\*\s]+[\*\s](\w+)$/
-          mems.push($1)
-          tys.push(parse_ctype(msig, tymap))
-        when /^[\w\*\s]+\(\*(\w+)\)\(.*?\)$/
-          mems.push($1)
-          tys.push(parse_ctype(msig, tymap))
+        when /^([\w\*\s]+[\*\s])(\w+)$/
+          mems.push($2)
+          tys.push(parse_ctype($1, tymap))
+        when /^([\w\*\s]+)\(\*(\w+)\)\(.*?\)$/
+          mems.push($2)
+          tys.push(parse_ctype($1, tymap))
         when /^([\w\*\s]+[\*\s])(\w+)\[(\d+)\]$/
           mems.push($2)
           tys.push([parse_ctype($1.strip, tymap), $3.to_i])
