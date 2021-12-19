@@ -245,6 +245,18 @@ module Fiddle
       assert_equal [[TYPE_INT,-TYPE_LONG], ['i', 'cb']], parse_struct_signature(['int i', 'DWORD cb'], {"DWORD" => "unsigned long"})
     end
 
+    # verify fix for #100
+    def test_struct_int_long
+      assert_equal([[TYPE_LONG], ['len']],
+                   parse_struct_signature(['int long len']))
+    end
+
+    def test_struct_int_long
+      assert_equal([[TYPE_LONG], ['func']],
+                   parse_struct_signature(['int long (*func)(void)']))
+    end
+
+
     def test_signature_basic
       func, ret, args = parse_signature('void func()')
       assert_equal 'func', func
