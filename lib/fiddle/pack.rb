@@ -18,17 +18,17 @@ module Fiddle
     }
 
     PACK_MAP = {
-      TYPE_VOIDP => "l!",
+      TYPE_VOIDP => "L!",
       TYPE_CHAR  => "c",
       TYPE_SHORT => "s!",
       TYPE_INT   => "i!",
       TYPE_LONG  => "l!",
       TYPE_FLOAT => "f",
       TYPE_DOUBLE => "d",
-      -TYPE_CHAR  => "c",
-      -TYPE_SHORT => "s!",
-      -TYPE_INT   => "i!",
-      -TYPE_LONG  => "l!",
+      -TYPE_CHAR  => "C",
+      -TYPE_SHORT => "S!",
+      -TYPE_INT   => "I!",
+      -TYPE_LONG  => "L!",
     }
 
     SIZE_MAP = {
@@ -48,7 +48,7 @@ module Fiddle
       ALIGN_MAP[TYPE_LONG_LONG] = ALIGN_MAP[-TYPE_LONG_LONG] = ALIGN_LONG_LONG
       PACK_MAP[TYPE_LONG_LONG] = PACK_MAP[-TYPE_LONG_LONG] = "q"
       SIZE_MAP[TYPE_LONG_LONG] = SIZE_MAP[-TYPE_LONG_LONG] = SIZEOF_LONG_LONG
-      PACK_MAP[TYPE_VOIDP] = "q" if SIZEOF_LONG_LONG == SIZEOF_VOIDP
+      PACK_MAP[TYPE_VOIDP] = "Q" if SIZEOF_LONG_LONG == SIZEOF_VOIDP
     end
 
     def align(addr, align)
