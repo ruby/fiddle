@@ -8,6 +8,10 @@ end
 module Fiddle
   class TestPack < TestCase
     def test_pack_map
+      if defined?(TYPE_LONG_LONG)
+        assert_equal [0xffff_ffff_ffff_ffff], [0xffff_ffff_ffff_ffff].pack(PackInfo::PACK_MAP[-TYPE_LONG_LONG]).unpack(PackInfo::PACK_MAP[-TYPE_LONG_LONG])
+      end
+
       case Fiddle::SIZEOF_VOIDP
       when 8
         assert_equal [0xffff_ffff_ffff_ffff], [0xffff_ffff_ffff_ffff].pack(PackInfo::PACK_MAP[TYPE_VOIDP]).unpack(PackInfo::PACK_MAP[TYPE_VOIDP])
