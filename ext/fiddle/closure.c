@@ -92,7 +92,7 @@ with_gvl_callback(void *ptr)
 	  case TYPE_INT:
 	    rb_ary_push(params, INT2NUM(*(int *)x->args[i]));
 	    break;
-	  case -TYPE_INT:
+	  case TYPE_UINT:
 	    rb_ary_push(params, UINT2NUM(*(unsigned int *)x->args[i]));
 	    break;
 	  case TYPE_VOIDP:
@@ -103,19 +103,19 @@ with_gvl_callback(void *ptr)
 	  case TYPE_LONG:
 	    rb_ary_push(params, LONG2NUM(*(long *)x->args[i]));
 	    break;
-	  case -TYPE_LONG:
+	  case TYPE_ULONG:
 	    rb_ary_push(params, ULONG2NUM(*(unsigned long *)x->args[i]));
 	    break;
 	  case TYPE_CHAR:
 	    rb_ary_push(params, INT2NUM(*(signed char *)x->args[i]));
 	    break;
-	  case -TYPE_CHAR:
+	  case TYPE_UCHAR:
 	    rb_ary_push(params, UINT2NUM(*(unsigned char *)x->args[i]));
 	    break;
 	  case TYPE_SHORT:
 	    rb_ary_push(params, INT2NUM(*(signed short *)x->args[i]));
 	    break;
-	  case -TYPE_SHORT:
+	  case TYPE_USHORT:
 	    rb_ary_push(params, UINT2NUM(*(unsigned short *)x->args[i]));
 	    break;
 	  case TYPE_DOUBLE:
@@ -128,7 +128,7 @@ with_gvl_callback(void *ptr)
 	  case TYPE_LONG_LONG:
 	    rb_ary_push(params, LL2NUM(*(LONG_LONG *)x->args[i]));
 	    break;
-	  case -TYPE_LONG_LONG:
+	  case TYPE_ULONG_LONG:
 	    rb_ary_push(params, ULL2NUM(*(unsigned LONG_LONG *)x->args[i]));
 	    break;
 #endif
@@ -151,7 +151,7 @@ with_gvl_callback(void *ptr)
       case TYPE_LONG:
 	*(long *)x->resp = NUM2LONG(ret);
 	break;
-      case -TYPE_LONG:
+      case TYPE_ULONG:
 	*(unsigned long *)x->resp = NUM2ULONG(ret);
 	break;
       case TYPE_CHAR:
@@ -159,9 +159,9 @@ with_gvl_callback(void *ptr)
       case TYPE_INT:
 	*(ffi_sarg *)x->resp = NUM2INT(ret);
 	break;
-      case -TYPE_CHAR:
-      case -TYPE_SHORT:
-      case -TYPE_INT:
+      case TYPE_UCHAR:
+      case TYPE_USHORT:
+      case TYPE_UINT:
 	*(ffi_arg *)x->resp = NUM2UINT(ret);
 	break;
       case TYPE_VOIDP:
@@ -177,7 +177,7 @@ with_gvl_callback(void *ptr)
       case TYPE_LONG_LONG:
 	*(LONG_LONG *)x->resp = NUM2LL(ret);
 	break;
-      case -TYPE_LONG_LONG:
+      case TYPE_ULONG_LONG:
 	*(unsigned LONG_LONG *)x->resp = NUM2ULL(ret);
 	break;
 #endif
