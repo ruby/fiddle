@@ -137,6 +137,14 @@ module Fiddle
       end
     end
 
+    # Assert that the unsigned constants are equal to the "negative" signed ones
+    # for backwards compatibility
+    def test_unsigned_equals_negative_signed
+      Fiddle.constants.grep(/\ATYPE_(?!VOID|VARIADIC\z)(U.*)/) do |unsigned|
+        assert_equal -Fiddle.const_get(unsigned.to_s.sub(/U/, '')), Fiddle.const_get(unsigned)
+      end
+    end
+
     def test_unsigned_result()
       d = (2 ** 31) + 1
 
