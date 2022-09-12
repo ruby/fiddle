@@ -1,5 +1,10 @@
 # News
 
+### Improvements
+
+  * TYPE_U* constants have been added.  Instead of using `-TYPE_INT` to mean
+    "unsigned", you can use `TYPE_UINT`
+
 ## 1.1.0 - 2021-10-23
 
 ### Improvements
