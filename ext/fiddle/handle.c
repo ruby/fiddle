@@ -321,7 +321,9 @@ rb_fiddle_handle_s_sym(VALUE self, VALUE sym)
     return fiddle_handle_sym(RTLD_NEXT, sym);
 }
 
-static void *
+typedef void (*fiddle_void_func)(void);
+
+static fiddle_void_func
 fiddle_handle_find_func(void *handle, VALUE symbol)
 {
 #if defined(HAVE_DLERROR)
@@ -330,13 +332,13 @@ fiddle_handle_find_func(void *handle, VALUE symbol)
 #else
 # define CHECK_DLERROR
 #endif
-    void (*func)();
+    fiddle_void_func func;
     const char *name = StringValueCStr(symbol);
 
 #ifdef HAVE_DLERROR
     dlerror();
 #endif
-    func = (void (*)())(VALUE)dlsym(handle, name);
+    func = (fiddle_void_func)(VALUE)dlsym(handle, name);
     CHECK_DLERROR;
 #if defined(FUNC_STDCALL)
     if( !func ){
@@ -386,7 +388,7 @@ fiddle_handle_find_func(void *handle, VALUE symbol)
 static VALUE
 rb_fiddle_handle_s_sym_defined(VALUE self, VALUE sym)
 {
-    void (*func)();
+    fiddle_void_func func;
 
     func = fiddle_handle_find_func(RTLD_NEXT, sym);
 
