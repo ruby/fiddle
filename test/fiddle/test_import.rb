@@ -130,7 +130,7 @@ module Fiddle
         name = $1.sub(/P\z/,"*").gsub(/_(?!T\z)/, " ").downcase
         type_name = name
       end
-      type_name = "unsigned #{$1}" if type_name =~ /u(long|short|char)/
+      type_name = "unsigned #{$1}" if type_name =~ /\Au(long|short|char|int|long long)\z/
 
       define_method("test_sizeof_#{name}") do
         assert_equal(size, Fiddle::Importer.sizeof(type_name), type)
