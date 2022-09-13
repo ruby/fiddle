@@ -424,7 +424,7 @@ rb_fiddle_handle_sym_defined(VALUE self, VALUE sym)
 static VALUE
 fiddle_handle_sym(void *handle, VALUE symbol)
 {
-    void (*func)();
+    fiddle_void_func func;
 
     func = fiddle_handle_find_func(handle, symbol);
 
