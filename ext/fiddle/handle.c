@@ -404,7 +404,7 @@ static VALUE
 rb_fiddle_handle_sym_defined(VALUE self, VALUE sym)
 {
     struct dl_handle *fiddle_handle;
-    void (*func)();
+    fiddle_void_func func;
 
     TypedData_Get_Struct(self, struct dl_handle, &fiddle_handle_data_type, fiddle_handle);
     if( ! fiddle_handle->open ){
