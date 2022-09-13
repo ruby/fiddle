@@ -346,7 +346,7 @@ Init_fiddle(void)
      */
     rb_define_const(mFiddleTypes, "INTPTR_T",  INT2NUM(TYPE_INTPTR_T));
 
-    /* Document-const: Fiddle::TypesUINTPTR_T
+    /* Document-const: Fiddle::Types::UINTPTR_T
      *
      * C type - uintptr_t
      */
