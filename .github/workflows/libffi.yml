@@ -38,7 +38,7 @@ jobs:
         run: rake compile -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
         if: ${{ matrix.libffi-prefix == '' }}
       - name: Run test
-        run: ruby test
+        run: rake test
       - name: Install gem
         run: |
           rake build
