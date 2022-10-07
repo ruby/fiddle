@@ -26,7 +26,7 @@ jobs:
         run: |
           cd libffi-${{ matrix.libffi }}
           ./configure --prefix=${{ matrix.libffi-prefix }}
-          make
+          make -j$(nproc)
           make install
         if: ${{ matrix.libffi-prefix != '' }}
       - name: Install dependencies
