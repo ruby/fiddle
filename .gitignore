@@ -11,3 +11,4 @@
 *.bundle
 *.so
 *.dll
+/libffi-*
