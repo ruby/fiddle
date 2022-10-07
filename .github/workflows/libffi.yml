@@ -20,7 +20,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
       - name: Set up libffi ${{ matrix.libffi }}
         run: |
-          wget https://ftp.osuosl.org/pub/blfs/conglomeration/libffi/${{ matrix.libffi }}.tar.gz
+          wget https://ftp.osuosl.org/pub/blfs/conglomeration/libffi/libffi-${{ matrix.libffi }}.tar.gz
           tar xzf libffi-${{ matrix.libffi }}.tar.gz
       - name: Compile libffi ${{ matrix.libffi }}
         run: |
