@@ -46,7 +46,7 @@ end
 
 libffi_version = nil
 have_libffi = false
-bundle = with_config("libffi-source-dir") || enable_config('bundled-libffi')
+bundle = with_config("libffi-source-dir")
 unless bundle
   dir_config 'libffi'
 
@@ -67,16 +67,10 @@ unless bundle
 end
 
 unless have_libffi
-  if bundle == true
-    libffi_package_name = Dir.glob("#{$srcdir}/libffi-*/")
-                            .map {|n| File.basename(n)}
-                            .max_by {|n| n.scan(/\d+/).map(&:to_i)}
-    unless libffi_package_name
-      raise "missing libffi. Please install libffi."
-    end
-    libffi_srcdir = "#{$srcdir}/#{libffi_package_name}"
-  elsif bundle
+  if bundle
     libffi_srcdir = libffi_package_name = bundle
+  else
+    raise "missing libffi. Please install libffi or use --with-libffi-source-dir with libffi source location."
   end
   ffi_header = 'ffi.h'
   libffi = Struct.new(*%I[dir srcdir builddir include lib a cflags ldflags opt arch]).new
