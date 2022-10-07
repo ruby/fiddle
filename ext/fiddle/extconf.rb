@@ -67,7 +67,7 @@ unless bundle
 end
 
 unless have_libffi
-  if bundle != false
+  if bundle == true
     libffi_package_name = Dir.glob("#{$srcdir}/libffi-*/")
                             .map {|n| File.basename(n)}
                             .max_by {|n| n.scan(/\d+/).map(&:to_i)}
@@ -76,7 +76,7 @@ unless have_libffi
     end
     libffi_srcdir = "#{$srcdir}/#{libffi_package_name}"
   elsif bundle
-    libffi_srcdir = bundle
+    libffi_srcdir = libffi_package_name = bundle
   end
   ffi_header = 'ffi.h'
   libffi = Struct.new(*%I[dir srcdir builddir include lib a cflags ldflags opt arch]).new
