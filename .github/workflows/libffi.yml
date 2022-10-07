@@ -44,9 +44,9 @@ jobs:
         run: |
           rake build
           gem install pkg/fiddle-*.gem -- --with-libffi-dir=${{ matrix.libffi-prefix }}
-        if: ${{ matrix.ruby != 'head' && matrix.ruby != '3.1' && matrix.libffi-prefix != '' }}
+        if: ${{ matrix.ruby != 'head' && matrix.libffi-prefix != '' }}
       - name: Install gem with libffi source
         run: |
           rake build
           gem install pkg/fiddle-*.gem -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
-        if: ${{ matrix.ruby != 'head' && matrix.ruby != '3.1' && matrix.libffi-prefix == '' }}
+        if: ${{ matrix.ruby != 'head' && matrix.libffi-prefix == '' }}
