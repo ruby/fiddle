@@ -67,17 +67,6 @@ unless bundle
 end
 
 unless have_libffi
-  # for https://github.com/ruby/fiddle
-  extlibs_rb = File.expand_path("../../bin/extlibs.rb", $srcdir)
-  if bundle && File.exist?(extlibs_rb)
-    require "fileutils"
-    require_relative "../../bin/extlibs"
-    extlibs = ExtLibs.new
-    cache_dir = File.expand_path("../../tmp/.download_cache", $srcdir)
-    ext_dir = File.expand_path("../../ext", $srcdir)
-    Dir.glob("#{$srcdir}/libffi-*/").each{|dir| FileUtils.rm_rf(dir)}
-    extlibs.run(["--cache=#{cache_dir}", ext_dir])
-  end
   if bundle != false
     libffi_package_name = Dir.glob("#{$srcdir}/libffi-*/")
                             .map {|n| File.basename(n)}
