@@ -39,7 +39,6 @@ jobs:
         if: ${{ matrix.libffi-prefix == '' }}
       - name: Run test
         run: rake test
-        if: ${{ matrix.ruby != 'head' }}
       - name: Install gem
         run: |
           rake build
