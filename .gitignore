@@ -7,7 +7,7 @@
 /pkg/
 /spec/reports/
 /tmp/
-/ext/fiddle/libffi-*/
 *.bundle
 *.so
 *.dll
+/libffi-*

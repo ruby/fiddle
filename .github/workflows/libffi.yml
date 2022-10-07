@@ -1,0 +1,51 @@
+name: libffi
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ head, 3.1, "3.0", 2.7, 2.6, 2.5 ]
+        libffi: [3.2.1]
+        libffi-prefix: [/tmp/local, '']
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Set up libffi ${{ matrix.libffi }}
+        run: |
+          wget https://ftp.osuosl.org/pub/blfs/conglomeration/libffi/libffi-${{ matrix.libffi }}.tar.gz
+          tar xzf libffi-${{ matrix.libffi }}.tar.gz
+      - name: Compile libffi ${{ matrix.libffi }}
+        run: |
+          cd libffi-${{ matrix.libffi }}
+          ./configure --prefix=${{ matrix.libffi-prefix }}
+          make -j$(nproc)
+          make install
+        if: ${{ matrix.libffi-prefix != '' }}
+      - name: Install dependencies
+        run: bundle install
+      - name: Compile with libffi
+        run: rake compile -- --with-libffi-dir=${{ matrix.libffi-prefix }}
+        if: ${{ matrix.libffi-prefix != '' }}
+      - name: Compile with libffi source
+        run: rake compile -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
+        if: ${{ matrix.libffi-prefix == '' }}
+      - name: Run test
+        run: rake test
+      - name: Install gem
+        run: |
+          rake build
+          gem install pkg/fiddle-*.gem -- --with-libffi-dir=${{ matrix.libffi-prefix }}
+        if: ${{ matrix.ruby != 'head' && matrix.libffi-prefix != '' }}
+      - name: Install gem with libffi source
+        run: |
+          rake build
+          gem install pkg/fiddle-*.gem -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
+        if: ${{ matrix.ruby != 'head' && matrix.libffi-prefix == '' }}
