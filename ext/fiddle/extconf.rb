@@ -216,7 +216,7 @@ types.each do |type, signed|
 end
 
 if libffi
-  $LOCAL_LIBS.prepend("./#{libffi.a} ").strip! # to exts.mk
+  $LOCAL_LIBS.prepend("#{libffi.a} ").strip! # to exts.mk
   $INCFLAGS.gsub!(/-I#{libffi.dir}/, '-I$(LIBFFI_DIR)')
 end
 create_makefile 'fiddle' do |conf|
