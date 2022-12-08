@@ -1,9 +1,54 @@
 # News
 
+## 1.1.1 - 2022-12-08
+
 ### Improvements
 
-  * TYPE_U* constants have been added.  Instead of using `-TYPE_INT` to mean
-    "unsigned", you can use `TYPE_UINT`
+  * test: Improved glibc detection on alpha and ia64.
+    [[GitHub#105](https://github.com/ruby/fiddle/pull/105)]
+    [[Bug #18645](https://bugs.ruby-lang.org/issues/18645)]
+    [Patch by John Paul Adrian Glaubitz]
+
+  * Added support for linker script on Linux.
+    [[GitHub#107](https://github.com/ruby/fiddle/issues/107)]
+    [Reported by nicholas a. evans]
+
+  * Freed `Fiddle::Closure` immediately.
+    [[GitHub#109](https://github.com/ruby/fiddle/pull/109)]
+
+  * Added `Fiddle::TYPE_UXXX` constants for unsigned types.
+    [[GitHub#111](https://github.com/ruby/fiddle/pull/111)]
+
+  * Added `Fiddle::Types` for type constants. We can still use
+    `Fiddle::TYPE_XXX`.
+    [[GitHub#112](https://github.com/ruby/fiddle/pull/112)]
+
+  * Added `Fiddle::Handle.sym_defined?`.
+    [[GitHub#108](https://github.com/ruby/fiddle/pull/108)]
+
+  * Added `Fiddle::Closure.create` and `Fiddle::Closure.free`.
+    [[GitHub#102](https://github.com/ruby/fiddle/issues/102)]
+    [Reported by Vít Ondruch]
+
+  * Added `--with-libffi-source-dir` build option and removed
+    `--enable-bundled-libffi` build option.
+    [[Bug #18571](https://bugs.ruby-lang.org/issues/18571)]
+
+  * Added `Fiddle::Qtrue`, `Fiddle::Qfalse`, `Fiddle::Qnil` and
+    `Fiddle::Qundef`.
+    [[GitHub#115](https://github.com/ruby/fiddle/pull/115)]
+
+### Fixes
+
+  * Fixed a bug that `Fiddle::PackInfo::PACK_MAP` uses wrong pack
+    template for unsigned types.
+    [[GitHub#109](https://github.com/ruby/fiddle/pull/110)]
+
+### Thanks
+
+  * John Paul Adrian Glaubitz
+
+  * Vít Ondruch
 
 ## 1.1.0 - 2021-10-23
 
