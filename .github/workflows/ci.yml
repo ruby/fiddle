@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-11.0
+          - macos-11
           - macos-12
           - ubuntu-latest
           - windows-latest
