@@ -810,7 +810,7 @@ rb_fiddle_ptr_s_to_ptr(VALUE self, VALUE val)
 static VALUE
 rb_fiddle_ptr_read_mem(VALUE klass, VALUE address, VALUE len)
 {
-    return rb_str_new((char *)NUM2ULONG(address), NUM2ULONG(len));
+    return rb_str_new((char *)NUM2PTR(address), NUM2ULONG(len));
 }
 
 /*
