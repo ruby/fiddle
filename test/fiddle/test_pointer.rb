@@ -10,7 +10,7 @@ module Fiddle
       Fiddle.dlwrap arg
     end
 
-    def test_can_write_memory
+    def test_can_read_write_memory
       # Allocate some memory
       address = Fiddle.malloc(Fiddle::SIZEOF_VOIDP)
 
@@ -21,22 +21,6 @@ module Fiddle
 
       # Read the bytes out again
       bytes = Fiddle::Pointer.read(address, Fiddle::SIZEOF_VOIDP)
-      assert_equal bytes_to_write, bytes
-    ensure
-      Fiddle.free address
-    end
-
-    def test_can_read_memory
-      # Allocate some memory
-      address = Fiddle.malloc(Fiddle::SIZEOF_VOIDP)
-
-      # Write some bytes in to the memory
-      ptr = Fiddle::Pointer.new(address)
-      bytes_to_write = Fiddle::SIZEOF_VOIDP.times.to_a
-      bytes_to_write.each { |i| ptr[i] = i }
-
-      # Read the bytes out again
-      bytes = Fiddle::Pointer.read(address, Fiddle::SIZEOF_VOIDP).bytes
       assert_equal bytes_to_write, bytes
     ensure
       Fiddle.free address
