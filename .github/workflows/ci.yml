@@ -33,7 +33,7 @@ jobs:
           - { os: windows-latest , ruby: debug }
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -83,7 +83,7 @@ jobs:
           - fedora-33
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - run: docker-compose build ${{ matrix.service }}
 
