@@ -1,5 +1,65 @@
 # News
 
+## 1.1.2 - 2023-11-08
+
+### Improvements
+
+  * Preferred `String#unpack1`.
+
+    Patch by Mau Magnaguagno.
+
+    GH-118
+
+  * Preferred `_Alignof`.
+
+    Patch by Khem Raj.
+
+    GH-120
+
+  * Added `Fiddle::Pointer.read` and `Fiddle::Pointer.write`.
+
+    GH-123
+
+  * Added support for `long` variants.
+
+    Reported by David M. Lary.
+
+    GH-100
+
+  * Added support for `short` variants.
+
+  * Added support for converting one character string to char.
+
+    Reported by kojix2.
+
+    GH-96
+
+  * Added support for write barriers.
+
+    Patch by Jean byroot Boussier.
+
+    GH-127 GH-129
+
+  * Added support for `bool`.
+
+    Reported by Benoit Daloze.
+
+    GH-130
+
+### Thanks
+
+  * Mau Magnaguagno
+
+  * Khem Raj
+
+  * David M. Lary
+
+  * kojix2
+
+  * Jean byroot Boussier
+
+  * Benoit Daloze
+
 ## 1.1.1 - 2022-12-08
 
 ### Improvements
