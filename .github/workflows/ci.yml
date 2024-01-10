@@ -10,7 +10,8 @@ jobs:
     with:
       engine: cruby
       min_version: 2.5
-      versions: "[debug]"
+      versions:
+        - debug
 
   host:
     needs: ruby-versions
