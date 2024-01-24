@@ -13,8 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-11
           - macos-12
+          - macos-arm-oss
           - ubuntu-latest
           - windows-latest
         ruby:
@@ -29,6 +29,7 @@ jobs:
           - { os: windows-latest , ruby: mingw }
           - { os: windows-latest , ruby: mswin }
         exclude:
+          - { os: macos-arm-oss  , ruby: '2.5' }
           - { os: windows-latest , ruby: '3.0' }
           - { os: windows-latest , ruby: debug }
 
@@ -80,7 +81,7 @@ jobs:
       fail-fast: false
       matrix:
         service:
-          - fedora-33
+          - fedora-latest
 
     steps:
       - uses: actions/checkout@v4

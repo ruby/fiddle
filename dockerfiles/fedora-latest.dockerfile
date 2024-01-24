@@ -1,4 +1,4 @@
-FROM fedora:33
+FROM fedora:latest
 
 RUN \
   dnf install -y \
