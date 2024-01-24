@@ -81,7 +81,7 @@ jobs:
       fail-fast: false
       matrix:
         service:
-          - fedora-33
+          - fedora-latest
 
     steps:
       - uses: actions/checkout@v4
