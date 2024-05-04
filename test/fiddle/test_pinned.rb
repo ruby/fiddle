@@ -23,6 +23,14 @@ module Fiddle
       end
       assert_match "called on", ex.message
     end
+
+    if defined?(Ractor)
+      def test_ractor_shareable
+        x = Object.new
+        pinner = Pinned.new x
+        Ractor.make_shareable(pinner)
+        assert_operator Ractor, :shareable?, pinner
+      end
+    end
   end
 end
-

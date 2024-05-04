@@ -305,5 +305,13 @@ module Fiddle
       assert_raise(DLError) {nullpo[0]}
       assert_raise(DLError) {nullpo[0] = 1}
     end
+
+    if defined?(Ractor)
+      def test_ractor_shareable
+        null = Fiddle::NULL
+        Ractor.make_shareable(null)
+        assert_operator Ractor, :shareable?, null
+      end
+    end
   end
 end if defined?(Fiddle)

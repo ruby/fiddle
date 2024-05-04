@@ -157,5 +157,14 @@ module Fiddle
         end
       end
     end
+
+    if defined?(Ractor)
+      def test_ractor_shareable
+        Closure.create(:int, [:void]) do |c|
+          Ractor.make_shareable(c)
+          assert_operator Ractor, :shareable?, c
+        end
+      end
+    end
   end
 end if defined?(Fiddle)
