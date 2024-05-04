@@ -139,5 +139,14 @@ module Fiddle
       assert_equal([data.b, true],
                    [string, string.frozen?])
     end
+
+    if defined?(Ractor)
+      def test_ractor_shareable
+        ptr = Pointer["hello world"]
+        mview = MemoryView.new(ptr)
+        Ractor.make_shareable(mview)
+        assert_operator Ractor, :shareable?, mview
+      end
+    end
   end
 end
