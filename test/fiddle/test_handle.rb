@@ -227,12 +227,8 @@ module Fiddle
       end
     end
 
-    if defined?(Ractor)
-      def test_ractor_shareable
-        handle = Fiddle::Handle.new(LIBC_SO)
-        Ractor.make_shareable(handle)
-        assert_operator Ractor, :shareable?, handle
-      end
+    ractor def test_ractor_shareable
+      assert_ractor_shareable(Fiddle::Handle.new(LIBC_SO))
     end
   end
 end if defined?(Fiddle)

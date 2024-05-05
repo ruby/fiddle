@@ -259,12 +259,8 @@ module Fiddle
       end
     end
 
-    if defined?(Ractor)
-      def test_ractor_shareable
-        func = Function.new(@libm['sin'], [TYPE_DOUBLE], TYPE_DOUBLE)
-        Ractor.make_shareable(func)
-        assert_operator Ractor, :shareable?, func
-      end
+    ractor def test_ractor_shareable
+      assert_ractor_shareable(Function.new(@libm['sin'], [TYPE_DOUBLE], TYPE_DOUBLE))
     end
 
     private

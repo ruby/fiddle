@@ -306,12 +306,11 @@ module Fiddle
       assert_raise(DLError) {nullpo[0] = 1}
     end
 
-    if defined?(Ractor)
-      def test_ractor_shareable
-        null = Fiddle::NULL
-        Ractor.make_shareable(null)
-        assert_operator Ractor, :shareable?, null
-      end
+    ractor def test_ractor_shareable
+      assert_ractor_shareable(Fiddle::NULL)
+      ary = [0,1,2,4,5]
+      addr = Pointer.new(dlwrap(ary))
+      assert_ractor_shareable(addr)
     end
   end
 end if defined?(Fiddle)
