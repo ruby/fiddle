@@ -302,5 +302,12 @@ module Fiddle
         assert_no_memory_leak(%w[-W0 -rfiddle.so], '', '100_000.times {Fiddle::Pointer.allocate}', rss: true)
       end
     end
+
+    ractor def test_ractor_shareable
+      assert_ractor_shareable(Fiddle::NULL)
+      ary = [0,1,2,4,5]
+      addr = Pointer.new(dlwrap(ary))
+      assert_ractor_shareable(addr)
+    end
   end
 end if defined?(Fiddle)

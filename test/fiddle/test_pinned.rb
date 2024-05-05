@@ -23,6 +23,11 @@ module Fiddle
       end
       assert_match "called on", ex.message
     end
+
+    ractor def test_ractor_shareable
+      obj = Object.new
+      assert_ractor_shareable(Pinned.new(obj))
+      assert_predicate obj, :frozen?
+    end
   end
 end
-
