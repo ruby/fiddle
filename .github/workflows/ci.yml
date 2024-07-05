@@ -14,7 +14,7 @@ jobs:
       matrix:
         os:
           - macos-12
-          - macos-arm-oss
+          - macos-14
           - ubuntu-latest
           - windows-latest
         ruby:
@@ -29,7 +29,7 @@ jobs:
           - { os: windows-latest , ruby: mingw }
           - { os: windows-latest , ruby: mswin }
         exclude:
-          - { os: macos-arm-oss  , ruby: '2.5' }
+          - { os: macos-14  , ruby: '2.5' }
           - { os: windows-latest , ruby: '3.0' }
           - { os: windows-latest , ruby: debug }
 
