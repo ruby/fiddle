@@ -139,5 +139,11 @@ module Fiddle
       assert_equal([data.b, true],
                    [string, string.frozen?])
     end
+
+    ractor def test_ractor_shareable
+      ptr = Pointer["hello world"]
+      assert_ractor_shareable MemoryView.new(ptr)
+      assert_predicate ptr, :frozen?
+    end
   end
 end
