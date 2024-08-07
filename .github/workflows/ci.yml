@@ -86,6 +86,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: docker-compose build ${{ matrix.service }}
+      - run: docker compose build ${{ matrix.service }}
 
-      - run: docker-compose run --rm ${{ matrix.service }}
+      - run: docker compose run --rm ${{ matrix.service }}
