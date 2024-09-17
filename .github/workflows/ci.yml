@@ -73,6 +73,31 @@ jobs:
           cd tmp
           ruby test/run.rb
 
+  # Don't run tests on TruffleRuby and JRuby because tests don't pass on them yet.
+  # So check only gem installing.
+  install:
+    name: >-
+      Install ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - truffleruby
+          - jruby
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - run: rake install
+
+      - run: ruby -e 'require "fiddle"'
+
   docker:
     name: >-
       ${{ matrix.service }}
