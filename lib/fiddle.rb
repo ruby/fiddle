@@ -1,6 +1,13 @@
 # frozen_string_literal: true
 
-require 'fiddle.so'
+if RUBY_ENGINE == "ruby"
+  require 'fiddle.so'
+else
+  $LOAD_PATH.delete(__dir__)
+  require 'fiddle' # load from stdlib
+  return
+end
+
 require 'fiddle/closure'
 require 'fiddle/function'
 require 'fiddle/version'

@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 require 'mkmf'
 
+if RUBY_ENGINE != 'ruby'
+  File.write('Makefile', dummy_makefile("").join)
+  return
+end
+
 # :stopdoc:
 
 def gcc?
