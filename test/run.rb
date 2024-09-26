@@ -2,7 +2,7 @@
 
 $VERBOSE = true
 
-source_dir = "#{__dir__}/.."
+source_dir = File.dirname(__dir__)
 $LOAD_PATH.unshift("#{source_dir}/test")
 $LOAD_PATH.unshift("#{source_dir}/lib")
 
