@@ -21,6 +21,11 @@ module Fiddle
     end
 
     def test_set_ctypes
+      if RUBY_ENGINE == "jruby" and Fiddle::WINDOWS
+        omit("JRuby's 'l!' pack string is buggy. " +
+             "See https://github.com/jruby/jruby/issues/8357 for details")
+      end
+
       CUnionEntity.malloc([TYPE_INT, TYPE_LONG], Fiddle::RUBY_FREE) do |union|
         union.assign_names %w[int long]
 

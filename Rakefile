@@ -17,8 +17,13 @@ namespace :version do
   end
 end
 
-require 'rake/extensiontask'
-Rake::ExtensionTask.new("fiddle")
-Rake::ExtensionTask.new("-test-/memory_view")
+if RUBY_ENGINE == "ruby"
+  require 'rake/extensiontask'
+  Rake::ExtensionTask.new("fiddle")
+  Rake::ExtensionTask.new("-test-/memory_view")
+  task test: :compile
+else
+  task :compile
+end
 
-task :default => [:compile, :test]
+task default: :test

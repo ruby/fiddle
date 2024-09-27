@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
     "lib/fiddle/cparser.rb",
     "lib/fiddle/function.rb",
     "lib/fiddle/import.rb",
+    "lib/fiddle/jruby.rb",
     "lib/fiddle/pack.rb",
     "lib/fiddle/struct.rb",
     "lib/fiddle/types.rb",
