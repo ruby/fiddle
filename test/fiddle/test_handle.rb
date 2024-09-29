@@ -12,6 +12,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle#to_i is unavailable with JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#to_i is unavailable with TruffleRuby")
+      end
 
       handle = Fiddle::Handle.new(LIBC_SO)
       assert_kind_of Integer, handle.to_i
@@ -20,6 +23,9 @@ module Fiddle
     def test_to_ptr
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle#to_i is unavailable with JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#to_i is unavailable with TruffleRuby")
       end
 
       handle = Fiddle::Handle.new(LIBC_SO)
@@ -58,6 +64,10 @@ module Fiddle
     end unless /mswin|mingw/ =~ RUBY_PLATFORM
 
     def test_sym_closed_handle
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#close is unavailable with TruffleRuby")
+      end
+
       handle = Fiddle::Handle.new(LIBC_SO)
       handle.close
       assert_raise(DLError) { handle.sym("calloc") }
@@ -85,11 +95,19 @@ module Fiddle
     end
 
     def test_handle_close
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#close is unavailable with TruffleRuby")
+      end
+
       handle = Handle.new(LIBC_SO)
       assert_equal 0, handle.close
     end
 
     def test_handle_close_twice
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#close is unavailable with TruffleRuby")
+      end
+
       handle = Handle.new(LIBC_SO)
       handle.close
       assert_raise(DLError) do
@@ -116,6 +134,10 @@ module Fiddle
     end
 
     def test_enable_close
+      if RUBY_ENGINE == "truffleruby"
+        omit("Close on free is unavailable with TruffleRuby")
+      end
+
       handle = Handle.new(LIBC_SO)
       assert !handle.close_enabled?, 'close is enabled'
 
@@ -124,6 +146,10 @@ module Fiddle
     end
 
     def test_disable_close
+      if RUBY_ENGINE == "truffleruby"
+        omit("Close on free is unavailable with TruffleRuby")
+      end
+
       handle = Handle.new(LIBC_SO)
 
       handle.enable_close
@@ -135,6 +161,9 @@ module Fiddle
     def test_file_name
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle#file_name doesn't exist in JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#file_name is unavailable with TruffleRuby")
       end
 
       file_name = Handle.new(LIBC_SO).file_name
@@ -174,6 +203,9 @@ module Fiddle
       rescue
       end
 
+      if RUBY_ENGINE == "truffleruby"
+        omit("-test-/dln/empty is unavailable with TruffleRuby")
+      end
       begin
         # BSD
         #

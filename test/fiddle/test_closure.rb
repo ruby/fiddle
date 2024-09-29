@@ -6,6 +6,12 @@ end
 
 module Fiddle
   class TestClosure < Fiddle::TestCase
+    def setup
+      if RUBY_ENGINE == "truffleruby"
+        omit("TruffleRuby doesn't support Fiddle::Closure")
+      end
+    end
+
     def teardown
       super
       # We can't use ObjectSpace with JRuby.

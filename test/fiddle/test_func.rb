@@ -64,6 +64,10 @@ module Fiddle
     end
 
     def test_qsort1
+      if RUBY_ENGINE == "truffleruby"
+        omit("TruffleRuby doesn't support Fiddle::Closure")
+      end
+
       closure_class = Class.new(Closure) do
         def call(x, y)
           Pointer.new(x)[0] <=> Pointer.new(y)[0]
@@ -98,9 +102,13 @@ module Fiddle
     end
 
     def test_snprintf
+      if RUBY_ENGINE == "truffleruby"
+        omit("TruffleRuby doesn't support variadic arguments")
+      end
       unless Fiddle.const_defined?("TYPE_VARIADIC")
         omit "libffi doesn't support variadic arguments"
       end
+
       if Fiddle::WINDOWS
         snprintf_name = "_snprintf"
       else

@@ -14,6 +14,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Pointer.{read,write} don't exist in JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Pointer.{read,write} don't exist in TruffleRuby")
+      end
 
       # Allocate some memory
       Fiddle::Pointer.malloc(Fiddle::SIZEOF_VOIDP, Fiddle::RUBY_FREE) do |pointer|
@@ -116,6 +119,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Pointer#inspect is incompatible on JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Pointer#inspect is incompatible on TruffleRuby")
+      end
 
       ptr = Pointer.new(0)
       inspect = ptr.inspect
@@ -134,6 +140,9 @@ module Fiddle
     def test_to_ptr_io
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Pointer.to_ptr(IO) isn't supported with JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Pointer.to_ptr(IO) isn't supported with TruffleRuby")
       end
 
       Pointer.malloc(10, Fiddle::RUBY_FREE) do |buf|
@@ -186,6 +195,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("Fiddle.dlwrap([]) isn't supported with JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle.dlwrap([]) isn't supported with TruffleRuby")
+      end
 
       ary = [0,1,2,4,5]
       addr = Pointer.new(dlwrap(ary))
@@ -197,6 +209,9 @@ module Fiddle
     def test_to_value
       if RUBY_ENGINE == "jruby"
         omit("Fiddle.dlwrap([]) isn't supported with JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle.dlwrap([]) isn't supported with TruffleRuby")
       end
 
       ary = [0,1,2,4,5]

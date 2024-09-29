@@ -41,6 +41,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("rb_str_dup() doesn't exist in JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle.dl{,un}wrap don't work in TruffleRuby")
+      end
 
       libruby = Fiddle.dlopen(nil)
       rb_str_dup = Function.new(libruby['rb_str_dup'],
@@ -91,6 +94,10 @@ module Fiddle
     end
 
     def test_argument_count
+      if RUBY_ENGINE == "truffleruby"
+        omit("TruffleRuby doesn't support Fiddle::Closure")
+      end
+
       closure_class = Class.new(Closure) do
         def call one
           10 + one
@@ -111,6 +118,9 @@ module Fiddle
     def test_last_error
       if RUBY_ENGINE == "jruby"
         omit("Fiddle.last_error doesn't work with JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle.last_error doesn't work with TruffleRuby")
       end
 
       func = Function.new(@libc['strcpy'], [TYPE_VOIDP, TYPE_VOIDP], TYPE_VOIDP)
@@ -218,6 +228,9 @@ module Fiddle
     def test_no_memory_leak
       if RUBY_ENGINE == "jruby"
         omit("rb_obj_frozen_p() doesn't exist in JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("rb_obj_frozen_p() doesn't exit in TruffleRuby")
       end
 
       if respond_to?(:assert_nothing_leaked_memory)
