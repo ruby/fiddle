@@ -26,6 +26,8 @@ jobs:
           - '3.2'
           - debug
           - jruby
+          - truffleruby-23.1
+          - truffleruby-24.0
           - truffleruby
         include:
           - { os: windows-latest , ruby: mingw }
@@ -34,6 +36,8 @@ jobs:
           - { os: macos-14  , ruby: '2.5' }
           - { os: windows-latest , ruby: '3.0' }
           - { os: windows-latest , ruby: debug }
+          - { os: windows-latest , ruby: truffleruby-23.1 }
+          - { os: windows-latest , ruby: truffleruby-24.0 }
           - { os: windows-latest , ruby: truffleruby }
 
     steps:
