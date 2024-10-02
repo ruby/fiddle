@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
-case RUBY_ENGINE
-when 'jruby'
-  require 'fiddle/jruby'
-else
-  require 'fiddle.so'
-end
+require "fiddle/#{RUBY_ENGINE}"
 require 'fiddle/closure'
 require 'fiddle/function'
 require 'fiddle/version'

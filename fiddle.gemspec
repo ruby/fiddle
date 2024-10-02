@@ -42,6 +42,7 @@ Gem::Specification.new do |spec|
     "lib/fiddle/import.rb",
     "lib/fiddle/jruby.rb",
     "lib/fiddle/pack.rb",
+    "lib/fiddle/ruby.rb",
     "lib/fiddle/struct.rb",
     "lib/fiddle/types.rb",
     "lib/fiddle/value.rb",
