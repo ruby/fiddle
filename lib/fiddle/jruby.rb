@@ -450,7 +450,7 @@ module Fiddle
     end
 
     def ref
-      cptr = Pointer.malloc(FFI::Type::POINTER.size)
+      cptr = Pointer.malloc(FFI::Type::POINTER.size, RUBY_FREE)
       cptr.ffi_ptr.put_pointer(0, ffi_ptr)
       cptr
     end
