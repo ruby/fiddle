@@ -12,6 +12,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle#to_i is unavailable with JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#to_i is unavailable with TruffleRuby")
+      end
 
       handle = Fiddle::Handle.new(LIBC_SO)
       assert_kind_of Integer, handle.to_i
@@ -20,6 +23,9 @@ module Fiddle
     def test_to_ptr
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle#to_i is unavailable with JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#to_i is unavailable with TruffleRuby")
       end
 
       handle = Fiddle::Handle.new(LIBC_SO)
@@ -36,6 +42,9 @@ module Fiddle
     def test_static_sym
       if RUBY_ENGINE == "jruby"
         omit("We can't assume static symbols with JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("We can't assume static symbols with TruffleRuby")
       end
 
       begin
@@ -136,6 +145,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle#file_name doesn't exist in JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle#file_name doesn't exist in TruffleRuby")
+      end
 
       file_name = Handle.new(LIBC_SO).file_name
       if file_name
@@ -157,6 +169,9 @@ module Fiddle
     def test_NEXT
       if RUBY_ENGINE == "jruby"
         omit("Fiddle::Handle::NEXT doesn't exist in JRuby")
+      end
+      if RUBY_ENGINE == "truffleruby"
+        omit("Fiddle::Handle::NEXT doesn't exist in TruffleRuby")
       end
 
       begin

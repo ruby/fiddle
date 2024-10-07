@@ -157,6 +157,9 @@ module Fiddle
       if RUBY_ENGINE == "jruby"
         omit("BUILD_RUBY_PLATFORM doesn't exist in JRuby")
       end
+      if RUBY_ENGINE == "truffleruby"
+        omit("BUILD_RUBY_PLATFORM doesn't exist in TruffleRuby")
+      end
 
       if( RUBY_PLATFORM != BUILD_RUBY_PLATFORM ) || !defined?(LIBC.fprintf)
         return

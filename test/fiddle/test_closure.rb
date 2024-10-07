@@ -6,6 +6,12 @@ end
 
 module Fiddle
   class TestClosure < Fiddle::TestCase
+    def setup
+      if RUBY_ENGINE == "truffleruby"
+        omit("FFI::Function don't accept #call-able object with TruffleRuby")
+      end
+    end
+
     def teardown
       super
       # We can't use ObjectSpace with JRuby.

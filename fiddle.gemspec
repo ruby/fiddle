@@ -44,6 +44,7 @@ Gem::Specification.new do |spec|
     "lib/fiddle/pack.rb",
     "lib/fiddle/ruby.rb",
     "lib/fiddle/struct.rb",
+    "lib/fiddle/truffleruby.rb",
     "lib/fiddle/types.rb",
     "lib/fiddle/value.rb",
     "lib/fiddle/version.rb",

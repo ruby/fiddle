@@ -26,6 +26,7 @@ jobs:
           - '3.2'
           - debug
           - jruby
+          - truffleruby
         include:
           - { os: windows-latest , ruby: mingw }
           - { os: windows-latest , ruby: mswin }
@@ -33,6 +34,7 @@ jobs:
           - { os: macos-14  , ruby: '2.5' }
           - { os: windows-latest , ruby: '3.0' }
           - { os: windows-latest , ruby: debug }
+          - { os: windows-latest , ruby: truffleruby }
 
     steps:
       - uses: actions/checkout@v4

@@ -158,6 +158,17 @@ module Fiddle
           end
           args[i] = Fiddle::JRuby.__ffi_type__(args[i])
         end
+      else
+        args.size.times do |i|
+          arg = args[i]
+          next unless arg.respond_to?(:to_ptr)
+          loop do
+            arg = arg.to_ptr
+            break if arg.is_a?(FFI::Pointer)
+            break unless arg.respond_to?(:to_ptr)
+          end
+          args[i] = arg
+        end
       end
       result = @function.call(*args, &block)
       result = Pointer.new(result) if result.is_a?(FFI::Pointer)
