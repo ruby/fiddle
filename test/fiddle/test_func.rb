@@ -64,6 +64,10 @@ module Fiddle
     end
 
     def test_qsort1
+      if RUBY_ENGINE == "jruby"
+        omit("The untouched sanity check is broken on JRuby: https://github.com/jruby/jruby/issues/8365")
+      end
+
       closure_class = Class.new(Closure) do
         def call(x, y)
           Pointer.new(x)[0] <=> Pointer.new(y)[0]
@@ -91,14 +95,15 @@ module Fiddle
       end
     ensure
       # We can't use ObjectSpace with JRuby.
-      return if RUBY_ENGINE == "jruby"
-      # Ensure freeing all closures.
-      # See https://github.com/ruby/fiddle/issues/102#issuecomment-1241763091 .
-      not_freed_closures = []
-      ObjectSpace.each_object(Fiddle::Closure) do |closure|
-        not_freed_closures << closure unless closure.freed?
+      unless RUBY_ENGINE == "jruby"
+        # Ensure freeing all closures.
+        # See https://github.com/ruby/fiddle/issues/102#issuecomment-1241763091 .
+        not_freed_closures = []
+        ObjectSpace.each_object(Fiddle::Closure) do |closure|
+          not_freed_closures << closure unless closure.freed?
+        end
+        assert_equal([], not_freed_closures)
       end
-      assert_equal([], not_freed_closures)
     end
 
     def test_snprintf
