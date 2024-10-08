@@ -112,11 +112,8 @@ module Fiddle
     end
 
     def test_last_error
-      if RUBY_ENGINE == "jruby"
-        omit("Fiddle.last_error doesn't work with JRuby")
-      end
-      if RUBY_ENGINE == "truffleruby"
-        omit("Fiddle.last_error doesn't work with TruffleRuby")
+      if ffi_backend?
+        omit("Fiddle.last_error doesn't work with FFI backend")
       end
 
       func = Function.new(@libc['strcpy'], [TYPE_VOIDP, TYPE_VOIDP], TYPE_VOIDP)

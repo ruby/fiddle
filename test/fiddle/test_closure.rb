@@ -58,9 +58,9 @@ module Fiddle
     end
 
     def test_const_string
-      if RUBY_ENGINE == "jruby" or RUBY_ENGINE == "truffleruby"
+      if ffi_backend?
         omit("Closure with :const_string works but " +
-             "Function with :const_string doesn't work with JRuby")
+             "Function with :const_string doesn't work with FFI backend")
       end
 
       closure_class = Class.new(Closure) do

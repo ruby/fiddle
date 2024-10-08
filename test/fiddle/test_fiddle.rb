@@ -6,11 +6,8 @@ end
 
 class TestFiddle < Fiddle::TestCase
   def test_nil_true_etc
-    if RUBY_ENGINE == "jruby"
-      omit("Fiddle::Q* aren't supported with JRuby")
-    end
-    if RUBY_ENGINE == "truffleruby"
-      omit("Fiddle::Q* aren't supported with TruffleRuby")
+    if ffi_backend?
+      omit("Fiddle::Q* aren't supported with FFI backend")
     end
 
     assert_equal Fiddle::Qtrue, Fiddle.dlwrap(true)
@@ -33,8 +30,8 @@ class TestFiddle < Fiddle::TestCase
     if Dir.glob("/usr/lib/*/libncurses.so").empty?
       omit("libncurses.so is needed")
     end
-    if RUBY_ENGINE == "truffleruby"
-      omit("Fiddle::Handle#file_name doesn't exist in TruffleRuby")
+    if ffi_backend?
+      omit("Fiddle::Handle#file_name doesn't exist in FFI backend")
     end
 
     # libncurses.so uses INPUT() on Debian GNU/Linux
@@ -51,8 +48,8 @@ class TestFiddle < Fiddle::TestCase
 
   def test_dlopen_linker_script_group_linux
     omit("This is only for Linux") unless RUBY_PLATFORM.match?("linux")
-    if RUBY_ENGINE == "truffleruby"
-      omit("Fiddle::Handle#file_name doesn't exist in TruffleRuby")
+    if ffi_backend?
+      omit("Fiddle::Handle#file_name doesn't exist in FFI backend")
     end
 
     # libc.so uses GROUP() on Debian GNU/Linux
