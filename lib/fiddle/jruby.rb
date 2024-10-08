@@ -149,7 +149,7 @@ module Fiddle
       end
     end
 
-    def call(*args, &block);
+    def call(*args, &block)
       if @function.is_a?(FFI::VariadicInvoker)
         n_fixed_args = @args.size - 1
         n_fixed_args.step(args.size - 1, 2) do |i|
@@ -159,15 +159,15 @@ module Fiddle
           args[i] = Fiddle::JRuby.__ffi_type__(args[i])
         end
       else
-        args.size.times do |i|
-          arg = args[i]
-          next unless arg.respond_to?(:to_ptr)
-          loop do
-            arg = arg.to_ptr
-            break if arg.is_a?(FFI::Pointer)
-            break unless arg.respond_to?(:to_ptr)
+        args.map! do |arg|
+          if arg.respond_to?(:to_ptr)
+            begin
+              arg = arg.to_ptr
+            end until arg.is_a?(FFI::Pointer) || !arg.respond_to?(:to_ptr)
+            arg
+          else
+            arg
           end
-          args[i] = arg
         end
       end
       result = @function.call(*args, &block)
