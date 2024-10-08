@@ -185,13 +185,15 @@ module Fiddle
       if ffi_args.size == 1 && ffi_args[0] == FFI::Type::Builtin::VOID
         ffi_args = []
       end
-      @function = FFI::Function.new(
-        Fiddle::JRuby.__ffi_type__(@ctype),
-        ffi_args,
-        self,
-        :convention => abi
-      )
+      return_type = Fiddle::JRuby.__ffi_type__(@ctype)
+      raise "#{self.class} must implement #call" unless respond_to?(:call)
+      callable = method(:call)
+      @function = FFI::Function.new(return_type, ffi_args, callable, convention: abi)
       @freed = false
+    end
+
+    def to_ptr
+      @function
     end
 
     def to_i

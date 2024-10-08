@@ -64,10 +64,6 @@ module Fiddle
     end
 
     def test_qsort1
-      if RUBY_ENGINE == "truffleruby"
-        omit("TruffleRuby's FFI::Function don't accept #call-able object")
-      end
-
       closure_class = Class.new(Closure) do
         def call(x, y)
           Pointer.new(x)[0] <=> Pointer.new(y)[0]

@@ -6,12 +6,6 @@ end
 
 module Fiddle
   class TestClosure < Fiddle::TestCase
-    def setup
-      if RUBY_ENGINE == "truffleruby"
-        omit("FFI::Function don't accept #call-able object with TruffleRuby")
-      end
-    end
-
     def teardown
       super
       # We can't use ObjectSpace with JRuby.
@@ -64,7 +58,7 @@ module Fiddle
     end
 
     def test_const_string
-      if RUBY_ENGINE == "jruby"
+      if RUBY_ENGINE == "jruby" or RUBY_ENGINE == "truffleruby"
         omit("Closure with :const_string works but " +
              "Function with :const_string doesn't work with JRuby")
       end
@@ -125,9 +119,14 @@ module Fiddle
       end
 
       require 'objspace'
+      closure_class = Class.new(Closure) do
+        def call
+          10
+        end
+      end
       n = 10000
       n.times do
-        Closure.create(:int, [:void]) do |closure|
+        closure_class.create(:int, [:void]) do |closure|
           ObjectSpace.memsize_of(closure)
         end
       end

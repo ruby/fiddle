@@ -94,10 +94,6 @@ module Fiddle
     end
 
     def test_argument_count
-      if RUBY_ENGINE == "truffleruby"
-        omit("TruffleRuby's FFI::Function don't accept #call-able object")
-      end
-
       closure_class = Class.new(Closure) do
         def call one
           10 + one
