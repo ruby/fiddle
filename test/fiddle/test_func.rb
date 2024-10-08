@@ -78,16 +78,20 @@ module Fiddle
         qsort = Function.new(@libc['qsort'],
                              [TYPE_VOIDP, TYPE_SIZE_T, TYPE_SIZE_T, TYPE_VOIDP],
                              TYPE_VOID)
-        buff = "9341"
+        untouched = "9341"
+        buff = +"9341"
         qsort.call(buff, buff.size, 1, callback)
         assert_equal("1349", buff)
 
         bug4929 = '[ruby-core:37395]'
-        buff = "9341"
+        buff = +"9341"
         under_gc_stress do
           qsort.call(buff, buff.size, 1, callback)
         end
         assert_equal("1349", buff, bug4929)
+
+        # Ensure the test didn't mutate String literals
+        assert_equal("93" + "41", untouched)
       end
     ensure
       # We can't use ObjectSpace with JRuby.
