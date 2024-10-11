@@ -259,7 +259,8 @@ module Fiddle
       end
     end
 
-    ractor def test_ractor_shareable
+    def test_ractor_shareable
+      omit("Need Ractor") unless defined?(Ractor)
       assert_ractor_shareable(Function.new(@libm['sin'], [TYPE_DOUBLE], TYPE_DOUBLE))
     end
 

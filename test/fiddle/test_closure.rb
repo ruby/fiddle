@@ -158,8 +158,14 @@ module Fiddle
       end
     end
 
-    ractor def test_ractor_shareable
-      Closure.create(:int, [:void]) do |c|
+    def test_ractor_shareable
+      omit("Need Ractor") unless defined?(Ractor)
+      closure_class = Class.new(Closure) do
+        def call
+          0
+        end
+      end
+      closure_class.create(:int, [:void]) do |c|
         assert_ractor_shareable(c)
       end
     end

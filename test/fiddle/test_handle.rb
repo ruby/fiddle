@@ -227,7 +227,8 @@ module Fiddle
       end
     end
 
-    ractor def test_ractor_shareable
+    def test_ractor_shareable
+      omit("Need Ractor") unless defined?(Ractor)
       assert_ractor_shareable(Fiddle::Handle.new(LIBC_SO))
     end
   end

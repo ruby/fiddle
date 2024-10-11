@@ -306,7 +306,8 @@ module Fiddle
       assert_raise(DLError) {nullpo[0] = 1}
     end
 
-    ractor def test_ractor_shareable
+    def test_ractor_shareable
+      omit("Need Ractor") unless defined?(Ractor)
       assert_ractor_shareable(Fiddle::NULL)
       ary = [0,1,2,4,5]
       addr = Pointer.new(dlwrap(ary))
