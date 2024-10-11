@@ -1,5 +1,27 @@
 # News
 
+## 1.1.3 - 2024-10-11
+
+### Improvements
+
+  * Set `changelog_uri` gem metadata.
+    * Patch by Masato Nakamura
+    * GH-138
+
+  * Imported JRuby implementation.
+    * GH-104
+    * GH-147
+
+  * Added support for TruffleRuby.
+    * GH-149
+
+  * Added support for Ractor.
+    * GH-139
+
+### Thanks
+
+  * Masato Nakamura
+
 ## 1.1.2 - 2023-11-08
 
 ### Improvements
