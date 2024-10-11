@@ -28,7 +28,7 @@ module Fiddle
       omit("Need Ractor") unless defined?(Ractor)
       obj = Object.new
       assert_ractor_shareable(Pinned.new(obj))
-      assert_predicate obj, :frozen?
+      assert_predicate(obj, :frozen?)
     end
   end
 end

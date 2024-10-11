@@ -165,8 +165,8 @@ module Fiddle
       ptr = Pointer["hello world"]
       mview = MemoryView.new(ptr)
       begin
-        assert_ractor_shareable mview
-        assert_predicate ptr, :frozen?
+        assert_ractor_shareable(mview)
+        assert_predicate(ptr, :frozen?)
       ensure
         mview.release
       end
