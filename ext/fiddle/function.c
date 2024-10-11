@@ -59,7 +59,7 @@ const rb_data_type_t function_data_type = {
         .dfree = deallocate,
         .dsize = function_memsize
     },
-    .flags = FIDDLE_DEFAULT_TYPED_DATA_FALGS,
+    .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
 };
 
 static VALUE

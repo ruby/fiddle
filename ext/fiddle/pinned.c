@@ -30,7 +30,7 @@ static const rb_data_type_t pinned_data_type = {
         .dfree = RUBY_TYPED_DEFAULT_FREE,
         .dsize = pinned_memsize,
     },
-    .flags = FIDDLE_DEFAULT_TYPED_DATA_FALGS,
+    .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
 };
 
 static VALUE

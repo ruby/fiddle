@@ -70,7 +70,7 @@ static const rb_data_type_t fiddle_memview_data_type = {
         .dfree = fiddle_memview_free,
         .dsize = fiddle_memview_memsize,
     },
-    .flags = FIDDLE_DEFAULT_TYPED_DATA_FALGS,
+    .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
 };
 
 static VALUE

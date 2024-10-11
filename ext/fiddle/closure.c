@@ -61,7 +61,7 @@ const rb_data_type_t closure_data_type = {
         .dfree = dealloc,
         .dsize = closure_memsize
     },
-    .flags = FIDDLE_DEFAULT_TYPED_DATA_FALGS,
+    .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
 };
 
 struct callback_args {
