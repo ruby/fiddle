@@ -1,5 +1,22 @@
 # News
 
+## 1.1.4 - 2024-10-23
+
+### Improvements
+
+  * JRuby, TruffleRuby: Don't use `mkmf` to generate dummy `Makefile`.
+
+    * GH-153
+    * GH-155
+
+### Fixes
+
+  * JRuby, TruffleRuby: Fixed a bug that shared library load failure
+    isn't caught correctly.
+
+    * GH-156
+    * ruby/reline#766
+
 ## 1.1.3 - 2024-10-11
 
 ### Improvements
