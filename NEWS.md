@@ -1,5 +1,18 @@
 # News
 
+## 1.1.5 - 2024-11-09
+
+### Improvements
+
+  * Removed the "`Fiddle::Function(name:)` must be `String`"
+    limitation that is introduced by 1.1.3.
+    * GH-159
+    * Reported by Mamoru TASAKA
+
+### Thanks
+
+  * Mamoru TASAKA
+
 ## 1.1.4 - 2024-10-23
 
 ### Improvements
