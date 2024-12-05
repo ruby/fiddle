@@ -309,6 +309,8 @@ module Fiddle
               end
             elsif addr.is_a?(IO)
               raise NotImplementedError, "IO ptr isn't supported"
+            else
+              FFI::Pointer.new(Integer(addr))
             end
 
       @size = size ? size : ptr.size
