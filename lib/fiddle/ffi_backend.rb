@@ -159,16 +159,12 @@ module Fiddle
           args[i] = Fiddle::FFIBackend.to_ffi_type(args[i])
         end
       else
-        args.map!.with_index do |arg, i|
-          if arg.respond_to?(:to_ptr)
-            begin
-              arg = arg.to_ptr
-            end until arg.is_a?(FFI::Pointer) || !arg.respond_to?(:to_ptr)
-            arg
-          elsif @args[i] == Types::VOIDP && arg.is_a?(Integer)
-            FFI::Pointer.new(arg)
-          else
-            arg
+        @args.each_with_index do |arg_type, i|
+          if @args[i] == Types::VOIDP
+            src = args[i]
+            next if src.nil? || src.is_a?(String) || src.is_a?(FFI::Pointer)
+
+            args[i] = Pointer[src]
           end
         end
       end
