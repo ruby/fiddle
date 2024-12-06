@@ -160,7 +160,7 @@ module Fiddle
         end
       else
         @args.each_with_index do |arg_type, i|
-          if @args[i] == Types::VOIDP
+          if arg_type == Types::VOIDP
             src = args[i]
             next if src.nil? ||
               src.is_a?(String) ||
