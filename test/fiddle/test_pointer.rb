@@ -161,9 +161,14 @@ module Fiddle
       end
     end
 
-    def test_to_ptr_with_num
+    def test_to_ptr_with_int
       ptr = Pointer.new 0
       assert_equal ptr, Pointer[0]
+    end
+
+    def test_to_ptr_with_num
+      ptr = Pointer.new 0
+      assert_equal ptr, Pointer[0.0]
     end
 
     def test_equals

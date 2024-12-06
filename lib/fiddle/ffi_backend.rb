@@ -159,14 +159,15 @@ module Fiddle
           args[i] = Fiddle::FFIBackend.to_ffi_type(args[i])
         end
       else
-        args.map! do |arg|
-          if arg.respond_to?(:to_ptr)
-            begin
-              arg = arg.to_ptr
-            end until arg.is_a?(FFI::Pointer) || !arg.respond_to?(:to_ptr)
-            arg
-          else
-            arg
+        @args.each_with_index do |arg_type, i|
+          if arg_type == Types::VOIDP
+            src = args[i]
+            next if src.nil? ||
+              src.is_a?(String) ||
+              src.is_a?(FFI::AbstractMemory) ||
+              src.is_a?(FFI::Struct)
+
+            args[i] = Pointer[src]
           end
         end
       end
@@ -308,6 +309,8 @@ module Fiddle
               end
             elsif addr.is_a?(IO)
               raise NotImplementedError, "IO ptr isn't supported"
+            else
+              FFI::Pointer.new(Integer(addr))
             end
 
       @size = size ? size : ptr.size
