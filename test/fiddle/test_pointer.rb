@@ -166,9 +166,10 @@ module Fiddle
       assert_equal ptr, Pointer[0]
     end
 
-    def test_to_ptr_with_num
+    MimicInteger = Struct.new(:to_int)
+    def test_to_ptr_with_to_int
       ptr = Pointer.new 0
-      assert_equal ptr, Pointer[0.0]
+      assert_equal ptr, Pointer[MimicInteger.new(0)]
     end
 
     def test_equals
