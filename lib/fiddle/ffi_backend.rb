@@ -160,15 +160,15 @@ module Fiddle
         end
       else
         @args.each_with_index do |arg_type, i|
-          if arg_type == Types::VOIDP
-            src = args[i]
-            next if src.nil? ||
-              src.is_a?(String) ||
-              src.is_a?(FFI::AbstractMemory) ||
-              src.is_a?(FFI::Struct)
+          next unless arg_type == Types::VOIDP
 
-            args[i] = Pointer[src]
-          end
+          src = args[i]
+          next if src.nil?
+          next if src.is_a?(String)
+          next if src.is_a?(FFI::AbstractMemory)
+          next if src.is_a?(FFI::Struct)
+
+          args[i] = Pointer[src]
         end
       end
       result = @function.call(*args, &block)
