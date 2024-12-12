@@ -1,5 +1,28 @@
 # News
 
+## 1.1.6 - 2024-12-12
+
+### Improvements
+
+  * JRuby, TruffleRuby: Added `Fiddle::Pointer.read` and
+    `Fiddle::Pointer.write`.
+    * GH-166
+    * Patch by Lars Kanis
+
+  * CRuby: Added support for `INPUT(-lXXX)` `.so`. For example, Arch
+    Linux's `libncurses.so` uses this style.
+
+  * JRuby, TruffleRuby: Added support for accepting numeric value as a
+    `void *` argument.
+    * GH-162
+    * Patch by Dani Smith
+
+### Thanks
+
+  * Lars Kanis
+
+  * Dani Smith
+
 ## 1.1.5 - 2024-11-09
 
 ### Improvements
