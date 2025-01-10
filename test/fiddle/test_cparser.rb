@@ -278,7 +278,8 @@ module Fiddle
     end
 
     def test_struct_bool
-      assert_equal [[TYPE_INT, TYPE_BOOL], ['x', 'toggle']], parse_struct_signature('int x; bool toggle')
+      assert_equal([[TYPE_INT, TYPE_BOOL], ['x', 'toggle']],
+                   parse_struct_signature('int x; bool toggle'))
     end
 
     def test_struct_undefined
