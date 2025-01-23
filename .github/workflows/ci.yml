@@ -15,6 +15,7 @@ jobs:
         os:
           - macos-13
           - macos-14
+          - macos-15
           - ubuntu-latest
           - windows-latest
         ruby:
@@ -25,15 +26,16 @@ jobs:
           - '3.1'
           - '3.2'
           - '3.3'
+          - '3.4'
           - debug
           - jruby
           - truffleruby
         include:
-          - { os: windows-latest , ruby: mingw }
+          - { os: windows-latest , ruby: ucrt }
           - { os: windows-latest , ruby: mswin }
         exclude:
           - { os: macos-14  , ruby: '2.5' }
-          - { os: windows-latest , ruby: '3.0' }
+          - { os: macos-15  , ruby: '2.5' }
           - { os: windows-latest , ruby: debug }
           - { os: windows-latest , ruby: truffleruby }
 
@@ -63,12 +65,12 @@ jobs:
       - run: rake install
 
       - name: Run test against installed gem
-        # We can't use Fiddle gem with RubyInstaller because
+        # We can't use Fiddle gem with older RubyInstaller because
         # RubyInstaller requires Fiddle before rubygems is loaded:
         # https://github.com/oneclick/rubyinstaller2/blob/master/lib/ruby_installer/build/dll_directory.rb#L1
         if: >-
           matrix.os != 'windows-latest' ||
-          (matrix.os == 'windows-latest' && matrix.ruby == 'mswin')
+          (matrix.os == 'windows-latest' && matrix.ruby >= '3.0')
         run: |
           ruby -run -e mkdir -- -p tmp/
           ruby -run -e cp -- -pr test/ tmp/
