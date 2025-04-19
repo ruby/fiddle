@@ -408,10 +408,9 @@ module Fiddle
     end
     alias to_int to_i
 
-    # without \0
     def to_s(len = nil)
       if len
-        ffi_ptr.get_string(0, len)
+        ffi_ptr.read_string(len)
       else
         ffi_ptr.get_string(0)
       end
