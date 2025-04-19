@@ -92,6 +92,7 @@ module Fiddle
 
       ptr[5] = 0
       assert_equal 'hello', ptr.to_s
+      assert_equal "hello\0", ptr.to_s(6)
     end
 
     def test_minus
