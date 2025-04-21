@@ -240,7 +240,7 @@ module Fiddle
     def self.to_ptr(value)
       if value.is_a?(String)
         cptr = Pointer.malloc(value.bytesize)
-        cptr.ffi_ptr.put_string(0, value)
+        cptr.ffi_ptr.put_bytes(0, value)
         cptr
 
       elsif value.is_a?(Array)
@@ -412,7 +412,7 @@ module Fiddle
       if len
         ffi_ptr.read_string(len)
       else
-        ffi_ptr.get_string(0)
+        ffi_ptr.get_string(0, @size)
       end
     rescue FFI::NullPointerError
       raise DLError.new("NULL pointer access")
