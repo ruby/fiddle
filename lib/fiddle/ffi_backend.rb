@@ -412,7 +412,7 @@ module Fiddle
       if len
         ffi_ptr.read_string(len)
       else
-        ffi_ptr.get_string(0)
+        ffi_ptr.get_string(0, @size)
       end
     rescue FFI::NullPointerError
       raise DLError.new("NULL pointer access")
