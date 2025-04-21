@@ -240,7 +240,7 @@ module Fiddle
     def self.to_ptr(value)
       if value.is_a?(String)
         cptr = Pointer.malloc(value.bytesize)
-        cptr.ffi_ptr.put_string(0, value)
+        cptr.ffi_ptr.put_bytes(0, value)
         cptr
 
       elsif value.is_a?(Array)
