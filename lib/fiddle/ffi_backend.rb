@@ -433,11 +433,16 @@ module Fiddle
     end
 
     def inspect
-      inspect_ptr = lambda do |ptr|
-        addr = ptr.to_i
-        addr == 0 ? "0x#{"0"*(SIZEOF_VOIDP * 2)}" : sprintf("%#0#{SIZEOF_VOIDP * 2 + 2}x", addr)
-      end
-      "#<#{self.class.name} ptr=#{inspect_ptr.(self)} size=#{@size} free=#{inspect_ptr.(@free)}>"
+      # SIZEOF_VOIDP * 2 == Math.log(2 ** (SIZEOF_VOIDP * 8), 16)
+      pointer_inspect_width = SIZEOF_VOIDP * 2
+      "#<%s ptr=0x%0.*x size=%d free=0x%0.*x>" % [
+        self.class.name,
+        pointer_inspect_width,
+        to_i,
+        size,
+        pointer_inspect_width,
+        @free || 0,
+      ]
     end
 
     def +(delta)
