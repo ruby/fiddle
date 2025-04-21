@@ -188,8 +188,10 @@ module Fiddle
       end
       return_type = Fiddle::FFIBackend.to_ffi_type(@ctype)
       raise "#{self.class} must implement #call" unless respond_to?(:call)
-      callable = method(:call)
-      @function = FFI::Function.new(return_type, ffi_args, callable, convention: abi)
+      wrapper = lambda do |*args|
+        call(*args.map { |v| v.is_a?(FFI::Pointer) ? Pointer.new(v) : v })
+      end
+      @function = FFI::Function.new(return_type, ffi_args, wrapper, convention: abi)
       @freed = false
     end
 

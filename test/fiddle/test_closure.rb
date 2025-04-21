@@ -87,6 +87,20 @@ module Fiddle
       end
     end
 
+    def test_pointer
+      closure_class = Class.new(Closure) do
+        def call(ptr)
+          ptr.is_a?(Pointer)
+        end
+      end
+      closure_class.create(:bool, [:voidp]) do |closure|
+        func = Function.new(closure, [:voidp], :bool)
+        assert do
+          func.call(Pointer["hello"])
+        end
+      end
+    end
+
     def test_free
       closure_class = Class.new(Closure) do
         def call
