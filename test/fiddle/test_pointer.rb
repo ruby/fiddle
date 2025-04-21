@@ -110,10 +110,6 @@ module Fiddle
     end
 
     def test_inspect
-      if ffi_backend?
-        omit("Fiddle::Pointer#inspect is incompatible with FFI backend")
-      end
-
       ptr = Pointer.new(0)
       inspect = ptr.inspect
       assert_match(/size=#{ptr.size}/, inspect)
