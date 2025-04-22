@@ -432,6 +432,9 @@ module Fiddle
       if len
         ffi_ptr.read_string(len)
       else
+        if @size < 0
+          raise ArgumentError.new("negative string size (or size too big)")
+        end
         ffi_ptr.read_string(@size)
       end
     rescue FFI::NullPointerError

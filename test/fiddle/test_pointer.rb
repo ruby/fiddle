@@ -84,6 +84,10 @@ module Fiddle
 
       ptr.size = 0
       assert_equal "", ptr.to_str
+      assert_equal "ello\0", (ptr + 1).to_str(5)
+      assert_raise(ArgumentError) do
+        (ptr + 1).to_str
+      end
     end
 
     def test_to_s
@@ -99,6 +103,8 @@ module Fiddle
 
       ptr.size = 0
       assert_equal "hello", ptr.to_s
+      assert_equal "ello\0", (ptr + 1).to_s(5)
+      assert_equal "ello", (ptr + 1).to_s
     end
 
     def test_minus
@@ -264,6 +270,7 @@ module Fiddle
       end
       assert_equal 0, Pointer.new(0).size
       assert_equal 0, Pointer.new(0).ref.size
+      assert_equal -1, (Pointer.new(0) + 1).size
     end
 
     def test_size=
