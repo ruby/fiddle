@@ -323,7 +323,7 @@ module Fiddle
               FFI::Pointer.new(Integer(addr))
             end
 
-      @size = size ? size : ptr.size
+      @size = size ? size : (ptr.size_limit? ? ptr.size : 0)
       @free = free
       @ffi_ptr = ptr
       @freed = false
@@ -413,6 +413,8 @@ module Fiddle
     def to_s(len = nil)
       if len
         ffi_ptr.read_string(len)
+      elsif @size == 0
+        ffi_ptr.read_string
       else
         ffi_ptr.get_string(0, @size)
       end
@@ -486,6 +488,7 @@ module Fiddle
     def ref
       cptr = Pointer.malloc(FFI::Type::POINTER.size, RUBY_FREE)
       cptr.ffi_ptr.put_pointer(0, ffi_ptr)
+      cptr.size = 0
       cptr
     end
   end
