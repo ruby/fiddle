@@ -81,6 +81,9 @@ module Fiddle
 
       ptr[5] = 0
       assert_equal "hello\0world", ptr.to_str
+
+      ptr.size = 0
+      assert_equal "", ptr.to_str
     end
 
     def test_to_s
@@ -93,6 +96,9 @@ module Fiddle
       ptr[5] = 0
       assert_equal 'hello', ptr.to_s
       assert_equal "hello\0", ptr.to_s(6)
+
+      ptr.size = 0
+      assert_equal "hello", ptr.to_s
     end
 
     def test_minus
@@ -256,6 +262,8 @@ module Fiddle
       Pointer.malloc(4, Fiddle::RUBY_FREE) do |ptr|
         assert_equal 4, ptr.size
       end
+      assert_equal 0, Pointer.new(0).size
+      assert_equal 0, Pointer.new(0).ref.size
     end
 
     def test_size=
