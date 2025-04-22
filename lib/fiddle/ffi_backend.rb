@@ -323,7 +323,13 @@ module Fiddle
               FFI::Pointer.new(Integer(addr))
             end
 
-      @size = size ? size : (ptr.size_limit? ? ptr.size : 0)
+      if size
+        @size = size
+      elsif ptr.size_limit?
+        @size = ptr.size
+      else
+        @size = 0
+      end
       @free = free
       @ffi_ptr = ptr
       @freed = false
