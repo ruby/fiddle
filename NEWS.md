@@ -1,5 +1,32 @@
 # News
 
+## 1.1.7 - 2025-04-23
+
+### Improvements
+
+  * Added support for `bool` in struct.
+    * [GH-168](https://github.com/ruby/fiddle/issues/168)
+    * [GH-169](https://github.com/ruby/fiddle/issues/169)
+    * Patch by Dmitrii
+
+  * JRuby, TruffleRuby: Improved compatibility with CRuby
+    implementation.
+    * [GH-176](https://github.com/ruby/fiddle/issues/176)
+    * [GH-179](https://github.com/ruby/fiddle/issues/179)
+    * [GH-180](https://github.com/ruby/fiddle/issues/180)
+    * [GH-181](https://github.com/ruby/fiddle/issues/181)
+    * [GH-182](https://github.com/ruby/fiddle/issues/182)
+    * [GH-183](https://github.com/ruby/fiddle/issues/183)
+    * [GH-184](https://github.com/ruby/fiddle/issues/184)
+    * [GH-185](https://github.com/ruby/fiddle/issues/185)
+    * Patch by Andrew Kane
+
+### Thanks
+
+  * Dmitrii
+
+  * Andrew Kane
+
 ## 1.1.6 - 2024-12-12
 
 ### Improvements
