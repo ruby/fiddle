@@ -218,6 +218,7 @@ module Fiddle
   class DLError < Error; end
   class ClearedReferenceError < Error; end
 
+  # Pointer isn't thread safe for now
   class Pointer
     extend FFI::DataConverter
     native_type FFI::Type::Builtin::POINTER
