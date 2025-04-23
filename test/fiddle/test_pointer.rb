@@ -187,6 +187,19 @@ module Fiddle
       assert_nil(ptr <=> 10, '10 should not be comparable')
     end
 
+    def test_ref
+      ptr = Fiddle::Pointer["hello"]
+      ref = ptr.ref
+      assert_equal(0, ref.size)
+      assert_nil(ref.free)
+      assert_equal(ptr, ref.ptr)
+
+      ptr2 = Fiddle::Pointer["world"]
+      ptr.ref[0, Fiddle::SIZEOF_VOIDP] = ptr2.ref
+      assert_equal("world", ptr.to_s)
+      assert_equal(ptr.to_i, ptr2.to_i)
+    end
+
     def test_ref_ptr
       if ffi_backend?
         omit("Fiddle.dlwrap([]) isn't supported with FFI backend")

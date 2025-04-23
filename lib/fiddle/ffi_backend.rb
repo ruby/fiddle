@@ -219,7 +219,6 @@ module Fiddle
   class ClearedReferenceError < Error; end
 
   class Pointer
-    attr_reader :ffi_ptr
     extend FFI::DataConverter
     native_type FFI::Type::Builtin::POINTER
 
@@ -285,7 +284,7 @@ module Fiddle
           value = value.to_str(args[1])
         end
 
-        @ffi_ptr.put_bytes(args[0], value, 0, args[1])
+        ffi_ptr.put_bytes(args[0], value, 0, args[1])
       elsif args.size == 1
         if value.is_a?(Fiddle::Pointer)
           value = value.to_str(args[0] + 1)
@@ -293,7 +292,7 @@ module Fiddle
           value = value.chr
         end
 
-        @ffi_ptr.put_bytes(args[0], value, 0, 1)
+        ffi_ptr.put_bytes(args[0], value, 0, 1)
       end
     rescue FFI::NullPointerError
       raise DLError.new("NULL pointer access")
@@ -332,7 +331,12 @@ module Fiddle
       end
       @free = free
       @ffi_ptr = ptr
+      @addr_ptr = nil
       @freed = false
+    end
+
+    def ffi_ptr
+      @addr_ptr ? @addr_ptr.get_pointer(0) : @ffi_ptr
     end
 
     module LibC
@@ -363,11 +367,11 @@ module Fiddle
     end
 
     def null?
-      @ffi_ptr.null?
+      ffi_ptr.null?
     end
 
     def to_ptr
-      @ffi_ptr
+      ffi_ptr
     end
 
     def size
@@ -386,9 +390,9 @@ module Fiddle
       return if @free.nil?
       return if @freed
       if @free == RUBY_FREE
-        LibC::FREE.call(@ffi_ptr)
+        LibC::FREE.call(ffi_ptr)
       else
-        @free.call(@ffi_ptr)
+        @free.call(ffi_ptr)
       end
       @freed = true
     end
@@ -492,10 +496,8 @@ module Fiddle
     end
 
     def ref
-      cptr = Pointer.malloc(FFI::Type::POINTER.size, RUBY_FREE)
-      cptr.ffi_ptr.put_pointer(0, ffi_ptr)
-      cptr.size = 0
-      cptr
+      @addr_ptr ||= FFI::MemoryPointer.new(:pointer).put_pointer(0, @ffi_ptr)
+      Pointer.new(@addr_ptr, 0)
     end
   end
 
