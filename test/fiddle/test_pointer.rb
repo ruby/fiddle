@@ -134,6 +134,8 @@ module Fiddle
       ptr = Pointer[str]
       assert_equal str.length, ptr.size
       assert_equal 'hello', ptr[0,5]
+      assert_equal 0, Fiddle::Pointer.to_ptr("abc")[3]
+      assert_equal "world", Fiddle::Pointer.to_ptr("hello\0world")[6,5]
     end
 
     def test_to_ptr_io
