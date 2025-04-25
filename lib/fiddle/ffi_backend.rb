@@ -241,9 +241,7 @@ module Fiddle
 
     def self.to_ptr(value)
       if value.is_a?(String)
-        cptr = Pointer.malloc(value.bytesize)
-        cptr.ffi_ptr.put_bytes(0, value)
-        cptr
+        Pointer.new(FFI::MemoryPointer.from_string(value), value.bytesize)
 
       elsif value.is_a?(Array)
         raise NotImplementedError, "array ptr"
