@@ -1,5 +1,18 @@
 # News
 
+## 1.1.8 - 2025-04-25
+
+### Improvements
+
+  * JRuby, TruffleRuby: Improved compatibility with CRuby
+    implementation.
+    * GH-187
+    * Patch by Andrew Kane
+
+### Thanks
+
+  * Andrew Kane
+
 ## 1.1.7 - 2025-04-23
 
 ### Improvements
