@@ -285,7 +285,7 @@ module Fiddle
       end
       assert_equal 0, Pointer.new(0).size
       assert_equal 0, Pointer.new(0).ref.size
-      assert_equal -1, (Pointer.new(0) + 1).size
+      assert_equal(-1, (Pointer.new(0) + 1).size)
     end
 
     def test_size=
