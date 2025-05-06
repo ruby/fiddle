@@ -283,8 +283,8 @@ module Fiddle
       Pointer.malloc(4, Fiddle::RUBY_FREE) do |ptr|
         assert_equal 4, ptr.size
       end
-      assert_equal 0, Pointer.new(0).size
-      assert_equal 0, Pointer.new(0).ref.size
+      assert_equal(0, Pointer.new(0).size)
+      assert_equal(0, Pointer.new(0).ref.size)
       assert_equal(-1, (Pointer.new(0) + 1).size)
     end
 
