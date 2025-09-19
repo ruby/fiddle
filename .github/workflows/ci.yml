@@ -77,6 +77,40 @@ jobs:
           cd tmp
           ruby test/run.rb
 
+  host-ibm:
+    if: github.repository == 'ruby/fiddle'
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04-ppc64le
+          - ubuntu-24.04-s390x
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Ruby
+        run: |
+          sudo apt-get update
+          sudo apt-get install ruby-full bundler libffi-dev
+
+      - run: sudo bundle install --jobs $(nproc)
+
+      - run: rake compile
+
+      - run: ruby -Ilib test/run.rb
+
+      - run: sudo rake install
+
+      - name: Run test against installed gem
+        run: |
+          ruby -run -e mkdir -- -p tmp/
+          ruby -run -e cp -- -pr test/ tmp/
+          cd tmp
+          ruby test/run.rb
+
   docker:
     name: >-
       ${{ matrix.service }}
