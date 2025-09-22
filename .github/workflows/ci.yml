@@ -49,18 +49,18 @@ jobs:
 
       - run: bundle install
 
-      - run: rake compile
+      - run: bundle exec rake compile
 
       # If Fiddle in Ruby's master has the same version of this Fiddle,
       # "gem install pkg/*.gem" fails.
-      - run: rake version:bump
+      - run: bundle exec rake version:bump
         if: >-
           matrix.ruby == 'debug' ||
           matrix.ruby == 'mingw' ||
           matrix.ruby == 'mswin'
 
       # This is for ensuring using Fiddle in this repository.
-      - run: ruby -Ilib test/run.rb
+      - run: bundle exec ruby -Ilib test/run.rb
 
       - run: rake install
 
@@ -98,9 +98,9 @@ jobs:
 
       - run: sudo bundle install --jobs $(nproc)
 
-      - run: rake compile
+      - run: bundle exec rake compile
 
-      - run: ruby -Ilib test/run.rb
+      - run: bundle exec ruby -Ilib test/run.rb
 
       - run: sudo rake install
 

@@ -32,20 +32,20 @@ jobs:
       - name: Install dependencies
         run: bundle install
       - name: Compile with libffi
-        run: rake compile -- --with-libffi-dir=${{ matrix.libffi-prefix }}
+        run: bundle exec rake compile -- --with-libffi-dir=${{ matrix.libffi-prefix }}
         if: ${{ matrix.libffi-prefix != '' }}
       - name: Compile with libffi source
-        run: rake compile -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
+        run: bundle exec rake compile -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
         if: ${{ matrix.libffi-prefix == '' }}
       - name: Run test
         run: rake test
       - name: Install gem
         run: |
-          rake build
+          bundle exec rake build
           gem install pkg/fiddle-*.gem -- --with-libffi-dir=${{ matrix.libffi-prefix }}
         if: ${{ matrix.ruby != 'head' && matrix.libffi-prefix != '' }}
       - name: Install gem with libffi source
         run: |
-          rake build
+          bundle exec rake build
           gem install pkg/fiddle-*.gem -- --with-libffi-source-dir=$(pwd)/libffi-${{ matrix.libffi }}
         if: ${{ matrix.ruby != 'head' && matrix.libffi-prefix == '' }}
