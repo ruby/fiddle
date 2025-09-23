@@ -64,18 +64,21 @@ unless bundle
   dir_config 'libffi'
 
   if pkg_config("libffi")
+    have_libffi = true
     libffi_version = pkg_config("libffi", "modversion")
   end
 
-  have_ffi_header = false
-  if have_header(ffi_header = 'ffi.h')
-    have_ffi_header = true
-  elsif have_header(ffi_header = 'ffi/ffi.h')
-    $defs.push('-DUSE_HEADER_HACKS')
-    have_ffi_header = true
-  end
-  if have_ffi_header && (have_library('ffi') || have_library('libffi'))
-    have_libffi = true
+  unless have_libffi
+    have_ffi_header = false
+    if have_header(ffi_header = 'ffi.h')
+      have_ffi_header = true
+    elsif have_header(ffi_header = 'ffi/ffi.h')
+      $defs.push('-DUSE_HEADER_HACKS')
+      have_ffi_header = true
+    end
+    if have_ffi_header && (have_library('ffi') || have_library('libffi'))
+      have_libffi = true
+    end
   end
 end
 
