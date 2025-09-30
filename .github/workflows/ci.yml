@@ -39,13 +39,21 @@ jobs:
           - { os: windows-latest , ruby: debug }
           - { os: windows-latest , ruby: truffleruby }
 
-    steps:
+    steps: &host-steps
       - uses: actions/checkout@v5
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+        if: ${{ !endsWith(matrix.os, 'ppc64le') && !endsWith(matrix.os, 's390x') }}
+
+      - name: Set up Ruby from deb package
+        run: |
+          sudo apt update
+          sudo apt install ruby-full bundler
+          sudo bundle install --jobs $(nproc)
+        if: ${{ endsWith(matrix.os, 'ppc64le') || endsWith(matrix.os, 's390x') }}
 
       - run: bundle install
 
@@ -63,6 +71,10 @@ jobs:
       - run: ruby -Ilib test/run.rb
 
       - run: rake install
+        if: ${{ !endsWith(matrix.os, 'ppc64le') && !endsWith(matrix.os, 's390x') }}
+
+      - run: sudo rake install
+        if: ${{ endsWith(matrix.os, 'ppc64le') || endsWith(matrix.os, 's390x') }}
 
       - name: Run test against installed gem
         # We can't use Fiddle gem with older RubyInstaller because
@@ -88,28 +100,7 @@ jobs:
           - ubuntu-24.04-ppc64le
           - ubuntu-24.04-s390x
 
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Set up Ruby
-        run: |
-          sudo apt-get update
-          sudo apt-get install ruby-full bundler libffi-dev
-
-      - run: sudo bundle install --jobs $(nproc)
-
-      - run: rake compile
-
-      - run: ruby -Ilib test/run.rb
-
-      - run: sudo rake install
-
-      - name: Run test against installed gem
-        run: |
-          ruby -run -e mkdir -- -p tmp/
-          ruby -run -e cp -- -pr test/ tmp/
-          cd tmp
-          ruby test/run.rb
+    steps: *host-steps
 
   docker:
     name: >-
