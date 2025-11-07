@@ -222,7 +222,7 @@ module Fiddle
       # In general uses of dlerror(3) should call it before use it.
       verbose, $VERBOSE = $VERBOSE, nil
       require 'socket'
-      Socket.gethostbyname("localhost")
+      Addrinfo.getaddrinfo("localhost", nil)
       Fiddle.dlopen("/lib/libc.so.7").sym('strcpy')
     ensure
       $VERBOSE = verbose
