@@ -117,7 +117,7 @@ when /aix/
         %x!/usr/bin/ar x /usr/lib/libm.a #{mobjs.join(' ')}!
         %x!echo "#{funcs.join("\n")}\n" > #{expfile}!
         require 'rbconfig'
-        if RbConfig::CONFIG["GCC"] = 'yes'
+        if RbConfig::CONFIG["GCC"] == 'yes'
           lflag='-Wl,'
         else
           lflag=''
