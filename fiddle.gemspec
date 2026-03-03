@@ -54,4 +54,14 @@ Gem::Specification.new do |spec|
 
   spec.metadata["msys2_mingw_dependencies"] = "libffi"
   spec.metadata["changelog_uri"] = "https://github.com/ruby/fiddle/releases"
+
+  spec.requirements << "system: libffi: alpine_linux: libffi-dev"
+  spec.requirements << "system: libffi: alt_linux: libffi-devel"
+  spec.requirements << "system: libffi: arch_linux: libffi"
+  spec.requirements << "system: libffi: conda: libffi"
+  spec.requirements << "system: libffi: debian: libffi-dev"
+  spec.requirements << "system: libffi: gentoo_linux: dev-libs/libffi"
+  spec.requirements << "system: libffi: homebrew: libffi"
+  spec.requirements << "system: libffi: macports: libffi"
+  spec.requirements << "system: libffi: rhel: pkgconfig(libffi)"
 end
