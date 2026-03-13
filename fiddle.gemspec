@@ -17,7 +17,8 @@ Gem::Specification.new do |spec|
   spec.licenses      = ["Ruby", "BSD-2-Clause"]
 
   spec.files         = [
-    "LICENSE.txt",
+    "COPYING",
+    "BSDL",
     "README.md",
     "Rakefile",
     "ext/fiddle/closure.c",
