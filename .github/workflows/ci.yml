@@ -38,6 +38,7 @@ jobs:
           - { os: macos-15  , ruby: '2.5' }
           - { os: windows-latest , ruby: debug }
           - { os: windows-latest , ruby: truffleruby }
+          - { os: macos-15-intel , ruby: truffleruby }
 
     steps:
       - uses: actions/checkout@v6
