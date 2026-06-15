@@ -416,9 +416,11 @@ static VALUE
 rb_fiddle_ptr_free_set(VALUE self, VALUE val)
 {
     struct ptr_data *data;
+    VALUE wrap = 0;
 
     TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, data);
-    data->free = get_freefunc(val, &data->wrap[1]);
+    data->free = get_freefunc(val, &wrap);
+    RB_OBJ_WRITE(self, &data->wrap[1], wrap);
 
     return Qnil;
 }
