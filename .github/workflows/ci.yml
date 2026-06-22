@@ -41,7 +41,7 @@ jobs:
           - { os: macos-15-intel , ruby: truffleruby }
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -90,7 +90,7 @@ jobs:
           - ubuntu-24.04-s390x
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Ruby
         run: |
@@ -123,7 +123,7 @@ jobs:
           - fedora-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - run: docker compose build ${{ matrix.service }}
 
