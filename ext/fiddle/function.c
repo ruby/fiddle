@@ -368,6 +368,11 @@ function_call(int argc, VALUE argv[], VALUE self)
             if (NIL_P(src)) {
                 generic_args[i_call].pointer = NULL;
             }
+            else if (RB_TYPE_P(src, T_STRING)) {
+                /* kept alive and pinned via converted_args */
+                generic_args[i_call].pointer = RSTRING_PTR(src);
+                converted_args[n_converted_args++] = src;
+            }
             else {
                 if (cPointer != CLASS_OF(src)) {
                     src = rb_funcall(cPointer, id_aref, 1, src);
