@@ -168,7 +168,7 @@ rb_fiddle_ptr_malloc(VALUE klass, long size, freefunc_t func)
     return rb_fiddle_ptr_new2(klass, ptr, size, func, 0, 0);
 }
 
-static void *
+void *
 rb_fiddle_ptr2cptr(VALUE val)
 {
     struct ptr_data *data;

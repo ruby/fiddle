@@ -239,7 +239,8 @@ function_call(int argc, VALUE argv[], VALUE self)
     int n_call_args = 0;
     int i;
     int i_call;
-    VALUE converted_args = Qnil;
+    VALUE *converted_args;
+    int n_converted_args = 0;
     VALUE alloc_buffer = 0;
 
     cfunc    = rb_ivar_get(self, id_ptr);
@@ -340,9 +341,14 @@ function_call(int argc, VALUE argv[], VALUE self)
 
     generic_args = ALLOCV(alloc_buffer,
                           sizeof(fiddle_generic) * n_call_args +
-                          sizeof(void *) * (n_call_args + 1));
+                          sizeof(void *) * (n_call_args + 1) +
+                          sizeof(VALUE) * n_call_args);
     args.values = (void **)((char *)generic_args +
                             sizeof(fiddle_generic) * n_call_args);
+    /* GC-scanned (conservatively) as part of the ALLOCV buffer */
+    converted_args = (VALUE *)((char *)args.values +
+                               sizeof(void *) * (n_call_args + 1));
+    MEMZERO(converted_args, VALUE, n_call_args);
 
     for (i = 0, i_call = 0;
          i < argc && i_call < n_call_args;
@@ -360,25 +366,22 @@ function_call(int argc, VALUE argv[], VALUE self)
 
         if (c_arg_type == TYPE_VOIDP) {
             if (NIL_P(src)) {
-                src = INT2FIX(0);
+                generic_args[i_call].pointer = NULL;
             }
-            else if (cPointer != CLASS_OF(src)) {
-                src = rb_funcall(cPointer, id_aref, 1, src);
-                if (NIL_P(converted_args)) {
-                    converted_args = rb_ary_new();
+            else {
+                if (cPointer != CLASS_OF(src)) {
+                    src = rb_funcall(cPointer, id_aref, 1, src);
+                    converted_args[n_converted_args++] = src;
                 }
-                rb_ary_push(converted_args, src);
+                generic_args[i_call].pointer = rb_fiddle_ptr2cptr(src);
             }
-            src = rb_Integer(src);
         }
-
-        original_src = src;
-        VALUE2GENERIC(c_arg_type, src, &generic_args[i_call]);
-        if (src != original_src) {
-            if (NIL_P(converted_args)) {
-                converted_args = rb_ary_new();
+        else {
+            original_src = src;
+            VALUE2GENERIC(c_arg_type, src, &generic_args[i_call]);
+            if (src != original_src) {
+                converted_args[n_converted_args++] = src;
             }
-            rb_ary_push(converted_args, src);
         }
         args.values[i_call] = (void *)&generic_args[i_call];
     }
