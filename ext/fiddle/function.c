@@ -14,6 +14,13 @@
 
 VALUE cFiddleFunction;
 
+static ID id_ptr, id_abi, id_argument_types, id_return_type, id_is_variadic,
+          id_need_gvl, id_name, id_closure, id_Pointer, id_aref,
+          id_set_last_error;
+#if defined(_WIN32)
+static ID id_set_win32_last_error, id_set_win32_last_socket_error;
+#endif
+
 #define MAX_ARGS (SIZE_MAX / (sizeof(void *) + sizeof(fiddle_generic)) - 1)
 
 #define Check_Max_Args(name, len) \
@@ -136,7 +143,7 @@ initialize(int argc, VALUE argv[], VALUE self)
     void *cfunc;
 
     rb_scan_args(argc, argv, "31:", &ptr, &arg_types, &ret_type, &abi, &kwargs);
-    rb_iv_set(self, "@closure", ptr);
+    rb_ivar_set(self, id_closure, ptr);
 
     if (!NIL_P(kwargs)) {
         enum {
@@ -163,8 +170,8 @@ initialize(int argc, VALUE argv[], VALUE self)
             need_gvl = args[kw_need_gvl];
         }
     }
-    rb_iv_set(self, "@name", name);
-    rb_iv_set(self, "@need_gvl", need_gvl);
+    rb_ivar_set(self, id_name, name);
+    rb_ivar_set(self, id_need_gvl, need_gvl);
 
     ptr = rb_Integer(ptr);
     cfunc = NUM2PTR(ptr);
@@ -187,11 +194,11 @@ initialize(int argc, VALUE argv[], VALUE self)
     }
 #endif
 
-    rb_iv_set(self, "@ptr", ptr);
-    rb_iv_set(self, "@argument_types", arg_types);
-    rb_iv_set(self, "@return_type", ret_type);
-    rb_iv_set(self, "@abi", abi);
-    rb_iv_set(self, "@is_variadic", is_variadic ? Qtrue : Qfalse);
+    rb_ivar_set(self, id_ptr, ptr);
+    rb_ivar_set(self, id_argument_types, arg_types);
+    rb_ivar_set(self, id_return_type, ret_type);
+    rb_ivar_set(self, id_abi, abi);
+    rb_ivar_set(self, id_is_variadic, is_variadic ? Qtrue : Qfalse);
 
     TypedData_Get_Struct(self, ffi_cif, &function_data_type, cif);
     cif->arg_types = NULL;
@@ -235,12 +242,12 @@ function_call(int argc, VALUE argv[], VALUE self)
     VALUE converted_args = Qnil;
     VALUE alloc_buffer = 0;
 
-    cfunc    = rb_iv_get(self, "@ptr");
-    abi      = rb_iv_get(self, "@abi");
-    arg_types = rb_iv_get(self, "@argument_types");
-    cPointer = rb_const_get(mFiddle, rb_intern("Pointer"));
-    is_variadic = rb_iv_get(self, "@is_variadic");
-    need_gvl = rb_iv_get(self, "@need_gvl");
+    cfunc    = rb_ivar_get(self, id_ptr);
+    abi      = rb_ivar_get(self, id_abi);
+    arg_types = rb_ivar_get(self, id_argument_types);
+    cPointer = rb_const_get(mFiddle, id_Pointer);
+    is_variadic = rb_ivar_get(self, id_is_variadic);
+    need_gvl = rb_ivar_get(self, id_need_gvl);
 
     n_arg_types = RARRAY_LENINT(arg_types);
     n_fixed_args = n_arg_types;
@@ -289,7 +296,7 @@ function_call(int argc, VALUE argv[], VALUE self)
           rb_ary_push(arg_types, INT2FIX(c_arg_type));
         }
 
-        return_type = rb_iv_get(self, "@return_type");
+        return_type = rb_ivar_get(self, id_return_type);
         c_return_type = FIX2INT(return_type);
         ffi_return_type = INT2FFI_TYPE(c_return_type);
 
@@ -356,7 +363,7 @@ function_call(int argc, VALUE argv[], VALUE self)
                 src = INT2FIX(0);
             }
             else if (cPointer != CLASS_OF(src)) {
-                src = rb_funcall(cPointer, rb_intern("[]"), 1, src);
+                src = rb_funcall(cPointer, id_aref, 1, src);
                 if (NIL_P(converted_args)) {
                     converted_args = rb_ary_new();
                 }
@@ -390,17 +397,17 @@ function_call(int argc, VALUE argv[], VALUE self)
 #if defined(_WIN32)
         DWORD error = WSAGetLastError();
         int socket_error = WSAGetLastError();
-        rb_funcall(mFiddle, rb_intern("win32_last_error="), 1,
+        rb_funcall(mFiddle, id_set_win32_last_error, 1,
                    ULONG2NUM(error));
-        rb_funcall(mFiddle, rb_intern("win32_last_socket_error="), 1,
+        rb_funcall(mFiddle, id_set_win32_last_socket_error, 1,
                    INT2NUM(socket_error));
 #endif
-        rb_funcall(mFiddle, rb_intern("last_error="), 1, INT2NUM(errno_keep));
+        rb_funcall(mFiddle, id_set_last_error, 1, INT2NUM(errno_keep));
     }
 
     ALLOCV_END(alloc_buffer);
 
-    return GENERIC2VALUE(rb_iv_get(self, "@return_type"), args.retval);
+    return GENERIC2VALUE(rb_ivar_get(self, id_return_type), args.retval);
 }
 
 void
@@ -440,6 +447,22 @@ Init_fiddle_function(void)
      *   f.abi == Fiddle::Function::DEFAULT
      *	    #=> true
      */
+    id_ptr = rb_intern_const("@ptr");
+    id_abi = rb_intern_const("@abi");
+    id_argument_types = rb_intern_const("@argument_types");
+    id_return_type = rb_intern_const("@return_type");
+    id_is_variadic = rb_intern_const("@is_variadic");
+    id_need_gvl = rb_intern_const("@need_gvl");
+    id_name = rb_intern_const("@name");
+    id_closure = rb_intern_const("@closure");
+    id_Pointer = rb_intern_const("Pointer");
+    id_aref = rb_intern_const("[]");
+    id_set_last_error = rb_intern_const("last_error=");
+#if defined(_WIN32)
+    id_set_win32_last_error = rb_intern_const("win32_last_error=");
+    id_set_win32_last_socket_error = rb_intern_const("win32_last_socket_error=");
+#endif
+
     cFiddleFunction = rb_define_class_under(mFiddle, "Function", rb_cObject);
 
     /*
