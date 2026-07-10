@@ -15,7 +15,7 @@
 VALUE cFiddleFunction;
 
 static ID id_ptr, id_abi, id_argument_types, id_return_type, id_is_variadic,
-          id_need_gvl, id_name, id_closure, id_Pointer, id_aref,
+          id_need_gvl, id_name, id_closure, id_aref,
           id_set_last_error;
 #if defined(_WIN32)
 static ID id_set_win32_last_error, id_set_win32_last_socket_error;
@@ -231,7 +231,6 @@ function_call(int argc, VALUE argv[], VALUE self)
     VALUE cfunc;
     VALUE abi;
     VALUE arg_types;
-    VALUE cPointer;
     VALUE is_variadic;
     VALUE need_gvl;
     int n_arg_types;
@@ -246,7 +245,6 @@ function_call(int argc, VALUE argv[], VALUE self)
     cfunc    = rb_ivar_get(self, id_ptr);
     abi      = rb_ivar_get(self, id_abi);
     arg_types = rb_ivar_get(self, id_argument_types);
-    cPointer = rb_const_get(mFiddle, id_Pointer);
     is_variadic = rb_ivar_get(self, id_is_variadic);
     need_gvl = rb_ivar_get(self, id_need_gvl);
 
@@ -374,8 +372,8 @@ function_call(int argc, VALUE argv[], VALUE self)
                 converted_args[n_converted_args++] = src;
             }
             else {
-                if (cPointer != CLASS_OF(src)) {
-                    src = rb_funcall(cPointer, id_aref, 1, src);
+                if (rb_cPointer != CLASS_OF(src)) {
+                    src = rb_funcall(rb_cPointer, id_aref, 1, src);
                     converted_args[n_converted_args++] = src;
                 }
                 generic_args[i_call].pointer = rb_fiddle_ptr2cptr(src);

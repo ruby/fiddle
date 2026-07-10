@@ -230,6 +230,7 @@
 #define ALIGN_INT64_T ALIGN_OF(int64_t)
 
 extern VALUE mFiddle;
+extern VALUE rb_cPointer;
 extern VALUE rb_eFiddleDLError;
 
 VALUE rb_fiddle_new_function(VALUE address, VALUE arg_types, VALUE ret_type);
