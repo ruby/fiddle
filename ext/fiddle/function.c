@@ -16,9 +16,9 @@ VALUE cFiddleFunction;
 
 static ID id_ptr, id_abi, id_argument_types, id_return_type, id_is_variadic,
           id_need_gvl, id_name, id_closure, id_aref,
-          id_set_last_error;
+          id_last_error;
 #if defined(_WIN32)
-static ID id_set_win32_last_error, id_set_win32_last_socket_error;
+static ID id_win32_last_error, id_win32_last_socket_error;
 #endif
 
 #define MAX_ARGS (SIZE_MAX / (sizeof(void *) + sizeof(fiddle_generic)) - 1)
@@ -403,12 +403,13 @@ function_call(int argc, VALUE argv[], VALUE self)
 #if defined(_WIN32)
         DWORD error = WSAGetLastError();
         int socket_error = WSAGetLastError();
-        rb_funcall(mFiddle, id_set_win32_last_error, 1,
-                   ULONG2NUM(error));
-        rb_funcall(mFiddle, id_set_win32_last_socket_error, 1,
-                   INT2NUM(socket_error));
+        rb_thread_local_aset(rb_thread_current(), id_win32_last_error,
+                             ULONG2NUM(error));
+        rb_thread_local_aset(rb_thread_current(), id_win32_last_socket_error,
+                             INT2NUM(socket_error));
 #endif
-        rb_funcall(mFiddle, id_set_last_error, 1, INT2NUM(errno_keep));
+        rb_thread_local_aset(rb_thread_current(), id_last_error,
+                             INT2NUM(errno_keep));
     }
 
     ALLOCV_END(alloc_buffer);
@@ -461,12 +462,11 @@ Init_fiddle_function(void)
     id_need_gvl = rb_intern_const("@need_gvl");
     id_name = rb_intern_const("@name");
     id_closure = rb_intern_const("@closure");
-    id_Pointer = rb_intern_const("Pointer");
     id_aref = rb_intern_const("[]");
-    id_set_last_error = rb_intern_const("last_error=");
+    id_last_error = rb_intern_const("__FIDDLE_LAST_ERROR__");
 #if defined(_WIN32)
-    id_set_win32_last_error = rb_intern_const("win32_last_error=");
-    id_set_win32_last_socket_error = rb_intern_const("win32_last_socket_error=");
+    id_win32_last_error = rb_intern_const("__FIDDLE_WIN32_LAST_ERROR__");
+    id_win32_last_socket_error = rb_intern_const("__FIDDLE_WIN32_LAST_SOCKET_ERROR__");
 #endif
 
     cFiddleFunction = rb_define_class_under(mFiddle, "Function", rb_cObject);

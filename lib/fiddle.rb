@@ -44,7 +44,6 @@ module Fiddle
 
     # Sets the last +Error+ of the current executing +Thread+ to +error+
     def self.last_error= error
-      Thread.current[:__DL2_LAST_ERROR__] = error
       Thread.current[:__FIDDLE_LAST_ERROR__] = error
     end
 
