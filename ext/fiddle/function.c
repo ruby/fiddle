@@ -433,7 +433,7 @@ function_call(int argc, VALUE argv[], VALUE self)
 
     ALLOCV_END(alloc_buffer);
 
-    return GENERIC2VALUE(INT2FIX(func->return_type), args.retval);
+    return GENERIC2VALUE(func->return_type, args.retval);
 }
 
 void

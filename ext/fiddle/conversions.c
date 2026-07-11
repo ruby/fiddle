@@ -308,10 +308,8 @@ value_to_generic(int type, VALUE src, fiddle_generic *dst)
 }
 
 VALUE
-rb_fiddle_generic_to_value(VALUE rettype, fiddle_generic retval)
+rb_fiddle_generic_to_value(int type, fiddle_generic retval)
 {
-    int type = NUM2INT(rettype);
-
     switch (type) {
       case TYPE_VOID:
 	return Qnil;
@@ -374,5 +372,5 @@ rb_fiddle_generic_to_value(VALUE rettype, fiddle_generic retval)
 VALUE
 generic_to_value(VALUE rettype, fiddle_generic retval)
 {
-    return rb_fiddle_generic_to_value(rettype, retval);
+    return rb_fiddle_generic_to_value(NUM2INT(rettype), retval);
 }
