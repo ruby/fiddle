@@ -40,7 +40,6 @@
 # endif
 #endif
 
-#define FFI_GO_CLOSURES 0 /* fiddle does not use go closures */
 #ifdef USE_HEADER_HACKS
 #include <ffi/ffi.h>
 #else

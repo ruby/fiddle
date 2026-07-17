@@ -162,6 +162,16 @@ unless have_libffi
   $INCFLAGS << " -I" << libffi.include
 end
 
+unless macro_defined?("FFI_GO_CLOSURES", cpp_include(ffi_header || 'ffi.h'))
+  # ffi.h in libffi 3.4.4 or earlier and the macOS SDK uses
+  # `#if FFI_GO_CLOSURES`, which warns with -Wundef on targets whose
+  # ffitarget.h does not define it.  Newer libffi defines it in
+  # ffitarget.h unconditionally, where defining it on our side would be
+  # a macro redefinition (e.g. warning C4005 with MSVC).  Fiddle does
+  # not use Go closures.
+  $defs.push('-DFFI_GO_CLOSURES=0')
+end
+
 if libffi_version
   # If libffi_version contains rc version, just ignored.
   libffi_version = libffi_version.gsub(/-rc\d+/, '')
