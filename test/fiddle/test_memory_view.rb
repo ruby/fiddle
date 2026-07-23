@@ -30,6 +30,12 @@ module Fiddle
       end
     end
 
+    def test_available?
+      assert {MemoryView.available?(Pointer["hello world"])}
+      assert {!MemoryView.available?(Fiddle::NULL)}
+      assert {!MemoryView.available?(Object.new)}
+    end
+
     def test_memory_view_from_pointer
       str = Marshal.load(Marshal.dump("hello world"))
       ptr = Pointer[str]

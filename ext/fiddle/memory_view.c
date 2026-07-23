@@ -97,6 +97,12 @@ rb_fiddle_memview_release(VALUE obj)
 }
 
 static VALUE
+rb_fiddle_memview_s_available_p(VALUE klass, VALUE target)
+{
+    return rb_memory_view_available_p(target) ? Qtrue : Qfalse;
+}
+
+static VALUE
 rb_fiddle_memview_s_export(VALUE klass, VALUE target)
 {
     ID id_new;
@@ -307,6 +313,7 @@ Init_fiddle_memory_view(void)
 {
     rb_cMemoryView = rb_define_class_under(mFiddle, "MemoryView", rb_cObject);
     rb_define_alloc_func(rb_cMemoryView, rb_fiddle_memview_s_allocate);
+    rb_define_singleton_method(rb_cMemoryView, "available?", rb_fiddle_memview_s_available_p, 1);
     rb_define_singleton_method(rb_cMemoryView, "export", rb_fiddle_memview_s_export, 1);
     rb_define_method(rb_cMemoryView, "initialize", rb_fiddle_memview_initialize, 1);
     rb_define_method(rb_cMemoryView, "release", rb_fiddle_memview_release, 0);
