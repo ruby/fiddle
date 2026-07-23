@@ -241,6 +241,7 @@ if libffi
 end
 
 have_func("rb_str_to_interned_str")
+have_const("RUBY_TYPED_EMBEDDABLE", "ruby.h") # RUBY_VERSION >= 3.3
 create_makefile 'fiddle' do |conf|
   if !libffi
     next conf << "LIBFFI_CLEAN = none\n"

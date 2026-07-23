@@ -115,6 +115,7 @@ rb_fiddle_memview_initialize(VALUE obj, VALUE target)
         data->view.obj = Qnil;
         rb_raise(rb_eArgError, "Unable to get a memory view from %+"PRIsVALUE, target);
     }
+    RB_OBJ_WRITTEN(obj, Qundef, data->view.obj);
 
     return Qnil;
 }

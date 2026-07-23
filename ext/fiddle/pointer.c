@@ -34,7 +34,22 @@ struct ptr_data {
     VALUE wrap[2];
 };
 
-#define RPTR_DATA(obj) ((struct ptr_data *)(DATA_PTR(obj)))
+#ifdef RUBY_TYPED_EMBEDDABLE
+#  define HAVE_RUBY_TYPED_EMBEDDABLE 1
+#else
+# ifdef HAVE_CONST_RUBY_TYPED_EMBEDDABLE
+#  define RUBY_TYPED_EMBEDDABLE RUBY_TYPED_EMBEDDABLE
+#  define HAVE_RUBY_TYPED_EMBEDDABLE 1
+# else
+#  define RUBY_TYPED_EMBEDDABLE 0
+# endif
+#endif
+
+#ifdef HAVE_RUBY_TYPED_EMBEDDABLE
+#define RPTR_DATA(obj) ((struct ptr_data *)RTYPEDDATA_GET_DATA(obj))
+#else
+#define RPTR_DATA(obj) ((struct ptr_data *)DATA_PTR(obj))
+#endif
 
 static inline freefunc_t
 get_freefunc(VALUE func, volatile VALUE *wrap)
@@ -77,14 +92,20 @@ static void
 fiddle_ptr_free(void *ptr)
 {
     fiddle_ptr_free_ptr(ptr);
+#ifndef HAVE_RUBY_TYPED_EMBEDDABLE
     xfree(ptr);
+#endif
 }
 
 static size_t
 fiddle_ptr_memsize(const void *ptr)
 {
     const struct ptr_data *data = ptr;
-    return sizeof(*data) + data->size;
+    size_t size = data->size;
+#ifndef HAVE_RUBY_TYPED_EMBEDDABLE
+    size += sizeof(*data);
+#endif
+    return size;
 }
 
 static const rb_data_type_t fiddle_ptr_data_type = {
@@ -94,7 +115,7 @@ static const rb_data_type_t fiddle_ptr_data_type = {
         .dfree = fiddle_ptr_free,
         .dsize = fiddle_ptr_memsize,
     },
-    .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
+    .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS | RUBY_TYPED_EMBEDDABLE,
 };
 
 #ifdef HAVE_RUBY_MEMORY_VIEW_H
@@ -168,7 +189,7 @@ rb_fiddle_ptr_malloc(VALUE klass, long size, freefunc_t func)
     return rb_fiddle_ptr_new2(klass, ptr, size, func, 0, 0);
 }
 
-static void *
+void *
 rb_fiddle_ptr2cptr(VALUE val)
 {
     struct ptr_data *data;
@@ -416,9 +437,11 @@ static VALUE
 rb_fiddle_ptr_free_set(VALUE self, VALUE val)
 {
     struct ptr_data *data;
+    VALUE wrap = 0;
 
     TypedData_Get_Struct(self, struct ptr_data, &fiddle_ptr_data_type, data);
-    data->free = get_freefunc(val, &data->wrap[1]);
+    data->free = get_freefunc(val, &wrap);
+    RB_OBJ_WRITE(self, &data->wrap[1], wrap);
 
     return Qnil;
 }
