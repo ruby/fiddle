@@ -36,6 +36,31 @@ module Fiddle
       assert {!MemoryView.available?(Object.new)}
     end
 
+    def test_new_with_flags
+      ptr = Pointer["hello world"]
+      mview = MemoryView.new(ptr, MemoryView::SIMPLE)
+      begin
+        assert_equal(ptr.size, mview.byte_size)
+      ensure
+        mview.release
+      end
+    end
+
+    def test_new_with_unsupported_flags
+      ptr = Pointer["hello world"]
+      assert_raise(ArgumentError) do
+        MemoryView.new(ptr, MemoryView::WRITABLE)
+      end
+    end
+
+    def test_export_with_flags
+      str = "hello world"
+      mview_str = MemoryView.export(Pointer[str], MemoryView::SIMPLE) do |mview|
+        mview.to_s
+      end
+      assert_equal(str, mview_str)
+    end
+
     def test_memory_view_from_pointer
       str = Marshal.load(Marshal.dump("hello world"))
       ptr = Pointer[str]
