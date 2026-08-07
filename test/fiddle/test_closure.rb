@@ -172,6 +172,30 @@ module Fiddle
       end
     end
 
+    def test_call_after_compaction
+      omit("Need GC.verify_compaction_references") unless
+        GC.respond_to?(:verify_compaction_references)
+      omit("Need CRuby") unless RUBY_ENGINE == "ruby"
+
+      closure_class = Class.new(Closure) do
+        def call(a, b)
+          a + b
+        end
+      end
+
+      # The closure must be reachable only through the heap. A local variable is
+      # pinned by the conservative machine-stack scan. A pinned closure does not
+      # move, and then this test cannot fail.
+      holder = [closure_class.new(TYPE_INT, [TYPE_INT, TYPE_INT])]
+      begin
+        GC.verify_compaction_references(expand_heap: true, toward: :empty)
+        func = Function.new(holder[0].to_i, [TYPE_INT, TYPE_INT], TYPE_INT)
+        assert_equal(42, func.call(40, 2))
+      ensure
+        holder[0].free
+      end
+    end
+
     def test_ractor_shareable
       omit("Need Ractor") unless defined?(Ractor)
       closure_class = Class.new(Closure) do
