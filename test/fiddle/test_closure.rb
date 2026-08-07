@@ -173,8 +173,9 @@ module Fiddle
     end
 
     def test_call_after_compaction
-      omit("Need GC.verify_compaction_references") unless
-        GC.respond_to?(:verify_compaction_references)
+      unless GC.respond_to?(:verify_compaction_references)
+        omit("Need GC.verify_compaction_references")
+      end
       omit("Need CRuby") unless RUBY_ENGINE == "ruby"
 
       closure_class = Class.new(Closure) do
