@@ -304,7 +304,18 @@ function_call(int argc, VALUE argv[], VALUE self)
                           (func->is_variadic ? sizeof(int) * n_call_args : 0));
     args.values = (void **)((char *)generic_args +
                             sizeof(fiddle_generic) * n_call_args);
-    /* GC-scanned (conservatively) as part of the ALLOCV buffer */
+    /* GC-scanned (conservatively) as part of the ALLOCV buffer.
+     *
+     * The conservative scan both keeps these values alive and holds them in
+     * place, and both properties are required. generic_args can hold a pointer
+     * into one of them: TYPE_CONST_STRING stores rb_string_value_cstr(&src),
+     * and for a to_str object that is the coerced String, which argv does not
+     * hold. ffi_call then runs without the GVL, where another thread can compact
+     * the heap.
+     *
+     * Storing these values somewhere the GC may move them instead, such as a
+     * Ruby Array, keeps them alive but not in place. The C function then reads
+     * the slot the String left. Keep them in this buffer. */
     converted_args = (VALUE *)((char *)args.values +
                                sizeof(void *) * (n_call_args + 1));
     MEMZERO(converted_args, VALUE, n_call_args);
