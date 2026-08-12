@@ -55,6 +55,12 @@ closure_memsize(const void * ptr)
     return size;
 }
 
+/* Ruby 2.6 and earlier have no compaction, so marking the reference plainly
+ * holds it in place there. */
+#ifndef HAVE_RB_GC_MARK_MOVABLE
+# define rb_gc_mark_movable rb_gc_mark
+#endif
+
 /* Fiddle::Closure#free and initialize_rescue set the data pointer to NULL.
  * The garbage collector does not call these functions with a NULL pointer,
  * but this file is the only one in the extension that clears the pointer,
@@ -68,6 +74,7 @@ closure_mark(void *ptr)
     }
 }
 
+#ifdef HAVE_RB_GC_MARK_MOVABLE
 static void
 closure_compact(void *ptr)
 {
@@ -76,6 +83,7 @@ closure_compact(void *ptr)
         closure->self = rb_gc_location(closure->self);
     }
 }
+#endif
 
 const rb_data_type_t closure_data_type = {
     .wrap_struct_name = "fiddle/closure",
@@ -83,7 +91,9 @@ const rb_data_type_t closure_data_type = {
         .dmark = closure_mark,
         .dfree = dealloc,
         .dsize = closure_memsize,
-        .dcompact = closure_compact
+#ifdef HAVE_RB_GC_MARK_MOVABLE
+        .dcompact = closure_compact,
+#endif
     },
     .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
 };
