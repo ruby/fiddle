@@ -38,9 +38,21 @@ module Fiddle
 
     def test_new_with_flags
       ptr = Pointer["hello world"]
+
+      mview = MemoryView.new(ptr, MemoryView::SIMPLE)
+      begin
+        assert do
+          mview.readonly?
+        end
+      ensure
+        mview.release
+      end
+
       mview = MemoryView.new(ptr, MemoryView::WRITABLE)
       begin
-        assert_equal(ptr.size, mview.byte_size)
+        assert do
+          !mview.readonly?
+        end
       ensure
         mview.release
       end
@@ -71,7 +83,7 @@ module Fiddle
       begin
         assert_same(ptr, mview.obj)
         assert_equal(str.bytesize, mview.byte_size)
-        assert_equal(false, mview.readonly?)
+        assert_equal(true, mview.readonly?)
         assert_equal(nil, mview.format)
         assert_equal(1, mview.item_size)
         assert_equal(1, mview.ndim)
