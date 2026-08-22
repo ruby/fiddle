@@ -38,7 +38,7 @@ module Fiddle
 
     def test_new_with_flags
       ptr = Pointer["hello world"]
-      mview = MemoryView.new(ptr, MemoryView::SIMPLE)
+      mview = MemoryView.new(ptr, MemoryView::WRITABLE)
       begin
         assert_equal(ptr.size, mview.byte_size)
       ensure
@@ -50,6 +50,9 @@ module Fiddle
       ptr = Pointer["hello world"]
       assert_raise(ArgumentError) do
         MemoryView.new(ptr, MemoryView::INDIRECT)
+      end
+      assert_raise(ArgumentError) do
+        MemoryView.new(ptr, MemoryView::WRITABLE | MemoryView::INDIRECT)
       end
     end
 
