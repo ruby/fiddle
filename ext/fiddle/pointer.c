@@ -140,7 +140,7 @@ fiddle_ptr_get_memory_view(VALUE obj, rb_memory_view_t *view, int flags)
     if (flags != RUBY_MEMORY_VIEW_SIMPLE) return false;
 
     struct ptr_data *data = fiddle_ptr_check_memory_view(obj);
-    rb_memory_view_init_as_byte_array(view, obj, data->ptr, data->size, true);
+    rb_memory_view_init_as_byte_array(view, obj, data->ptr, data->size, false);
 
     return true;
 }
