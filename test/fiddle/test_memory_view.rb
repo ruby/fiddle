@@ -68,7 +68,7 @@ module Fiddle
       begin
         assert_same(ptr, mview.obj)
         assert_equal(str.bytesize, mview.byte_size)
-        assert_equal(true, mview.readonly?)
+        assert_equal(false, mview.readonly?)
         assert_equal(nil, mview.format)
         assert_equal(1, mview.item_size)
         assert_equal(1, mview.ndim)
