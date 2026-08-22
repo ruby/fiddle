@@ -49,7 +49,7 @@ module Fiddle
     def test_new_with_unsupported_flags
       ptr = Pointer["hello world"]
       assert_raise(ArgumentError) do
-        MemoryView.new(ptr, MemoryView::WRITABLE)
+        MemoryView.new(ptr, MemoryView::INDIRECT)
       end
     end
 
