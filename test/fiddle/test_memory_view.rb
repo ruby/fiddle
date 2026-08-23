@@ -38,9 +38,21 @@ module Fiddle
 
     def test_new_with_flags
       ptr = Pointer["hello world"]
+
       mview = MemoryView.new(ptr, MemoryView::SIMPLE)
       begin
-        assert_equal(ptr.size, mview.byte_size)
+        assert do
+          mview.readonly?
+        end
+      ensure
+        mview.release
+      end
+
+      mview = MemoryView.new(ptr, MemoryView::WRITABLE)
+      begin
+        assert do
+          !mview.readonly?
+        end
       ensure
         mview.release
       end
@@ -49,7 +61,10 @@ module Fiddle
     def test_new_with_unsupported_flags
       ptr = Pointer["hello world"]
       assert_raise(ArgumentError) do
-        MemoryView.new(ptr, MemoryView::WRITABLE)
+        MemoryView.new(ptr, MemoryView::INDIRECT)
+      end
+      assert_raise(ArgumentError) do
+        MemoryView.new(ptr, MemoryView::WRITABLE | MemoryView::INDIRECT)
       end
     end
 
