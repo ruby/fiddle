@@ -61,17 +61,11 @@ closure_memsize(const void * ptr)
 # define rb_gc_mark_movable rb_gc_mark
 #endif
 
-/* Fiddle::Closure#free and initialize_rescue set the data pointer to NULL.
- * The garbage collector does not call these functions with a NULL pointer,
- * but this file is the only one in the extension that clears the pointer,
- * so both functions check it. */
 static void
 closure_mark(void *ptr)
 {
     fiddle_closure *closure = ptr;
-    if (closure) {
-        rb_gc_mark_movable(closure->self);
-    }
+    rb_gc_mark_movable(closure->self);
 }
 
 #ifdef HAVE_RB_GC_MARK_MOVABLE
@@ -79,9 +73,7 @@ static void
 closure_compact(void *ptr)
 {
     fiddle_closure *closure = ptr;
-    if (closure) {
-        closure->self = rb_gc_location(closure->self);
-    }
+    closure->self = rb_gc_location(closure->self);
 }
 #endif
 
