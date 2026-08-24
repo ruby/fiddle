@@ -172,6 +172,54 @@ module Fiddle
       end
     end
 
+    def test_call_after_compaction
+      unless GC.respond_to?(:verify_compaction_references)
+        omit("Need GC.verify_compaction_references")
+      end
+      omit("Need CRuby") unless RUBY_ENGINE == "ruby"
+      require "envutil" unless defined?(EnvUtil)
+
+      # A separate process, because expand_heap: doubles the heap and the pages
+      # stay. Expanding this process's heap changes how often the collector runs
+      # afterwards, and test_no_memory_leak reads that as growth.
+      script = <<~'RUBY'
+        require "fiddle"
+
+        closure_class = Class.new(Fiddle::Closure) do
+          def call(a, b)
+            a + b
+          end
+        end
+
+        # The closure must be reachable only through the heap. A local variable is
+        # pinned by the conservative machine-stack scan. A pinned closure does not
+        # move, and then this test cannot fail.
+        holder = [closure_class.new(Fiddle::TYPE_INT,
+                                    [Fiddle::TYPE_INT, Fiddle::TYPE_INT])]
+        begin
+          begin
+            GC.verify_compaction_references(expand_heap: true, toward: :empty)
+          rescue ArgumentError
+            # Ruby 3.1 and earlier spell expand_heap: as double_heap:
+            GC.verify_compaction_references(double_heap: true, toward: :empty)
+          end
+        rescue NotImplementedError
+          # A Ruby without compaction cannot move the closure. The call below
+          # still exercises the plain path.
+        end
+        func = Fiddle::Function.new(holder[0].to_i,
+                                    [Fiddle::TYPE_INT, Fiddle::TYPE_INT],
+                                    Fiddle::TYPE_INT)
+        puts(func.call(40, 2))
+        holder[0].free
+      RUBY
+      load_path_args = $LOAD_PATH.flat_map {|path| ["-I", path]}
+      stdout, stderr, status = EnvUtil.invoke_ruby([*load_path_args, "-e", script],
+                                                   "", true, true)
+      assert(status.success?, stderr)
+      assert_equal("42", stdout.chomp)
+    end
+
     def test_ractor_shareable
       omit("Need Ractor") unless defined?(Ractor)
       closure_class = Class.new(Closure) do

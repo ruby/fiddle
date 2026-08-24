@@ -7,6 +7,7 @@ int ruby_thread_has_gvl_p(void); /* from internal.h */
 VALUE cFiddleClosure;
 
 typedef struct {
+    VALUE self;
     void * code;
     ffi_closure *pcl;
     ffi_cif cif;
@@ -54,12 +55,37 @@ closure_memsize(const void * ptr)
     return size;
 }
 
+/* Ruby 2.6 and earlier have no compaction, so marking the reference plainly
+ * holds it in place there. */
+#ifndef HAVE_RB_GC_MARK_MOVABLE
+# define rb_gc_mark_movable rb_gc_mark
+#endif
+
+static void
+closure_mark(void *ptr)
+{
+    fiddle_closure *closure = ptr;
+    rb_gc_mark_movable(closure->self);
+}
+
+#ifdef HAVE_RB_GC_MARK_MOVABLE
+static void
+closure_compact(void *ptr)
+{
+    fiddle_closure *closure = ptr;
+    closure->self = rb_gc_location(closure->self);
+}
+#endif
+
 const rb_data_type_t closure_data_type = {
     .wrap_struct_name = "fiddle/closure",
     .function = {
-        .dmark = 0,
+        .dmark = closure_mark,
         .dfree = dealloc,
-        .dsize = closure_memsize
+        .dsize = closure_memsize,
+#ifdef HAVE_RB_GC_MARK_MOVABLE
+        .dcompact = closure_compact,
+#endif
     },
     .flags = FIDDLE_DEFAULT_TYPED_DATA_FLAGS,
 };
@@ -76,7 +102,7 @@ with_gvl_callback(void *ptr)
 {
     struct callback_args *x = ptr;
 
-    VALUE self      = (VALUE)x->ctx;
+    VALUE self      = ((fiddle_closure *)x->ctx)->self;
     VALUE rbargs    = rb_iv_get(self, "@args");
     VALUE ctype     = rb_iv_get(self, "@ctype");
     int argc        = RARRAY_LENINT(rbargs);
@@ -288,6 +314,10 @@ initialize_body(VALUE user_data)
 
     TypedData_Get_Struct(data->self, fiddle_closure, &closure_data_type, cl);
 
+    /* libffi receives the address of this struct, which xmalloc'd memory keeps
+     * stable. The trampoline reads cl->self, so the GC must mark and relocate it. */
+    RB_OBJ_WRITE(data->self, &cl->self, data->self);
+
     cl->argv = (ffi_type **)xcalloc(argc + 1, sizeof(ffi_type *));
 
     normalized_args = rb_ary_new_capa(argc);
@@ -318,9 +348,9 @@ initialize_body(VALUE user_data)
 
 #if USE_FFI_CLOSURE_ALLOC
     result = ffi_prep_closure_loc(pcl, cif, callback,
-                                  (void *)(data->self), cl->code);
+                                  (void *)cl, cl->code);
 #else
-    result = ffi_prep_closure(pcl, cif, callback, (void *)(data->self));
+    result = ffi_prep_closure(pcl, cif, callback, (void *)cl);
     cl->code = (void *)pcl;
     i = mprotect(pcl, sizeof(*pcl), PROT_READ | PROT_EXEC);
     if (i) {
