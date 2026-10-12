@@ -43,8 +43,10 @@ typedef struct fiddle_function {
     ffi_cif cif;
     void (*fn)(void);
     int *argument_types;
+    ffi_type **argument_ffi_types;
     int n_argument_types;
     int return_type;
+    ffi_type *return_ffi_type;
     ffi_abi abi;
     bool is_variadic;
     bool need_gvl;
@@ -56,6 +58,7 @@ deallocate(void *p)
     fiddle_function_t *func = p;
     if (func->cif.arg_types) xfree(func->cif.arg_types);
     if (func->argument_types) xfree(func->argument_types);
+    if (func->argument_ffi_types) xfree(func->argument_ffi_types);
     xfree(func);
 }
 
@@ -67,6 +70,7 @@ function_memsize(const void *p)
 
     size += sizeof(*func);
     size += func->n_argument_types * sizeof(int);
+    size += func->n_argument_types * sizeof(ffi_type *);
 #if !defined(FFI_NO_RAW_API) || !FFI_NO_RAW_API
     size += ffi_raw_size((ffi_cif *)&func->cif);
 #endif
@@ -153,6 +157,7 @@ initialize(int argc, VALUE argv[], VALUE self)
     VALUE name = Qnil;
     VALUE need_gvl = Qfalse;
     int c_ret_type;
+    ffi_type *ret_ffi_type;
     bool is_variadic = false;
     ffi_abi c_ffi_abi;
     void *cfunc;
@@ -196,7 +201,7 @@ initialize(int argc, VALUE argv[], VALUE self)
     abi = INT2FIX(c_ffi_abi);
     ret_type = rb_fiddle_type_ensure(ret_type);
     c_ret_type = NUM2INT(ret_type);
-    (void)INT2FFI_TYPE(c_ret_type); /* raise */
+    ret_ffi_type = INT2FFI_TYPE(c_ret_type); /* raise */
     ret_type = INT2FIX(c_ret_type);
 
     arg_types = normalize_argument_types("argument types",
@@ -220,6 +225,7 @@ initialize(int argc, VALUE argv[], VALUE self)
     func->fn = (void (*)(void))(VALUE)cfunc;
     func->abi = c_ffi_abi;
     func->return_type = c_ret_type;
+    func->return_ffi_type = ret_ffi_type;
     func->is_variadic = is_variadic;
     func->need_gvl = RTEST(need_gvl);
 
@@ -228,10 +234,16 @@ initialize(int argc, VALUE argv[], VALUE self)
         xfree(func->argument_types);
         func->argument_types = NULL;
     }
+    if (func->argument_ffi_types) {
+        xfree(func->argument_ffi_types);
+        func->argument_ffi_types = NULL;
+    }
     func->n_argument_types = RARRAY_LENINT(arg_types);
     func->argument_types = ALLOC_N(int, func->n_argument_types);
+    func->argument_ffi_types = ALLOC_N(ffi_type *, func->n_argument_types);
     for (i = 0; i < func->n_argument_types; i++) {
         func->argument_types[i] = FIX2INT(RARRAY_AREF(arg_types, i));
+        func->argument_ffi_types[i] = INT2FFI_TYPE(func->argument_types[i]);
     }
     if (func->cif.arg_types) {
         xfree(func->cif.arg_types);
@@ -348,7 +360,8 @@ function_call(int argc, VALUE argv[], VALUE self)
         ffi_status result;
 
         ffi_arg_types = xcalloc(n_call_args + 1, sizeof(ffi_type *));
-        for (i_call = 0; i_call < n_call_args; i_call++) {
+        MEMCPY(ffi_arg_types, func->argument_ffi_types, ffi_type *, n_fixed_args);
+        for (i_call = n_fixed_args; i_call < n_call_args; i_call++) {
             ffi_arg_types[i_call] = INT2FFI_TYPE(call_arg_types[i_call]);
         }
         ffi_arg_types[i_call] = NULL;
@@ -359,7 +372,7 @@ function_call(int argc, VALUE argv[], VALUE self)
                                       func->abi,
                                       n_fixed_args,
                                       n_call_args,
-                                      INT2FFI_TYPE(func->return_type),
+                                      func->return_ffi_type,
                                       ffi_arg_types);
 #else
             /* This code is never used because ffi_prep_cif_var()
@@ -371,7 +384,7 @@ function_call(int argc, VALUE argv[], VALUE self)
             result = ffi_prep_cif(&func->cif,
                                   func->abi,
                                   n_call_args,
-                                  INT2FFI_TYPE(func->return_type),
+                                  func->return_ffi_type,
                                   ffi_arg_types);
         }
         if (result != FFI_OK) {
