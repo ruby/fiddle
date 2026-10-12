@@ -328,27 +328,66 @@ module Fiddle
                                                Fiddle::TYPE_UINTPTR_T)
         a = "a"
         n_tries = 100_000
+        # DIAG: temporary diagnostics. Don't merge.
+        malloc_stats = begin
+                         Fiddle::Function.new(Fiddle.dlopen(nil)["malloc_stats"],
+                                              [],
+                                              Fiddle::TYPE_VOID)
+                       rescue Fiddle::DLError
+                         nil
+                       end
+        diag = lambda do |label|
+          status = File.read("/proc/self/status") rescue ""
+          rss = status.scan(/^(VmRSS|RssAnon|RssFile|RssShmem):\s+(\d+)/)
+          stat = GC.stat
+          keys = [
+            :count,
+            :major_gc_count,
+            :heap_allocated_pages,
+            :heap_live_slots,
+            :malloc_increase_bytes,
+            :malloc_increase_bytes_limit,
+            :oldmalloc_increase_bytes,
+          ]
+          $stderr.puts("DIAG #{RUBY_VERSION} #{label}: " +
+                       rss.collect {|k, v| "#{k}=#{v}kB"}.join(" ") + " " +
+                       keys.collect {|k| "#{k}=#{stat[k]}"}.join(" "))
+          if malloc_stats
+            $stderr.puts("DIAG malloc_stats #{label}:")
+            $stderr.flush
+            malloc_stats.call
+          end
+        end
+        diag.call("start")
         # Warm up in the same state as assert_nothing_leaked_memory,
         # which runs the block right after GC.start.
         GC.start
+        diag.call("after warm up GC")
         n_tries.times do
           begin
             a + 1
           rescue TypeError
           end
         end
+        diag.call("after warm up")
         n_arguments = 1
         sizeof_fiddle_generic = Fiddle::SIZEOF_VOIDP # Rough
         size_per_try =
           (sizeof_fiddle_generic * n_arguments) +
           (Fiddle::SIZEOF_VOIDP * (n_arguments + 1))
-        assert_nothing_leaked_memory(size_per_try * n_tries) do
-          n_tries.times do
-            begin
-              rb_obj_frozen_p.call(a)
-            rescue TypeError
+        begin
+          assert_nothing_leaked_memory(size_per_try * n_tries) do
+            diag.call("block start")
+            n_tries.times do
+              begin
+                rb_obj_frozen_p.call(a)
+              rescue TypeError
+              end
             end
+            diag.call("block end")
           end
+        ensure
+          diag.call("after assertion")
         end
       else
         prep = 'r = Fiddle::Function.new(Fiddle.dlopen(nil)["rb_obj_frozen_p"], [Fiddle::TYPE_UINTPTR_T], Fiddle::TYPE_UINTPTR_T); a = "a"'
