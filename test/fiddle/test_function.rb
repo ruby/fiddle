@@ -328,6 +328,9 @@ module Fiddle
                                                Fiddle::TYPE_UINTPTR_T)
         a = "a"
         n_tries = 100_000
+        # Warm up in the same state as assert_nothing_leaked_memory,
+        # which runs the block right after GC.start.
+        GC.start
         n_tries.times do
           begin
             a + 1
